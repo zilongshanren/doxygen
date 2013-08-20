@@ -2837,6 +2837,12 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
           // page itself
         {
           endQuickIndexList(t,TRUE);
+          //added by guanghui
+          t << "<ul class=\"tablist\" style=\"text-align:right;float:right;\">";
+          t << "<li ><a name=\"cpp\" style=\"background-color:red;\" href=\"javascript:onClickCpp();\">c++</a></li>";
+          t << "<li ><a name=\"js\" href=\"javascript:onClickJs();\">js</a></li>";
+          t << "<li ><a name=\"lua\" href=\"javascript:onClickLua();\">lua</a></li>";
+          t << "</ul>";
         }
       }
       else // normal case for other rows than first one

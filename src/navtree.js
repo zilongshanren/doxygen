@@ -1,5 +1,34 @@
 var navTreeSubIndices = new Array();
 
+function onClickCpp()
+{
+    $('tr[name=js]').css("display","none");
+    $('tr[name=lua]').css("display","none");
+    $('tr[name=cpp]').css("display",'');
+    $('a[name=cpp]').css("background-color","red");
+    $('a[name=js]').css("background-color","");
+    $('a[name=lua]').css("background-color","");
+}
+
+function onClickJs()
+{
+    $('tr[name=js]').css("display",'');
+    $('tr[name=cpp]').css("display","none");
+    $('tr[name=lua]').css("display","none");
+    $('a[name=cpp]').css("background-color","");
+    $('a[name=js]').css("background-color","red");
+    $('a[name=lua]').css("background-color","");
+}
+
+function onClickLua()
+{
+    $('tr[name=cpp]').css("display","none");
+    $('tr[name=lua]').css("display","");
+    $('tr[name=js]').css("display","none");
+    $('a[name=cpp]').css("background-color","");
+    $('a[name=js]').css("background-color","");
+    $('a[name=lua]').css("background-color","red");
+}
 function getData(varName)
 {
   var i = varName.lastIndexOf('/');
