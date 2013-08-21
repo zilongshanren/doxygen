@@ -351,6 +351,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId);
             }
+            else{
+                md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
+            }
             break;
           }
         case MemberType_Enumeration: 
