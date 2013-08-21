@@ -91,6 +91,10 @@ function toggleInherit(id)
     $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
   } else {
     rows.css('display','table-row'); // using show() causes jump in firefox
+    //added by guanghui
+    $('tr[name=cpp]').show();
+    $('tr[name=js]').hide();
+    $('tr[name=lua]').hide();
     $(img).attr('src',src.substring(0,src.length-10)+'open.png');
   }
 }

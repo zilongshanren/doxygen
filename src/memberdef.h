@@ -24,6 +24,8 @@
 #include "types.h"
 #include "definition.h"
 
+enum LanguageType { kLTNone =0,kLTCpp = 1, kLTLua = 2, kLTJs = 3 };
+
 class ClassDef;
 class NamespaceDef;
 class GroupDef;
@@ -350,9 +352,10 @@ class MemberDef : public Definition
     //-----------------------------------------------------------------------------------
 
     // output generation
+    // added by guanghui
     void writeDeclaration(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   bool inGroup, const DefType compoundType,
+                   bool inGroup, const DefType compoundType,LanguageType multipleLang,
                    ClassDef *inheritFrom=0,const char *inheritId=0); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName,Definition *container,

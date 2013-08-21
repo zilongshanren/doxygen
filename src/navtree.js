@@ -2,9 +2,9 @@ var navTreeSubIndices = new Array();
 
 function onClickCpp()
 {
-    $('tr[name=js]').css("display","none");
-    $('tr[name=lua]').css("display","none");
-    $('tr[name=cpp]').css("display",'');
+    $('tr[name=js]').hide();
+    $('tr[name=lua]').hide();
+    $('tr[name=cpp]').show();
     $('a[name=cpp]').css("background-color","red");
     $('a[name=js]').css("background-color","");
     $('a[name=lua]').css("background-color","");
@@ -12,9 +12,9 @@ function onClickCpp()
 
 function onClickJs()
 {
-    $('tr[name=js]').css("display",'');
-    $('tr[name=cpp]').css("display","none");
-    $('tr[name=lua]').css("display","none");
+    $('tr[name=js]').show();
+    $('tr[name=cpp]').hide();
+    $('tr[name=lua]').hide();
     $('a[name=cpp]').css("background-color","");
     $('a[name=js]').css("background-color","red");
     $('a[name=lua]').css("background-color","");
@@ -22,9 +22,9 @@ function onClickJs()
 
 function onClickLua()
 {
-    $('tr[name=cpp]').css("display","none");
-    $('tr[name=lua]').css("display","");
-    $('tr[name=js]').css("display","none");
+    $('tr[name=cpp]').hide();
+    $('tr[name=lua]').show();
+    $('tr[name=js]').hide();
     $('a[name=cpp]').css("background-color","");
     $('a[name=js]').css("background-color","");
     $('a[name=lua]').css("background-color","red");

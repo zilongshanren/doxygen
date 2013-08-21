@@ -1783,6 +1783,8 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     }
     ol.startMemberDeclaration();
     ol.startMemberItem(anchor(),FALSE);
+    //added by guanghui
+    /* ol.startCppMemberItem(anchor(),FALSE); */
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
 

@@ -1393,7 +1393,7 @@ bool MemberDef::isBriefSectionVisible() const
 
 void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup, const DefType compoundType, 
+               bool inGroup, const DefType compoundType, LanguageType multipleLang,
                ClassDef *inheritedFrom,const char *inheritId)
 {
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",qualifiedName().data(),inGroup);
@@ -1431,10 +1431,25 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  ol.startMemberItem(anchor(), 
-                     isAnonymous ? 1 : m_impl->tArgList ? 3 : 0,
-                     inheritId
-                    );
+  /* ol.startMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId); */
+  //added by guanghui
+  if (multipleLang == kLTCpp)
+  {
+      ol.startCppMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
+  }
+  else if (multipleLang == kLTLua)
+  {
+      
+      ol.startLuaMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
+  }
+  else if (multipleLang == kLTJs)
+  {
+      ol.startJsMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
+  }
+  else{
+      printf("guanghui:lalala\n");
+      ol.startCppMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
+  }
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
@@ -1495,9 +1510,15 @@ void MemberDef::writeDeclaration(OutputList &ol,
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(s_indentLevel++);
-      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
+      //added by guanghui,  to prevent multiple function description generated
+      if (multipleLang == kLTCpp)
+      {
+          annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
+      }
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      ol.startMemberItem(anchor(),2,inheritId);
+      /* ol.startMemberItem(anchor(),2,inheritId); */
+      //added by guanghui
+      ol.startCppMemberItem(anchor(),2,inheritId);
       int j;
       for (j=0;j< s_indentLevel-1;j++) 
       {
@@ -1550,6 +1571,17 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       ltype.prepend("(");
       ltype.append(")");
+    }
+    if (!ltype.isEmpty())
+    {
+        if (multipleLang == kLTJs)
+        {
+            ltype = "var";
+        }
+        else if (multipleLang == kLTLua)
+        {
+            ltype = "local";
+        }
     }
     linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
@@ -1629,7 +1661,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
       }
       ClassDef *rcd = cd;
       if (isReference() && m_impl->classDef) rcd = m_impl->classDef; 
-      writeLink(ol,rcd,nd,fd,gd,TRUE);
+      //added by guanghui
+      /* writeLink(ol,rcd,nd,fd,gd,TRUE); */
     }
   }
 
@@ -1773,11 +1806,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 getOuterScope()?getOuterScope():d,this,briefDescription(),
                 TRUE,FALSE,0,TRUE,FALSE);
 
-    if (rootNode && !rootNode->isEmpty())
+    if (rootNode && !rootNode->isEmpty() && multipleLang == kLTCpp)
     {
       ol.startMemberDescription(anchor(),inheritId);
       ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
-      if (detailsVisible) 
+
+      //added by guanghui, reduce repeative generate more links
+      if (detailsVisible ) 
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);

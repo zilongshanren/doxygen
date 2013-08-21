@@ -179,6 +179,11 @@ class HtmlGenerator : public OutputGenerator
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
     void startMemberItem(const char *anchor,int,const char *inheritId);
+    //added by guanghui
+    virtual void startCppMemberItem(const char*, int, const char*);
+    virtual void startLuaMemberItem(const char*, int, const char*);
+    virtual void startJsMemberItem(const char*, int, const char*);
+
     void endMemberItem();
     void startMemberTemplateParams();
     void endMemberTemplateParams(const char *anchor,const char *inheritId);

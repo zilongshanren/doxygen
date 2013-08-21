@@ -1128,7 +1128,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
     if (!serverBasedSearch) 
     {
       searchCssJs += "<script type=\"text/javascript\">\n"
-                     "  $(document).ready(function() { searchBox.OnSelectItem(0); });\n"
+                     "  $(document).ready( function() { searchBox.OnSelectItem(0); });\n"
                      "</script>";
     }
     else 
@@ -2129,6 +2129,89 @@ void HtmlGenerator::startMemberItem(const char *anchor,int annoType,const char *
   }
 }
 
+// anonymous type:
+//  0 = single column right aligned
+//  1 = double column left aligned
+//  2 = single column left aligned
+//  added by guanghui
+void HtmlGenerator::startCppMemberItem(const char *anchor,int annoType,const char *inheritId) 
+{ 
+  DBG_HTML(t << "<!-- startCppMemberItem() -->" << endl)
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr  name=\"cpp\" class=\"memitem:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\">";
+  switch(annoType)
+  {
+    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+  }
+}
+
+// anonymous type:
+//  0 = single column right aligned
+//  1 = double column left aligned
+//  2 = single column left aligned
+//  added by guanghui
+void HtmlGenerator::startJsMemberItem(const char *anchor,int annoType,const char *inheritId) 
+{ 
+  DBG_HTML(t << "<!-- startJsMemberItem() -->" << endl)
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr  name=\"js\" class=\"memitem:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\">";
+  switch(annoType)
+  {
+    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+  }
+}
+
+// anonymous type:
+//  0 = single column right aligned
+//  1 = double column left aligned
+//  2 = single column left aligned
+//  added by guanghui
+void HtmlGenerator::startLuaMemberItem(const char *anchor,int annoType,const char *inheritId) 
+{ 
+  DBG_HTML(t << "<!-- startLuaMemberItem() -->" << endl)
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr  name=\"lua\" class=\"memitem:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\">";
+  switch(annoType)
+  {
+    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+  }
+}
 void HtmlGenerator::endMemberItem() 
 { 
   t << "</td></tr>"; 

@@ -324,8 +324,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   MemberListIterator mli(*this);
   for ( ; (md=mli.current()); ++mli )
   {
-    //printf(">>> Member `%s' type=%d visible=%d\n",
-    //    md->name().data(),md->memberType(),md->isBriefSectionVisible());
+    /* printf(">>> Member `%s' type=%d visible=%d\n", md->name().data(),md->memberType(),md->isBriefSectionVisible()); */
+
     if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
     {
@@ -345,7 +345,12 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+            if (md->memberType() == MemberType_Function)
+            {
+                md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
+                md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
+                md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId);
+            }
             break;
           }
         case MemberType_Enumeration: 
@@ -423,7 +428,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
+            /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId); */
+            /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId); */
             break;
           }
         case MemberType_EnumValue: 
@@ -432,7 +439,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
+              /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId); */
+              /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId); */
             }
           }
           break;
@@ -458,7 +467,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.startMemberList();
             first=FALSE;
           }
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType);
+          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp);
+          /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua); */
+          /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs); */
         }
         md->setFromAnonymousScope(TRUE);
       }

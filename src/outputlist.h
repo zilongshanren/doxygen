@@ -210,6 +210,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
     void startMemberItem(const char *anchor,int i1,const char *id=0) 
     { forall(&OutputGenerator::startMemberItem,anchor,i1,id); }
+    //added by guanghui
+    void startCppMemberItem(const char *anchor,int i1,const char *id=0) 
+    { forall(&OutputGenerator::startCppMemberItem,anchor,i1,id); }
+    void startLuaMemberItem(const char *anchor,int i1,const char *id=0) 
+    { forall(&OutputGenerator::startLuaMemberItem,anchor,i1,id); }
+    void startJsMemberItem(const char *anchor,int i1,const char *id=0) 
+    { forall(&OutputGenerator::startJsMemberItem,anchor,i1,id); }
+    ////////////////////////////////////////////////////////////////////////
     void endMemberItem() 
     { forall(&OutputGenerator::endMemberItem); }
     void startMemberTemplateParams() 

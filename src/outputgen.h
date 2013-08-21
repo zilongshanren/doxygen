@@ -338,6 +338,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
     virtual void startMemberItem(const char *,int,const char *) = 0;
+    //added by guanghui
+    virtual void startCppMemberItem(const char*, int, const char*){}
+    virtual void startLuaMemberItem(const char*, int, const char*){}
+    virtual void startJsMemberItem(const char*, int, const char*){}
+
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const char *,const char *) = 0;
