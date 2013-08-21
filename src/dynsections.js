@@ -83,19 +83,24 @@ function toggleFolder(id)
 
 function toggleInherit(id)
 {
-  var rows = $('tr.inherit.'+id);
-  var img = $('tr.inherit_header.'+id+' img');
-  var src = $(img).attr('src');
-  if (rows.filter(':first').is(':visible')===true) {
-    rows.css('display','none');
-    $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
-  } else {
-    rows.css('display','table-row'); // using show() causes jump in firefox
-    //added by guanghui
-    $('tr[name=cpp]').show();
-    $('tr[name=js]').hide();
-    $('tr[name=lua]').hide();
-    $(img).attr('src',src.substring(0,src.length-10)+'open.png');
-  }
+    var rows = $('tr.inherit.'+id);
+    var img = $('tr.inherit_header.'+id+' img');
+    var src = $(img).attr('src');
+    if (rows.filter(':first').is(':visible')===true) {
+        rows.css('display','none');
+        if (src.length === 16) {
+            $(img).attr('src',src.substring(0,src.length-10)+'open.png');
+        }
+    } else {
+        rows.css('display','table-row'); // using show() causes jump in firefox
+        if (src.length === 14) {
+            $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
+        }
+
+        //added by guanghui
+        $('tr[name=cpp]').show();
+        $('tr[name=js]').hide();
+        $('tr[name=lua]').hide();
+    }
 }
 

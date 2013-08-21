@@ -21,7 +21,6 @@
 "    $('tr[name=cpp]').show();\n"
 "    $('tr[name=lua]').hide();\n"
 "    $('tr[name=js]').hide();\n"
-"    alert(\"loaded!\");\n"
 "}());\n"
 "</script>\n"
 "</body>\n"
