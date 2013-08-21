@@ -665,8 +665,10 @@ void MemberList::writeDocumentation(OutputList &ol,
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,container,
-                           m_inGroup,showEnumValues,showInline);
+      //added by guanghui
+    md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTCpp);
+    md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTLua);
+    md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTJs);
   }
   if (memberGroupList)
   {

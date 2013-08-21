@@ -8,6 +8,9 @@ function onClickCpp()
     $('a[name=cpp]').css("background-color","red");
     $('a[name=js]').css("background-color","");
     $('a[name=lua]').css("background-color","");
+    $('div[name=cpp]').show();
+    $('div[name=lua]').hide();
+    $('div[name=js]').hide();
 }
 
 function onClickJs()
@@ -18,6 +21,9 @@ function onClickJs()
     $('a[name=cpp]').css("background-color","");
     $('a[name=js]').css("background-color","red");
     $('a[name=lua]').css("background-color","");
+    $('div[name=js]').show();
+    $('div[name=lua]').hide();
+    $('div[name=cpp]').hide();
 }
 
 function onClickLua()
@@ -28,6 +34,9 @@ function onClickLua()
     $('a[name=cpp]').css("background-color","");
     $('a[name=js]').css("background-color","");
     $('a[name=lua]').css("background-color","red");
+    $('div[name=lua]').show();
+    $('div[name=js]').hide();
+    $('div[name=cpp]').hide();
 }
 function getData(varName)
 {

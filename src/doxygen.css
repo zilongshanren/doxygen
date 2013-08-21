@@ -512,7 +512,7 @@ table.memberdecls {
         -ms-transition: box-shadow 0.5s linear;
         -o-transition: box-shadow 0.5s linear;
         transition: box-shadow 0.5s linear;
-        display: table !important;
+        /* display: table !important; */
         width: 100%;
 }
 

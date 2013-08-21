@@ -2407,6 +2407,28 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
   t << "<div class=\"memproto\">" << endl;
 }
 
+//added by guanghui
+void HtmlGenerator::startCppMemberDoc(const char *,const char *,const char *,const char *,bool) 
+{ 
+  DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
+ 
+  t << "\n<div name=\"cpp\" class=\"memitem\">" << endl;
+  t << "<div class=\"memproto\">" << endl;
+}
+void HtmlGenerator::startLuaMemberDoc(const char *,const char *,const char *,const char *,bool) 
+{ 
+  DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
+ 
+  t << "\n<div name=\"lua\" class=\"memitem\">" << endl;
+  t << "<div class=\"memproto\">" << endl;
+}
+void HtmlGenerator::startJsMemberDoc(const char *,const char *,const char *,const char *,bool) 
+{ 
+  DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
+ 
+  t << "\n<div name=\"js\" class=\"memitem\">" << endl;
+  t << "<div class=\"memproto\">" << endl;
+}
 void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)

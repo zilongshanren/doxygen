@@ -512,7 +512,7 @@
 "        -ms-transition: box-shadow 0.5s linear;\n"
 "        -o-transition: box-shadow 0.5s linear;\n"
 "        transition: box-shadow 0.5s linear;\n"
-"        display: table !important;\n"
+"        /* display: table !important; */\n"
 "        width: 100%;\n"
 "}\n"
 "\n"

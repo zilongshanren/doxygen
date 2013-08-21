@@ -222,6 +222,13 @@ class HtmlGenerator : public OutputGenerator
     void lineBreak(const char *style);
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *,bool);
+    //added by guanghui
+    virtual void startCppMemberDoc(const char *,const char *,
+                                const char *,const char *,bool);
+    virtual void startLuaMemberDoc(const char *,const char *,
+                                const char *,const char *,bool);
+    virtual void startJsMemberDoc(const char *,const char *,
+                                const char *,const char *,bool);
     void endMemberDoc(bool); 
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor,const char *name,

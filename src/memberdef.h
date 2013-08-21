@@ -357,10 +357,12 @@ class MemberDef : public Definition
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                    bool inGroup, const DefType compoundType,LanguageType multipleLang,
                    ClassDef *inheritFrom=0,const char *inheritId=0); 
+    //added by guanghui, add 3 language support
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName,Definition *container,
-                            bool inGroup,bool showEnumValues=FALSE,bool
-                            showInline=FALSE);
+                            bool inGroup,
+                            bool showEnumValues=FALSE,bool
+                            showInline=FALSE,LanguageType multipleLang = kLTCpp);
     void writeMemberDocSimple(OutputList &ol,Definition *container);
     void writeEnumDeclaration(OutputList &typeDecl,
             ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd, 

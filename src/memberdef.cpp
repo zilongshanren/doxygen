@@ -118,6 +118,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 //   ol.endMemberDoc(hasArgs=FALSE);
 //  
 
+//added by guanghui, change this function to generate 3 language doc
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString & /*scopeName*/,MemberDef *md)
 {
@@ -2399,7 +2400,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    Definition *container,
                                    bool inGroup,
                                    bool showEnumValues,
-                                   bool showInline
+                                   bool showInline,
+                                   LanguageType multipleLang
                                   )
 {
   // if this member is in a group find the real scope name.
@@ -2494,7 +2496,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-        ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
+        //added by guanghui: TODO: add multiple language support
+        /* ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline); */
+        if (multipleLang == kLTCpp)
+        {
+            ol.startCppMemberDoc(ciname,name(), memAnchor, name(), showInline);
+        }
+        else if (multipleLang == kLTLua)
+        {
+            ol.startLuaMemberDoc(ciname, name(),memAnchor,name(),showInline);
+        }
+        else if (multipleLang == kLTJs)
+        {
+            ol.startJsMemberDoc(ciname, name(),memAnchor,name(),showInline);
+        }
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),definitionType());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-i-l));
@@ -2506,7 +2521,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       //printf("Anonymous compound `%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
+      //added by guanghui
+      /* ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline); */
+        if (multipleLang == kLTCpp)
+        {
+            ol.startCppMemberDoc(ciname,name(), memAnchor, name(), showInline);
+        }
+        else if (multipleLang == kLTLua)
+        {
+            ol.startLuaMemberDoc(ciname, name(),memAnchor,name(),showInline);
+        }
+        else if (multipleLang == kLTJs)
+        {
+            ol.startJsMemberDoc(ciname, name(),memAnchor,name(),showInline);
+        }
       // search for the last anonymous compound name in the definition
       int si=ldef.find(' '),pi,ei=i+l;
       if (si==-1) si=0;
@@ -2528,7 +2556,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   else // not an enum value or anonymous compound
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-    ol.startMemberDoc(ciname,name(),memAnchor,title,showInline);
+    //added by guanghui
+    /* ol.startMemberDoc(ciname,name(),memAnchor,title,showInline); */
+    if (multipleLang == kLTCpp)
+    {
+        ol.startCppMemberDoc(ciname,name(), memAnchor, name(), showInline);
+    }
+    else if (multipleLang == kLTLua)
+    {
+        ol.startLuaMemberDoc(ciname, name(),memAnchor,name(),showInline);
+    }
+    else if (multipleLang == kLTJs)
+    {
+        ol.startJsMemberDoc(ciname, name(),memAnchor,name(),showInline);
+    }
 
     ClassDef *cd=getClassDef();
     if (!Config_getBool("HIDE_SCOPE_NAMES"))

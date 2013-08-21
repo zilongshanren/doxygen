@@ -262,6 +262,17 @@ class OutputList : public OutputDocInterface
     void startMemberDoc(const char *clName,const char *memName,
                         const char *anchor,const char *title,bool showInline)
     { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title,showInline); }
+    //added by guanghui
+    void startCppMemberDoc(const char *clName,const char *memName,
+                        const char *anchor,const char *title,bool showInline)
+    { forall(&OutputGenerator::startCppMemberDoc,clName,memName,anchor,title,showInline); }
+    void startLuaMemberDoc(const char *clName,const char *memName,
+                        const char *anchor,const char *title,bool showInline)
+    { forall(&OutputGenerator::startLuaMemberDoc,clName,memName,anchor,title,showInline); }
+    void startJsMemberDoc(const char *clName,const char *memName,
+                        const char *anchor,const char *title,bool showInline)
+    { forall(&OutputGenerator::startJsMemberDoc,clName,memName,anchor,title,showInline); }
+
     void endMemberDoc(bool hasArgs) 
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const char *fName,const char *manName,
