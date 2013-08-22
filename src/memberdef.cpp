@@ -120,7 +120,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 
 //added by guanghui, change this function to generate 3 language doc
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
-                                 const QCString & /*scopeName*/,MemberDef *md)
+                                 const QCString & /*scopeName*/,MemberDef *md, LanguageType multipleLang)
 {
   ArgumentList *defArgList=(md->isDocsForDefinition()) ? 
                              md->argumentList() : md->declArgumentList();
@@ -183,6 +183,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
 
   Argument *a=defArgList->first();
   QCString cName;
+  //handle templatearguments
   if (cd)
   {
     cName=cd->name();
@@ -243,10 +244,19 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     else // non-function pointer type
     {
       QCString n=a->type;
+      //cpp function arg names
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (a->type!="...")
       {
         if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
+        if (multipleLang == kLTLua)
+        {
+            n = "local";
+        }
+        else if (multipleLang == kLTJs)
+        {
+            n = "var"; 
+        }
         linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
       }
     }
@@ -289,7 +299,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                         // that comes after the name
     {
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),
-                  md,a->type.right(a->type.length()-vp));
+                  md,a->type.right(a->type.length()-vp),kLTLua);
     }
     if (!a->defval.isEmpty()) // write the default value
     {
@@ -341,17 +351,24 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (first) ol.startParameterName(defArgList->count()<2);
   ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
   ol.popGeneratorState();
+  //added by guanghui, add translations
   if (md->extraTypeChars())
   {
     ol.docify(md->extraTypeChars());
   }
   if (defArgList->constSpecifier)
   {
-    ol.docify(" const");
+      if (multipleLang == kLTCpp)
+      {
+          ol.docify(" const");
+      }
   }
   if (defArgList->volatileSpecifier)
   {
-    ol.docify(" volatile");
+      if (multipleLang == kLTCpp)
+      {
+          ol.docify(" volatile");
+      }
   }
   if (!defArgList->trailingReturnType.isEmpty())
   {
@@ -1448,7 +1465,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.startJsMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
   }
   else{
-      printf("guanghui:lalala\n");
       ol.startCppMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
   }
 
@@ -1543,7 +1559,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
                     getBodyDef(),            // fileScope
                     this,                    // self
                     ltype.left(i),           // text
-                    TRUE                     // autoBreak
+                    TRUE,                     // autoBreak,
+                    multipleLang
                    ); 
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
         //ol+=*getAnonymousEnumType()->enumDecl();
@@ -1557,7 +1574,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
                     getBodyDef(),            // fileScope
                     this,                    // self
                     ltype,                   // text
-                    TRUE                     // autoBreak
+                    TRUE,                     // autoBreak
+                    multipleLang
                    ); 
       }
     }
@@ -1589,7 +1607,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 getBodyDef(),            // fileScope
                 this,                    // self
                 ltype,                   // text
-                TRUE                     // autoBreak
+                TRUE,                     // autoBreak
+                multipleLang
                );
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
@@ -1663,7 +1682,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ClassDef *rcd = cd;
       if (isReference() && m_impl->classDef) rcd = m_impl->classDef; 
       //added by guanghui
-      /* writeLink(ol,rcd,nd,fd,gd,TRUE); */
+      writeLink(ol,rcd,nd,fd,gd,TRUE);
     }
   }
 
@@ -1807,12 +1826,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 getOuterScope()?getOuterScope():d,this,briefDescription(),
                 TRUE,FALSE,0,TRUE,FALSE);
 
+    //added by guanghui, reduce repeative generate more links
     if (rootNode && !rootNode->isEmpty() && multipleLang == kLTCpp)
     {
       ol.startMemberDescription(anchor(),inheritId);
       ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
 
-      //added by guanghui, reduce repeative generate more links
       if (detailsVisible ) 
       {
         ol.pushGeneratorState();
@@ -2395,6 +2414,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
+//added by guanghui, add lua&js support
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scName,
                                    Definition *container,
@@ -2550,6 +2570,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       // last ei characters of ldef contain pointer/reference specifiers
       int ni=ldef.find("::",si);
       if (ni>=ei) ei=ni+2;
+      //added by guanghui, ToDO:
       linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-ei));
     }
   }
@@ -2674,13 +2695,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
+        //added by guanghui, TODO:
       linkifyText(TextGeneratorOLImpl(ol),
                   container,
                   getBodyDef(),
                   this,
-                  substitute(ldef,"::",sep)
+                  substitute(ldef,"::",sep),multipleLang
                  );
-      hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
+      //added by guanghui, modify this line to supoort multiple languages
+      hasParameterList=writeDefArgumentList(ol,cd,scopeName,this,multipleLang);
     }
 
     if (hasOneLineInitializer()) // add initializer

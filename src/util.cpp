@@ -1889,7 +1889,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     FileDef *fileScope,Definition *self,
     const char *text, bool autoBreak,bool external,
-    bool keepSpaces,int indentLevel)
+    bool keepSpaces,int indentLevel, LanguageType multipleLang)
 {
   //printf("linkify=`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
@@ -1933,20 +1933,29 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       //printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset);
       if (i!=-1) // add a link-break at i in case of Html output
       {
-        out.writeString(splitText.left(i+offset),keepSpaces);
-        out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
-        out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
+          if (multipleLang == kLTNone || multipleLang == kLTCpp)
+          {
+              out.writeString(splitText.left(i+offset),keepSpaces);
+              out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
+              out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
+          }
         floatingIndex=splitLength-i-offset+matchLen;
       } 
       else
       {
-        out.writeString(splitText,keepSpaces); 
+          if (multipleLang == kLTNone || multipleLang == kLTCpp)
+          {
+              out.writeString(splitText,keepSpaces); 
+          }
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
-      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
+      if (multipleLang == kLTNone || multipleLang == kLTCpp)
+      {
+          out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
+      }
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
@@ -1988,7 +1997,11 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         {
           if (cd!=self)
           {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+              //added by guanghui
+              if (multipleLang == kLTNone || multipleLang == kLTCpp)
+              {
+                  out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+              }
             found=TRUE;
           }
         }
@@ -2000,7 +2013,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         {
           if (cd!=self)
           {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+              if (multipleLang == kLTNone || multipleLang == kLTCpp)
+              {
+                  out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+              }
             found=TRUE;
           }
         }
@@ -2040,13 +2056,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
 
       //printf("ScopeName=%s\n",scopeName.data());
       //if (!found) printf("Trying to link %s in %s\n",word.data(),scopeName.data()); 
-      if (!found && 
-          getDefs(scopeName,matchWord,0,md,cd,fd,nd,gd) && 
-          //(md->isTypedef() || md->isEnumerate() || 
-          // md->isReference() || md->isVariable()
-          //) && 
-          (external ? md->isLinkable() : md->isLinkableInProject()) 
-         )
+      if (!found && getDefs(scopeName,matchWord,0,md,cd,fd,nd,gd) && (external ? md->isLinkable() : md->isLinkableInProject()) )
       {
         //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
         //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
@@ -2054,8 +2064,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         if (md!=self && (self==0 || md->name()!=self->name())) 
           // name check is needed for overloaded members, where getDefs just returns one
         {
-          out.writeLink(md->getReference(),md->getOutputFileBase(),
-              md->anchor(),word);
+            if (multipleLang == kLTNone || multipleLang == kLTCpp)
+            {
+                out.writeLink(md->getReference(),md->getOutputFileBase(), md->anchor(),word);
+            }
           //printf("found symbol %s\n",matchWord.data());
           found=TRUE;
         }
@@ -2064,7 +2076,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
 
     if (!found) // add word to the result
     {
-      out.writeString(word,keepSpaces);
+        if (multipleLang == kLTNone || multipleLang == kLTCpp)
+        {
+            out.writeString(word,keepSpaces);
+        }
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -2072,7 +2087,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
-  out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
+  if (multipleLang == kLTNone || multipleLang == kLTCpp)
+  {
+      out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
+  }
 }
 
 

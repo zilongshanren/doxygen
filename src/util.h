@@ -25,6 +25,7 @@
 #include <qlist.h>
 #include <ctype.h>
 #include "types.h"
+#include"memberdef.h"
 
 //--------------------------------------------------------------------
 
@@ -100,7 +101,8 @@ void linkifyText(const TextGeneratorIntf &ol,
                  bool autoBreak=FALSE,
                  bool external=TRUE,
                  bool keepSpaces=FALSE,
-                 int indentLevel=0
+                 int indentLevel=0,
+                 LanguageType multipleLang = kLTNone
                 );
 
 void setAnchors(MemberList *ml);
