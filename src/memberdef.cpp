@@ -244,6 +244,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     else // non-function pointer type
     {
       QCString n=a->type;
+      n.stripWhiteSpace();
       //cpp function arg names
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (a->type!="...")
@@ -251,11 +252,24 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
         if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
         if (multipleLang == kLTLua)
         {
-            n = "local";
+            if (n == "void")
+            {
+                n="";
+            }
+            else
+            {
+                n = "local";
+            }
         }
         else if (multipleLang == kLTJs)
         {
-            n = "var"; 
+            if (n == "void")
+            {
+               n = ""; 
+            }
+            else{
+                n = "var"; 
+            }
         }
         linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
       }
@@ -1712,32 +1726,36 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (argsString() && !isObjCMethod()) 
   {
     if (!isDefine()) ol.writeString(" ");
-    QCString argsStr = argsString();
+    QCString argsStr = "";
+    argsStr = argsString();
+    QRegExp commaReg(",");
+    int _mLen;
+    int _mIndex = commaReg.match(argsStr,0,&_mLen);
+    if (_mIndex == -1)
+    {
+        argsStr = ("");
+    }
+
     //added by guanghui, customize args list
-    /* if (multipleLang == kLTCpp) */
-    /* { */
-    /*     linkifyText(TextGeneratorOLImpl(ol), // out */
-    /*             d,                       // scope */
-    /*             getBodyDef(),            // fileScope */
-    /*             this,                    // self */
-    /*             argsStr,            // text */
-    /*             m_impl->annMemb,         // autoBreak */
-    /*             TRUE,                    // external */
-    /*             FALSE,                   // keepSpaces */
-    /*             s_indentLevel */
-    /*             ); */
-    /* } */
-        linkifyText(TextGeneratorOLImpl(ol), // out
-                d,                       // scope
-                getBodyDef(),            // fileScope
-                this,                    // self
-                argsStr,            // text
-                m_impl->annMemb,         // autoBreak
-                TRUE,                    // external
-                FALSE,                   // keepSpaces
-                s_indentLevel
-                );
-  }
+    if (multipleLang == kLTLua)
+    {
+        //todo:convert cpp arglists to lua
+    }
+    else if (multipleLang == kLTJs)
+    {
+        //todo: convert cpp arglists to js 
+    }
+    linkifyText(TextGeneratorOLImpl(ol), // out
+            d,                       // scope
+            getBodyDef(),            // fileScope
+            this,                    // self
+            argsStr,            // text
+            m_impl->annMemb,         // autoBreak
+            TRUE,                    // external
+            FALSE,                   // keepSpaces
+            s_indentLevel
+            );
+ }
   // *** write exceptions
   if (excpString())
   {
