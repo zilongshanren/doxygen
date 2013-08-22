@@ -1465,7 +1465,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.startJsMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
   }
   else{
-      ol.startCppMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
+      //added by guanghui, class attributes
+      ol.startMemberItem(anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0, inheritId);
   }
 
   // If there is no detailed description we need to write the anchor here.
@@ -1533,9 +1534,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
           annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
       }
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      /* ol.startMemberItem(anchor(),2,inheritId); */
+      ol.startMemberItem(anchor(),2,inheritId);
       //added by guanghui
-      ol.startCppMemberItem(anchor(),2,inheritId);
+      /* ol.startCppMemberItem(anchor(),2,inheritId); */
       int j;
       for (j=0;j< s_indentLevel-1;j++) 
       {
@@ -1602,6 +1603,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
             ltype = "local";
         }
     }
+    //added by guanghui, this line add return type to doxygen
     linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
                 getBodyDef(),            // fileScope
@@ -1710,16 +1712,31 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (argsString() && !isObjCMethod()) 
   {
     if (!isDefine()) ol.writeString(" ");
-    linkifyText(TextGeneratorOLImpl(ol), // out
+    QCString argsStr = argsString();
+    //added by guanghui, customize args list
+    /* if (multipleLang == kLTCpp) */
+    /* { */
+    /*     linkifyText(TextGeneratorOLImpl(ol), // out */
+    /*             d,                       // scope */
+    /*             getBodyDef(),            // fileScope */
+    /*             this,                    // self */
+    /*             argsStr,            // text */
+    /*             m_impl->annMemb,         // autoBreak */
+    /*             TRUE,                    // external */
+    /*             FALSE,                   // keepSpaces */
+    /*             s_indentLevel */
+    /*             ); */
+    /* } */
+        linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
                 getBodyDef(),            // fileScope
                 this,                    // self
-                argsString(),            // text
+                argsStr,            // text
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
                 s_indentLevel
-               );
+                );
   }
   // *** write exceptions
   if (excpString())

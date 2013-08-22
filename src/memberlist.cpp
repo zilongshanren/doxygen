@@ -345,7 +345,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            if (md->memberType() == MemberType_Function)
+            if (md->memberType() == MemberType_Function || 
+                    md->memberType() == MemberType_Variable )
             {
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
