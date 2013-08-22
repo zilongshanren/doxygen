@@ -1933,29 +1933,20 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       //printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset);
       if (i!=-1) // add a link-break at i in case of Html output
       {
-          if (multipleLang == kLTNone || multipleLang == kLTCpp)
-          {
-              out.writeString(splitText.left(i+offset),keepSpaces);
-              out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
-              out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
-          }
+          out.writeString(splitText.left(i+offset),keepSpaces);
+          out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
+          out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
         floatingIndex=splitLength-i-offset+matchLen;
       } 
       else
       {
-          if (multipleLang == kLTNone || multipleLang == kLTCpp)
-          {
-              out.writeString(splitText,keepSpaces); 
-          }
+          out.writeString(splitText,keepSpaces); 
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
-      if (multipleLang == kLTNone || multipleLang == kLTCpp)
-      {
-          out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
-      }
+        out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
@@ -1997,11 +1988,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         {
           if (cd!=self)
           {
-              //added by guanghui
-              if (multipleLang == kLTNone || multipleLang == kLTCpp)
-              {
-                  out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-              }
+              out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
             found=TRUE;
           }
         }
@@ -2013,10 +2000,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         {
           if (cd!=self)
           {
-              if (multipleLang == kLTNone || multipleLang == kLTCpp)
-              {
-                  out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-              }
+              out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
             found=TRUE;
           }
         }
@@ -2064,10 +2048,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         if (md!=self && (self==0 || md->name()!=self->name())) 
           // name check is needed for overloaded members, where getDefs just returns one
         {
-            if (multipleLang == kLTNone || multipleLang == kLTCpp)
-            {
-                out.writeLink(md->getReference(),md->getOutputFileBase(), md->anchor(),word);
-            }
+            out.writeLink(md->getReference(),md->getOutputFileBase(), md->anchor(),word);
           //printf("found symbol %s\n",matchWord.data());
           found=TRUE;
         }
@@ -2076,10 +2057,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
 
     if (!found) // add word to the result
     {
-        if (multipleLang == kLTNone || multipleLang == kLTCpp)
-        {
-            out.writeString(word,keepSpaces);
-        }
+        out.writeString(word,keepSpaces);
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -2087,10 +2065,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
-  if (multipleLang == kLTNone || multipleLang == kLTCpp)
-  {
-      out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
-  }
+  out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
 }
 
 

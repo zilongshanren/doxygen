@@ -2696,6 +2696,23 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else
     {
         //added by guanghui, TODO:
+       static QRegExp zlReg("[a-z_A-Z0-9]+$");
+       int matchLen = ldef.length() ;
+       int matchIndex = ldef.find(zlReg);
+       if (matchIndex != -1 && multipleLang != kLTCpp)
+       {
+           QCString preStr = "";
+           if (multipleLang == kLTLua)
+           {
+               preStr = "local";
+           }else if (multipleLang == kLTJs)
+           {
+               preStr = "var";
+           }
+           ldef = ldef.mid(matchIndex,matchLen - matchIndex);
+           ldef = preStr + " " +  ldef;
+           
+       }
       linkifyText(TextGeneratorOLImpl(ol),
                   container,
                   getBodyDef(),
