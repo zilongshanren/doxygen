@@ -433,8 +433,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               first=FALSE;
             }
             md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
-            /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId); */
-            /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId); */
             break;
           }
         case MemberType_EnumValue: 
@@ -444,8 +442,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
               md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
-              /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId); */
-              /* md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId); */
             }
           }
           break;

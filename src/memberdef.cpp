@@ -44,6 +44,8 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "config.h"
+#include"qstringlist.h"
+
 
 //-----------------------------------------------------------------------------
 
@@ -1728,22 +1730,86 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!isDefine()) ol.writeString(" ");
     QCString argsStr = "";
     argsStr = argsString();
-    QRegExp commaReg(",");
-    int _mLen;
-    int _mIndex = commaReg.match(argsStr,0,&_mLen);
-    if (_mIndex == -1)
-    {
-        argsStr = ("");
-    }
+
+    static QRegExp tokenReg("[a-z_A-Z0-9]+$");
 
     //added by guanghui, customize args list
     if (multipleLang == kLTLua)
     {
-        //todo:convert cpp arglists to lua
+        QRegExp innerPart("\\(.*\\)");
+        int innerLen;
+        int innerStartIndex = 0;
+        innerStartIndex = innerPart.match(argsStr,0,&innerLen);
+        argsStr = argsStr.mid(innerStartIndex,innerLen);
+        argsStr = argsStr.mid(1,argsStr.length()-2);
+        QStringList _sl = QStringList::split(",",argsStr);
+        QStringList::Iterator strBegin = _sl.begin();
+
+        argsStr = "";
+        while(strBegin != _sl.end())
+        {
+            QCString strToken = (*strBegin).data();
+            int matchLen = strToken.length();
+            int matchIndex = strToken.find(tokenReg);
+            //handle "void" argument 
+            if (matchIndex != -1)
+            {
+                QCString preStr = " local ";
+                QCString nameStr = strToken.mid(matchIndex,matchLen - matchIndex);
+                if (nameStr == "void")
+                {
+                    argsStr = ""; 
+                }
+                else 
+                {
+                    argsStr += preStr;
+                    argsStr += nameStr;
+                    argsStr += ",";
+                }
+            }
+            strBegin++;
+        }
+        argsStr = argsStr.mid(0,argsStr.length()-1);
+        argsStr = "(" + argsStr + ")";
+
     }
     else if (multipleLang == kLTJs)
     {
-        //todo: convert cpp arglists to js 
+        QRegExp innerPart("\\(.*\\)");
+        int innerLen;
+        int innerStartIndex = 0;
+        innerStartIndex = innerPart.match(argsStr,0,&innerLen);
+        argsStr = argsStr.mid(innerStartIndex,innerLen);
+        argsStr = argsStr.mid(1,argsStr.length()-2);
+        QStringList _sl = QStringList::split(",",argsStr);
+        QStringList::Iterator strBegin = _sl.begin();
+
+        argsStr = "";
+        while(strBegin != _sl.end())
+        {
+            QCString strToken = (*strBegin).data();
+            int matchLen = strToken.length();
+            int matchIndex = strToken.find(tokenReg);
+            if (matchIndex != -1)
+            {
+                QCString preStr = " var ";
+                QCString nameStr = strToken.mid(matchIndex,matchLen - matchIndex);
+                if (nameStr == "void")
+                {
+                    argsStr = ""; 
+                }
+                else 
+                {
+                    argsStr += preStr;
+                    argsStr += nameStr;
+                    argsStr += ",";
+                }
+            }
+            strBegin++;
+        }
+        argsStr = argsStr.mid(0,argsStr.length()-1);
+        argsStr = "(" + argsStr + ")";
+
     }
     linkifyText(TextGeneratorOLImpl(ol), // out
             d,                       // scope
