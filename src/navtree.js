@@ -5,7 +5,7 @@ function onClickCpp()
     $('tr[name=js]').hide();
     $('tr[name=lua]').hide();
     $('tr[name=cpp]').show();
-    $('a[name=cpp]').css("background-color","red");
+    $('a[name=cpp]').css("background-color","#BFEFFF");
     $('a[name=js]').css("background-color","");
     $('a[name=lua]').css("background-color","");
     $('div[name=cpp]').show();
@@ -19,7 +19,7 @@ function onClickJs()
     $('tr[name=cpp]').hide();
     $('tr[name=lua]').hide();
     $('a[name=cpp]').css("background-color","");
-    $('a[name=js]').css("background-color","red");
+    $('a[name=js]').css("background-color","#BFEFFF");
     $('a[name=lua]').css("background-color","");
     $('div[name=js]').show();
     $('div[name=lua]').hide();
@@ -33,7 +33,7 @@ function onClickLua()
     $('tr[name=js]').hide();
     $('a[name=cpp]').css("background-color","");
     $('a[name=js]').css("background-color","");
-    $('a[name=lua]').css("background-color","red");
+    $('a[name=lua]').css("background-color","#BFEFFF");
     $('div[name=lua]').show();
     $('div[name=js]').hide();
     $('div[name=cpp]').hide();
