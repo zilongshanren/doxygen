@@ -207,6 +207,8 @@ static bool   g_bOmitJsFun   = false;
 static bool g_bOmitLuaFun = false;
 static QCString  g_renameJsFunName;
 static QCString g_renameLuaFunName;
+static int last_jsdoc_state;
+static int last_luadoc_state;
 
 
 
@@ -4183,6 +4185,8 @@ LUACMD      {CMD}("lua")
                                         //added by guanghui
                                          g_renameJsFunName="";
                                          g_renameLuaFunName = "";
+                                        last_jsdoc_state = -1;
+                                        last_luadoc_state = -1;
                                          g_bOmitJsFun = false;
                                          g_bOmitLuaFun = false;
 
@@ -6178,12 +6182,14 @@ LUACMD      {CMD}("lua")
                 g_bHaveJsRenameFun = false;
                 g_bOmitJsFun = false;
                 printf("js v1");
+                last_jsdoc_state = DocBlock;
             }
 <DocBlock>{LUACMD} {
                 if(g_bHasLuaDoc)REJECT;
                 g_bOmitLuaFun = false;
                 g_bHasLuaDoc = true;
                 g_bHaveLuaRenameFun = false;
+                last_luadoc_state = DocBlock;
             }
 <DocBlock>{CMD}("f$"|"f["|"f{")	        {
                                           docBlock+=yytext;
@@ -6245,7 +6251,14 @@ LUACMD      {CMD}("lua")
                                        g_bHasLuaDoc = false;
                                        if(g_renameLuaFunName.isEmpty())g_bOmitLuaFun = true;
                                   }
-                                   docBlock+=yytext;
+                                  if(last_jsdoc_state == DocBlock || last_luadoc_state == DocBlock)
+                                  {
+                                  }
+                                  else
+                                    {
+                                        docBlock+=yytext;
+                                        printf("docBlock = %s, yytext=%s\n", docBlock.data(), yytext);
+                                    }
   					}
 <DocBlock>\n				{ // newline
                                           lineCount();
