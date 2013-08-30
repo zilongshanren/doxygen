@@ -3371,7 +3371,7 @@ static void buildFunctionList(EntryNav *rootNav)
   {
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
-    printf("hhkb rename js fun = %s\n", ( root->renameJsFunName ).data());
+    /* printf("hhkb rename js fun = %s\n", ( root->renameJsFunName ).data()); */
 
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"

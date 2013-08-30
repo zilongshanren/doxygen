@@ -4840,7 +4840,7 @@ LUACMD      {CMD}("lua")
 					    }
 					    else	      
 					    {
-                            printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+                            /* printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data()); */
                             current->section = Entry::FUNCTION_SEC ;
                             current->proto = *yytext==';';
                             /* current->renameJsFunName = "hhkb js fun"; */
@@ -4862,7 +4862,7 @@ LUACMD      {CMD}("lua")
                           }
                           else
                           {
-                              printf("Scanner.l: found prototype\n");
+                              /* printf("Scanner.l: found prototype\n"); */
                               current->section = Entry::FUNCTION_SEC;
                               current->proto = TRUE;
                           }
@@ -6620,7 +6620,7 @@ static void handleParametersCommentBlocks(ArgumentList *al)
 
 static void parseCompounds(Entry *rt)
 {
-  printf("parseCompounds(%s)\n",rt->name.data());
+  /* printf("parseCompounds(%s)\n",rt->name.data()); */
   EntryListIterator eli(*rt->children());
   Entry *ce;
   for (;(ce=eli.current());++eli)

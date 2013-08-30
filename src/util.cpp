@@ -1963,7 +1963,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       cd=getResolvedClass(scope,fileScope,matchWord,&typeDef);
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
-        printf("Found typedef %s\n",typeDef->name().data());
+        /* printf("Found typedef %s\n",typeDef->name().data()); */
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
           if (typeDef->getOuterScope()!=self)

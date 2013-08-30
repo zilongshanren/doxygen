@@ -2955,7 +2955,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else
     {
         //added by guanghui, TODO:
-       static QRegExp zlReg("[a-z_A-Z0-9]+$");
+       static QRegExp zlReg("~?[a-z_A-Z0-9]+$");
        int matchLen = ldef.length() ;
        int matchIndex = ldef.find(zlReg);
        if (matchIndex != -1 && multipleLang != kLTCpp)
@@ -2984,7 +2984,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                }
            }
            ldef = preStr + " " +  ldef;
-           printf("zilongshanren niucha v587: %s\n", ldef.data());
+           /* printf("zilongshanren niucha v587: %s\n", ldef.data()); */
            
        }
       linkifyText(TextGeneratorOLImpl(ol),
