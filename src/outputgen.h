@@ -372,6 +372,11 @@ class OutputGenerator : public BaseOutputDocInterface
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
     virtual void startMemberDescription(const char *anchor,const char *inheritId) = 0;
+    //added by guanghui
+    virtual void startCppMemberDescription(const char *anchor, const char *inheritId){}
+    virtual void startJsMemberDescription(const char *anchor, const char *inheritId){}
+    virtual void startLuaMemberDescription(const char *anchor, const char *inheritId){}
+     //===================================================
     virtual void endMemberDescription() = 0;
     virtual void startMemberDeclaration() = 0;
     virtual void endMemberDeclaration(const char *anchor,const char *inheritId) = 0;

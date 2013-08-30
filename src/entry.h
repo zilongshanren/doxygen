@@ -283,6 +283,14 @@ class Entry
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
     QCString    id;           //!< libclang id
+    //added by guanghui
+    bool    hasJsFunName;  //whether there is a @js doc cmd
+    bool    hasLuaFunName; //whether there is a @lua doc
+    bool    bIsOmitJsFun;
+    bool    bIsOmitLuaFun;
+    QCString  renameJsFunName; 
+    QCString  renameLuaFunName;
+
 
 
     static int  num;          //!< counts the total number of entries

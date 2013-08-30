@@ -323,6 +323,15 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endBold); }
     void startMemberDescription(const char *anchor,const char *inheritId=0) 
     { forall(&OutputGenerator::startMemberDescription,anchor,inheritId); }
+    
+    //added by guanghui
+    void startCppMemberDescription(const char *anchor,const char *inheritId=0) 
+    { forall(&OutputGenerator::startCppMemberDescription,anchor,inheritId); }
+    void startLuaMemberDescription(const char *anchor,const char *inheritId=0) 
+    { forall(&OutputGenerator::startLuaMemberDescription,anchor,inheritId); }
+    void startJsMemberDescription(const char *anchor,const char *inheritId=0) 
+    { forall(&OutputGenerator::startJsMemberDescription,anchor,inheritId); }
+    //
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
     void startMemberDeclaration()

@@ -1891,15 +1891,12 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     const char *text, bool autoBreak,bool external,
     bool keepSpaces,int indentLevel, LanguageType multipleLang)
 {
-  //printf("linkify=`%s'\n",text);
+  /* printf("linkify=`%s'\n",text); */
   static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
   int strLen = txtStr.length();
-  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
-  //    scope?scope->name().data():"<none>",
-  //    fileScope?fileScope->name().data():"<none>",
-  //    txtStr.data(),strLen,external);
+  /* printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n", scope?scope->name().data():"<none>", fileScope?fileScope->name().data():"<none>", txtStr.data(),strLen,external); */
   int matchLen;
   int index=0;
   int newIndex;
@@ -1920,7 +1917,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       if (txtStr.at(i)=='"') insideString=!insideString; 
     }
 
-    //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
+    /* printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak); */
     if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
     {
       QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
@@ -1930,7 +1927,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       if (i==-1) { i=splitText.find('<'); if (i!=-1) offset=0; }
       if (i==-1) i=splitText.find('>');
       if (i==-1) i=splitText.find(' ');
-      //printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset);
+      /* printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset); */
       if (i!=-1) // add a link-break at i in case of Html output
       {
           out.writeString(splitText.left(i+offset),keepSpaces);
@@ -1951,8 +1948,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
     QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
-    //printf("linkifyText word=%s matchWord=%s scope=%s\n",
-    //    word.data(),matchWord.data(),scope?scope->name().data():"<none>");
+    /* printf("linkifyText word=%s matchWord=%s scope=%s\n", word.data(),matchWord.data(),scope?scope->name().data():"<none>"); */
     bool found=FALSE;
     if (!insideString)
     {
@@ -1961,13 +1957,13 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       MemberDef    *md=0;
       NamespaceDef *nd=0;
       GroupDef     *gd=0;
-      //printf("** Match word '%s'\n",matchWord.data());
+      /* printf("** Match word '%s'\n",matchWord.data()); */
 
       MemberDef *typeDef=0;
       cd=getResolvedClass(scope,fileScope,matchWord,&typeDef);
       if (typeDef) // First look at typedef then class, see bug 584184.
       {
-        //printf("Found typedef %s\n",typeDef->name().data());
+        printf("Found typedef %s\n",typeDef->name().data());
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
           if (typeDef->getOuterScope()!=self)
@@ -1982,7 +1978,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       }
       if (!found && (cd || (cd=getClass(matchWord)))) 
       {
-        //printf("Found class %s\n",cd->name().data());
+        /* printf("Found class %s\n",cd->name().data()); */
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {

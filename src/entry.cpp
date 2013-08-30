@@ -57,6 +57,11 @@ Entry::Entry()
   relatesType = Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
+  //added by guanghui
+  this->hasJsFunName = false;
+  this->hasLuaFunName = false;
+  this->bIsOmitJsFun = false;
+  this->bIsOmitLuaFun = false;
   reset();
 }
 
@@ -271,6 +276,8 @@ void Entry::reset()
   if (sli)        { delete sli; sli=0; }
   if (typeConstr) { delete typeConstr; typeConstr=0; }
   //if (mtArgList) { delete mtArgList; mtArgList=0; }
+  
+
 }
 
 

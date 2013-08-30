@@ -3201,6 +3201,13 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
 
   QCString name=removeRedundantWhiteSpace(rname);
   if (name.left(2)=="::") name=name.right(name.length()-2);
+  //add by guanghui
+  /* name="ctor"; */
+  /* if (root->hasJsFunName) */
+  /* { */
+  /*     name = ( root->renameJsFunName ); */
+  /* } */
+
 
   MemberType mtype;
   if (isFriend)                 mtype=MemberType_Friend;
@@ -3243,6 +3250,14 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setId(root->id);
   md->setBodyDef(fd);
   md->setFileDef(fd);
+  //added by guanghui
+  md->setHasJsDoc(root->hasJsFunName);
+  md->setRenameJsFunName(root->renameJsFunName);
+  md->setHasLuaDoc(root->hasLuaFunName);
+  md->setRenameLuaFunName(root->renameLuaFunName);
+  md->setOmitJsFun(root->bIsOmitJsFun);
+  md->setOmitLuaFun(root->bIsOmitLuaFun);
+
   //md->setScopeTemplateArguments(root->tArgList);
   md->addSectionsToDefinition(root->anchors);
   QCString def;
@@ -3349,13 +3364,14 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setRefItems(root->sli);
 }
 
-
+//added by guanghui , this function will build all functions in documentation
 static void buildFunctionList(EntryNav *rootNav)
 {
   if (rootNav->section()==Entry::FUNCTION_SEC)
   {
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
+    printf("hhkb rename js fun = %s\n", ( root->renameJsFunName ).data());
 
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
@@ -3608,15 +3624,15 @@ static void buildFunctionList(EntryNav *rootNav)
         if (!found) /* global function is unique with respect to the file */
         {
           Debug::print(Debug::Functions,0,"  --> new function %s found!\n",rname.data());
-          //printf("New function type=`%s' name=`%s' args=`%s' bodyLine=%d\n",
-          //       root->type.data(),rname.data(),root->args.data(),root->bodyLine);
+          /* printf("New function type=`%s' name=`%s' args=`%s' bodyLine=%d\n", */
+          /*        root->type.data(),rname.data(),root->args.data(),root->bodyLine); */
 
           // new global function
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->last() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
           md=new MemberDef(
               root->fileName,root->startLine,root->startColumn,
-              root->type,name,root->args,root->exception,
+              root->type,root->renameJsFunName,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
               MemberType_Function,tArgList,root->argList);
 
@@ -6757,6 +6773,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
     //printf("Documentation for inline member `%s' found args=`%s'\n",
     //    root->name.data(),root->args.data());
     //if (root->relates.length()) printf("  Relates %s\n",root->relates.data());
+
     if (root->type.isEmpty())
     {
       findMember(rootNav,root->name+root->args+root->exception,FALSE,isFunc);

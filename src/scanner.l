@@ -196,6 +196,22 @@ static int              g_column;
 
 static int              g_fencedSize=0;
 
+//added by guanghui
+static bool  g_bHasJsDoc = false;
+static bool  g_bHasLuaDoc = false;
+static int   g_findMemberContext;
+
+static bool   g_bHaveJsRenameFun = false;
+static bool    g_bHaveLuaRenameFun = false;
+static bool   g_bOmitJsFun   = false;
+static bool g_bOmitLuaFun = false;
+static QCString  g_renameJsFunName;
+static QCString g_renameLuaFunName;
+
+
+
+
+
 //-----------------------------------------------------------------------------
 
 // forward declarations
@@ -406,34 +422,34 @@ static void setContext()
 
 static void prependScope()
 {
-  if (current_root->section & Entry::SCOPE_MASK)
-  {
-    //printf("--- prependScope %s to %s\n",current_root->name.data(),current->name.data());
-    current->name.prepend(current_root->name+"::");
-    if (current_root->tArgLists)
+    if (current_root->section & Entry::SCOPE_MASK)
     {
-      if (current->tArgLists==0)
-      {
-	current->tArgLists = new QList<ArgumentList>;
-	current->tArgLists->setAutoDelete(TRUE);
-      }
-      //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
-      QListIterator<ArgumentList> talsi(*current_root->tArgLists);
-      ArgumentList *srcAl=0;
-      for (talsi.toLast();(srcAl=talsi.current());--talsi)
-      {
-        ArgumentList *dstAl = new ArgumentList;
-	QListIterator<Argument> tali(*srcAl);
-        Argument *a;
-        for (;(a=tali.current());++tali)
+        //printf("--- prependScope %s to %s\n",current_root->name.data(),current->name.data());
+        current->name.prepend(current_root->name+"::");
+        if (current_root->tArgLists)
         {
-          dstAl->append(new Argument(*a));
-        //printf("appending argument %s %s\n",a->type.data(),a->name.data());
-        }	  
-        current->tArgLists->insert(0,dstAl);	
-      }
+            if (current->tArgLists==0)
+            {
+                current->tArgLists = new QList<ArgumentList>;
+                current->tArgLists->setAutoDelete(TRUE);
+            }
+            //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
+            QListIterator<ArgumentList> talsi(*current_root->tArgLists);
+            ArgumentList *srcAl=0;
+            for (talsi.toLast();(srcAl=talsi.current());--talsi)
+            {
+                ArgumentList *dstAl = new ArgumentList;
+                QListIterator<Argument> tali(*srcAl);
+                Argument *a;
+                for (;(a=tali.current());++tali)
+                {
+                    dstAl->append(new Argument(*a));
+                    //printf("appending argument %s %s\n",a->type.data(),a->name.data());
+                }	  
+                current->tArgLists->insert(0,dstAl);	
+            }
+        }
     }
-  }
 }
 
 //-----------------------------------------------------------------------------
@@ -441,17 +457,17 @@ static void prependScope()
 /*! Returns TRUE iff the current entry could be a K&R style C function */
 static bool checkForKnRstyleC()
 {
-  if (((QCString)yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
-  if (!current->argList) return FALSE; // must have arguments
-  ArgumentListIterator ali(*current->argList);
-  Argument *a;
-  for (ali.toFirst();(a=ali.current());++ali)
-  {
-    // in K&R style argument do not have a type, but doxygen expects a type
-    // so it will think the argument has no name
-    if (a->type.isEmpty() || !a->name.isEmpty()) return FALSE;
-  }
-  return TRUE;
+    if (((QCString)yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
+    if (!current->argList) return FALSE; // must have arguments
+    ArgumentListIterator ali(*current->argList);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+        // in K&R style argument do not have a type, but doxygen expects a type
+        // so it will think the argument has no name
+        if (a->type.isEmpty() || !a->name.isEmpty()) return FALSE;
+    }
+    return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -624,11 +640,16 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+JSCMD       {CMD}("js")
+LUACMD      {CMD}("lua")
+
+
 
 %option noyywrap
 
   /* language parsing states */
-
+%x   JsDoc
+%x  LuaDoc
 %x      AlignAs
 %x      AlignAsEnd
 %x	Define
@@ -1548,7 +1569,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  lineCount();
   					  isTypedef=FALSE;
 					  current->section = Entry::CLASS_SEC;
-                                          current->spec = Entry::Interface;
+                      current->spec = Entry::Interface;
 					  if (!insideJava)
 					  {
 					    language = current->lang = SrcLangExt_ObjC;
@@ -2304,57 +2325,80 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    }
 					    else if (javaLike && qstrcmp(yytext,"static")==0)
 					    {
-					      if (YY_START==FindMembers)
-					        current->name  = yytext;
-					      else
-						current->name += yytext;
-			 		      current->stat = TRUE;
+                            if (YY_START==FindMembers)
+                                current->name  = yytext;
+                            else
+                                current->name += yytext;
+                            current->stat = TRUE;
 					    }
 					    else
 					    {
-					      if (YY_START==FindMembers)
-					        current->name  = yytext;
-					      else
-						current->name += yytext;
-					      if (current->name.left(7)=="static ")
-					      {
-						current->stat = TRUE;
-						current->name= current->name.mid(7);
-					      }
-					      else if (current->name.left(7)=="inline ")
-					      {
-						if (current->type.isEmpty())
-						{
-						  current->type="inline";
-						}
-						else
-						{
-						  current->type+="inline ";
-						}
-						current->name= current->name.mid(7);
-					      }
-					      else if (current->name.left(6)=="const ")
-					      {
-						if (current->type.isEmpty())
-						{
-						  current->type="const";
-						}
-						else
-						{
-						  current->type+="const ";
-						}
-						current->name=current->name.mid(6);
-					      }
+                            if (YY_START==FindMembers)
+                                current->name  = yytext;
+                            else
+                                current->name += yytext;
+
+                            if (current->name.left(7)=="static ")
+                            {
+                                current->stat = TRUE;
+                                current->name= current->name.mid(7);
+                            }
+                            else if (current->name.left(7)=="inline ")
+                            {
+                                if (current->type.isEmpty())
+                                {
+                                    current->type="inline";
+                                }
+                                else
+                                {
+                                    current->type+="inline ";
+                                }
+                                current->name= current->name.mid(7);
+                            }
+                            else if (current->name.left(6)=="const ")
+                            {
+                                if (current->type.isEmpty())
+                                {
+                                    current->type="const";
+                                }
+                                else
+                                {
+                                    current->type+="const ";
+                                }
+                                current->name=current->name.mid(6);
+                            }
+
+                            if(g_findMemberContext == FindMembers)
+                            {
+                                
+                                if(!g_renameJsFunName.isEmpty())
+                                {
+                                    g_findMemberContext = -1;
+                                    current->renameJsFunName = g_renameJsFunName;
+                                    current->hasJsFunName = true;
+                                }
+                                current->bIsOmitJsFun = g_bOmitJsFun;
+                                current->bIsOmitLuaFun = g_bOmitLuaFun;
+                                if(!g_renameLuaFunName.isEmpty())
+                                {
+                                    g_findMemberContext = -1;
+                                    current->renameLuaFunName = g_renameLuaFunName;
+                                    current->hasLuaFunName = true;
+                                }
+                            }
+                            else {
+                                g_findMemberContext = FindMembers;
+                            }
 					    }
 					    QCString tmp=yytext;
 					    if (nameIsOperator(tmp))
-                                            {
-					      BEGIN( Operator );
-                                            }
+                        {
+                            BEGIN( Operator );
+                        }
 					    else
-                                            {
-		 			      BEGIN(FindMembers);
-                                            }
+                        {
+                            BEGIN(FindMembers);
+                        }
 					  }
 					}
 <StaticAssert>"("                       {
@@ -3670,7 +3714,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					                // was: current->args.simplifyWhiteSpace();
   					      current->type = current->type.simplifyWhiteSpace();
   					      current->name = current->name.stripWhiteSpace();
-					      //printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
+					      /* printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section); */
 					      if (insideObjC && 
 						  ((current->spec&Entry::Interface) || (current->spec==Entry::Category))
 						 ) // method definition follows
@@ -3696,7 +3740,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						{
                                                   static QRegExp re("@[0-9]+$");
 						  if (!isTypedef && memspecEntry &&
-                                                      memspecEntry->name.find(re)==-1) // not typedef or anonymous type (see bug691071)
+                                  memspecEntry->name.find(re)==-1) // not typedef or anonymous type (see bug691071)
 						  {
 						    // enabled the next two lines for bug 623424
 						    current->doc.resize(0);
@@ -3876,7 +3920,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						  memspecEntry
 						 ) // case 1: use S_t as type for pS_t in "typedef struct _S {} S_t, *pS_t;"
 					      {
-						varEntry->type+=memspecEntry->name+msType;
+                            varEntry->type+=memspecEntry->name+msType;
 					      }
 					      else // case 2: use _S as type for for pS_t
 					      {
@@ -3895,16 +3939,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      Grouping *g;
 					      for (;(g=gli.current());++gli)
 					      {
-						varEntry->groups->append(new Grouping(*g));
+                              varEntry->groups->append(new Grouping(*g));
 					      }
 					      if (current->sli) // copy special list items
 					      {
-						QListIterator<ListItemInfo> li(*current->sli);
-						ListItemInfo *lii;
-						for (li.toFirst();(lii=li.current());++li)
-						{
-						  varEntry->addSpecialListItem(lii->type,lii->itemId);
-						}
+                              QListIterator<ListItemInfo> li(*current->sli);
+                              ListItemInfo *lii;
+                              for (li.toFirst();(lii=li.current());++li)
+                              {
+                                  varEntry->addSpecialListItem(lii->type,lii->itemId);
+                              }
 					      }
 
 					      //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
@@ -4134,16 +4178,22 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  BEGIN( FuncPtr );
   					}
 <FindMembers>"("			{ 
-                                          if (!current->name.isEmpty())
-					  {
-					    current->args = yytext;
-					    current->bodyLine = yyLineNr;
-					    currentArgumentContext = FuncQual;
-					    fullArgString=current->args.copy();
-					    copyArgString=&current->args;
-					    BEGIN( ReadFuncArgType ) ;
-					    //printf(">>> Read function arguments current->argList->count()=%d\n",current->argList->count());
-					  }
+                                    if (!current->name.isEmpty())
+                                      {
+                                        //added by guanghui
+                                         g_renameJsFunName="";
+                                         g_renameLuaFunName = "";
+                                         g_bOmitJsFun = false;
+                                         g_bOmitLuaFun = false;
+
+                                          current->args = yytext;
+                                          current->bodyLine = yyLineNr;
+                                          currentArgumentContext = FuncQual;
+                                          fullArgString=current->args.copy();
+                                          copyArgString=&current->args;
+                                          BEGIN( ReadFuncArgType ) ;
+                                          //printf(">>> Read function arguments current->argList->count()=%d\n",current->argList->count());
+                                      }
 					}
   /*
 <FindMembers>"("{BN}*("void"{BN}*)?")"	{
@@ -4200,7 +4250,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    fixArgumentListForJavaScript(current->argList);
 					  }
-                                          handleParametersCommentBlocks(current->argList);
+                      handleParametersCommentBlocks(current->argList);
 
 					  /* remember the current documentation block, since
 					     we could overwrite it with the documentation of
@@ -4459,9 +4509,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   */
 <FuncQual>[{:;,]                        {
                                           if ( qstrcmp(yytext,";")==0 && 
-					       insidePHP && 
-					       !containsWord(current->type,"function") )
-                                          {
+                                               insidePHP && 
+                                                   !containsWord(current->type,"function") )
+                                              {
                                             current->reset();
                                             initEntry();
                                             BEGIN( FindMembers );
@@ -4751,7 +4801,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  if (!insidePHP) BEGIN(SkipInits);
   					}
 <Function>[;{,]				{ 
-					  current->name=current->name.simplifyWhiteSpace();
+                        current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
 					  current->args=removeRedundantWhiteSpace(current->args);
 					                // was: current->args.simplifyWhiteSpace();
@@ -4777,39 +4827,41 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    if (!current->type.isEmpty() &&
 						(!isFunction || current->type.left(8)=="typedef "))
 					    {
-					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
-					      if (isTypedef && current->type.left(8)!="typedef ")
-					      {
-						current->type.prepend("typedef ");
-					      }
-					      current->section = Entry::VARIABLE_SEC ;
+                            //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+                            if (isTypedef && current->type.left(8)!="typedef ")
+                            {
+                                current->type.prepend("typedef ");
+                            }
+                            current->section = Entry::VARIABLE_SEC ;
 					    }
 					    else	      
 					    {
-					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
-					      current->section = Entry::FUNCTION_SEC ;
-			                      current->proto = *yytext==';';
+                            printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+                            current->section = Entry::FUNCTION_SEC ;
+                            current->proto = *yytext==';';
+                            /* current->renameJsFunName = "hhkb js fun"; */
+                            /* current->mtype = Method; */
 					    }
 					  }
 					  else // a global function prototype or function variable
 					  {
-					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
-					    if (!current->type.isEmpty() && 
-						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
-					    {
-					      if (isTypedef && current->type.left(8)!="typedef ")
-					      {
-						current->type.prepend("typedef ");
-					      }
-					      //printf("Scanner.l: found function variable!\n");
-					      current->section = Entry::VARIABLE_SEC;
-					    }
-					    else
-					    {
-					      //printf("Scanner.l: found prototype\n");
-					      current->section = Entry::FUNCTION_SEC;
-					      current->proto = TRUE;
-					    }
+                          //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
+                          if (!current->type.isEmpty() && 
+                                  (current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
+                          {
+                              if (isTypedef && current->type.left(8)!="typedef ")
+                              {
+                                  current->type.prepend("typedef ");
+                              }
+                              //printf("Scanner.l: found function variable!\n");
+                              current->section = Entry::VARIABLE_SEC;
+                          }
+                          else
+                          {
+                              printf("Scanner.l: found prototype\n");
+                              current->section = Entry::FUNCTION_SEC;
+                              current->proto = TRUE;
+                          }
 					  }
 					  //printf("Adding entry `%s'\n",current->name.data());
 					  if ( insidePHP)
@@ -5283,10 +5335,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
-                                          if (insideCpp || insideObjC) 
-                                          {
-                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
-                                          }
+                      if (insideCpp || insideObjC) 
+                      {
+                          current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                      }
 					  lineCount();
 					  if (current->spec & Entry::Protocol)
 					  {
@@ -5621,39 +5673,39 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("\\")?({ID}"\\")*{ID}		{ // PHP namespace token, not sure if interspacing is allowed but it gives problems (see bug 640847)
-                                          if (!insidePHP)
-					  {
-					    REJECT;
-					  }
-					  else // PHP base class of the form \Ns\Cl or Ns\Cl
-					  {
-  					    lineCount();
-					    QCString bn=yytext;
-					    bn = substitute(bn,"\\","::");
-					    baseName += bn;
-					    current->args += ' ';
-					    current->args += yytext;
-					  }
+                                        if (!insidePHP)
+                                        {
+                                            REJECT;
                                         }
+                                        else // PHP base class of the form \Ns\Cl or Ns\Cl
+                                        {
+                                            lineCount();
+                                            QCString bn=yytext;
+                                            bn = substitute(bn,"\\","::");
+                                            baseName += bn;
+                                            current->args += ' ';
+                                            current->args += yytext;
+                                        }
+                                    }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
-  					  lineCount();
-                                          QCString baseScope = yytext;
-                                          if (insideCS && baseScope.stripWhiteSpace()=="where")
-					  { 
-					    // type contraint for a class
-                                            delete current->typeConstr;
-                                            current->typeConstr = new ArgumentList;
-					    current->typeConstr->append(new Argument);
-					    lastCSConstraint = YY_START;
-					    BEGIN( CSConstraintName );
-					  }
-					  else
-					  {
-  					    baseName+=yytext;
-					    current->args += ' ';
-					    current->args += yytext;
-					  }
-					}
+                                                    lineCount();
+                                                    QCString baseScope = yytext;
+                                                    if (insideCS && baseScope.stripWhiteSpace()=="where")
+                                                    { 
+                                                        // type contraint for a class
+                                                        delete current->typeConstr;
+                                                        current->typeConstr = new ArgumentList;
+                                                        current->typeConstr->append(new Argument);
+                                                        lastCSConstraint = YY_START;
+                                                        BEGIN( CSConstraintName );
+                                                    }
+                                                    else
+                                                    {
+                                                        baseName+=yytext;
+                                                        current->args += ' ';
+                                                        current->args += yytext;
+                                                    }
+                                                }
 <Bases>{BN}*{ID}("."{ID})*		{ // Java style class
     					  QCString name = substitute(yytext,".","::");
 					  baseName += name;
@@ -5869,7 +5921,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           insideCode=FALSE;
   					  current->program += yytext ;
   					}
-<Comment>[^ \.\t\r\n\/\*]+		{ current->program += yytext ; }
+<Comment>[^ \.\t\r\n\/\*]+		{ 
+                                   current->program += yytext ;
+                        }
 <Comment>"*/"				{ current->program += yytext ;
 					  if (!insideCode) BEGIN( lastContext ) ;
 					}
@@ -5915,20 +5969,20 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  lastDocContext = YY_START;
 
 					  //printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
-					  if (current_root->section & Entry::SCOPE_MASK)
-                                          {
-					    current->inside = current_root->name+"::";
-                                          }
-					  current->docLine = yyLineNr;
-					  current->docFile = yyFileName;
-					  docBlockContext = YY_START;
-					  docBlockInBody  = YY_START==SkipCurly;
-                                          static bool javadocAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
-					  docBlockAutoBrief = javadocAutoBrief;
+                      if (current_root->section & Entry::SCOPE_MASK)
+                      {
+                          current->inside = current_root->name+"::";
+                      }
+                      current->docLine = yyLineNr;
+                      current->docFile = yyFileName;
+                      docBlockContext = YY_START;
+                      docBlockInBody  = YY_START==SkipCurly;
+                      static bool javadocAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
+                      docBlockAutoBrief = javadocAutoBrief;
 
-                                          QCString indent;
-                                          indent.fill(' ',computeIndent(yytext,g_column));
-                                          docBlock=indent;
+                      QCString indent;
+                      indent.fill(' ',computeIndent(yytext,g_column));
+                      docBlock=indent;
 
 					  if (docBlockAutoBrief)
 					  {
@@ -6117,6 +6171,20 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
   					}
+<DocBlock>{JSCMD} {
+                if(g_bHasJsDoc) REJECT;
+
+                g_bHasJsDoc = true;
+                g_bHaveJsRenameFun = false;
+                g_bOmitJsFun = false;
+                printf("js v1");
+            }
+<DocBlock>{LUACMD} {
+                if(g_bHasLuaDoc)REJECT;
+                g_bOmitLuaFun = false;
+                g_bHasLuaDoc = true;
+                g_bHaveLuaRenameFun = false;
+            }
 <DocBlock>{CMD}("f$"|"f["|"f{")	        {
                                           docBlock+=yytext;
 				          docBlockName=&yytext[1];
@@ -6157,7 +6225,27 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <DocBlock>[^@*~\/\\\n]+			{ // any character that isn't special
-  					  docBlock+=yytext;
+
+                                  if(g_bHasJsDoc) 
+                                  {
+                                     g_renameJsFunName = yytext;
+                                     g_bHaveJsRenameFun = true;
+                                     g_renameJsFunName = g_renameJsFunName.stripWhiteSpace();
+                                     g_bHasJsDoc = false;
+
+                                    if(g_renameJsFunName.isEmpty())g_bOmitJsFun = true;
+                                     printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size());
+
+                                   }  
+                                   if(g_bHasLuaDoc)
+                                  {
+                                       g_renameLuaFunName = yytext;
+                                       g_bHaveLuaRenameFun = true;
+                                        g_renameLuaFunName = g_renameLuaFunName.stripWhiteSpace();
+                                       g_bHasLuaDoc = false;
+                                       if(g_renameLuaFunName.isEmpty())g_bOmitLuaFun = true;
+                                  }
+                                   docBlock+=yytext;
   					}
 <DocBlock>\n				{ // newline
                                           lineCount();
@@ -6444,6 +6532,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
       current->docFile = docFile;
       current->docLine = lineNr;
     }
+
   }
   if (needsEntry)
   {
@@ -6518,16 +6607,15 @@ static void handleParametersCommentBlocks(ArgumentList *al)
 
 static void parseCompounds(Entry *rt)
 {
-  //printf("parseCompounds(%s)\n",rt->name.data());
+  printf("parseCompounds(%s)\n",rt->name.data());
   EntryListIterator eli(*rt->children());
   Entry *ce;
   for (;(ce=eli.current());++eli)
   {
     if (!ce->program.isEmpty())
     {
-      //printf("-- %s ---------\n%s\n---------------\n",
-      //  ce->name.data(),ce->program.data());
-      // init scanner state
+      /* printf("-- %s ---------\n%s\n---------------\n", ce->name.data(),ce->program.data()); */
+       /* init scanner state */
       padCount=0;
       //depthIf = 0;
       g_column=0;
@@ -6596,7 +6684,7 @@ static void parseCompounds(Entry *rt)
       }
       mtype = Method;
       virt = Normal;
-      //printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
+      printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
 
       //memberGroupId = DOX_NOGROUP;
       //memberGroupRelates.resize(0);

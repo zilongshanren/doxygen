@@ -2254,7 +2254,7 @@ void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheri
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr class=\"memdesc:" << anchor;
+    t << "<tr  class=\"memdesc:" << anchor;
     if (inheritId)
     {
       t << " inherit " << inheritId;
@@ -2265,6 +2265,67 @@ void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheri
   //{
   //  t << "<dl class=\"el\"><dd class=\"mdescRight\">";
   //}
+}
+
+//added by guanghui
+void HtmlGenerator::startCppMemberDescription(const char *anchor, const char *inheritId)
+{  
+    /* printf("startCppMemberDescription\n"); */
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
+    if (m_emptySection)
+    {
+      t << "<table class=\"memberdecls\">" << endl;
+      m_emptySection=FALSE;
+    }
+    t << "<tr name=\"cpp\"  class=\"memdesc:" << anchor;
+    /* t << "zilongshanren v5"; */
+    if (inheritId)
+    {
+      t << " inherit " << inheritId;
+    }
+    t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
+  //}
+  //else
+  //{
+  //  t << "<dl class=\"el\"><dd class=\"mdescRight\">";
+  //}
+}
+
+void  HtmlGenerator::startJsMemberDescription(const char *anchor, const char *inheritId)
+{
+
+    if (m_emptySection)
+    {
+        t << "<table class=\"memberdecls\">" << endl;
+        m_emptySection=FALSE;
+    }
+    t << "<tr name=\"js\"  class=\"memdesc:" << anchor;
+    if (inheritId)
+    {
+        t << " inherit " << inheritId;
+    }
+    t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
+    //
+    //
+}
+
+void HtmlGenerator::startLuaMemberDescription(const char *anchor, const char *inheritId)
+{
+    if (m_emptySection)
+    {
+        t << "<table class=\"memberdecls\">" << endl;
+        m_emptySection=FALSE;
+    }
+    t << "<tr name=\"lua\"  class=\"memdesc:" << anchor;
+    if (inheritId)
+    {
+        t << " inherit " << inheritId;
+    }
+    t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
+    //
+    //
+
 }
 
 void HtmlGenerator::endMemberDescription()   

@@ -197,6 +197,11 @@ class HtmlGenerator : public OutputGenerator
 
     void insertMemberAlign(bool);
     void startMemberDescription(const char *anchor,const char *inheritId);
+    //added by guanghui
+    void startCppMemberDescription(const char *anchor, const char *inheritId);
+    void startJsMemberDescription(const char *anchor, const char *inheritId);
+    void startLuaMemberDescription(const char *anchor, const char *inheritId);
+     //===================================================
     void endMemberDescription();
     void startMemberDeclaration() {}
     void endMemberDeclaration(const char *anchor,const char *inheritId);

@@ -56,6 +56,20 @@ class MemberDef : public Definition
     // move this member into a different scope
     MemberDef *deepCopy() const;
     void moveTo(Definition *);
+
+    //added by guanghui
+    void setOmitJsFun(bool flag);
+    bool getIsOmitJsFun();
+    void setOmitLuaFun(bool flag);
+    bool getIsOmitLuaFun();
+    void setHasJsDoc(bool flag);
+    bool getHasJsDoc();
+    void setHasLuaDoc(bool flag);
+    bool getHasLuaDoc();
+    void setRenameJsFunName(QCString name);
+    QCString getRenameJsFunName();
+    void setRenameLuaFunName(QCString name);
+    QCString getRenameLuaFunName();
     
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -408,7 +422,7 @@ class MemberDef : public Definition
 
     void writeLink(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   bool onlyText=FALSE);
+                   bool onlyText=FALSE, LanguageType ltype = kLTCpp);
 
     MemberDefImpl *m_impl;
     uchar m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE

@@ -124,8 +124,10 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString & /*scopeName*/,MemberDef *md, LanguageType multipleLang)
 {
+ 
   ArgumentList *defArgList=(md->isDocsForDefinition()) ? 
                              md->argumentList() : md->declArgumentList();
+  
   //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
   if (defArgList==0 || md->isProperty()) 
   {
@@ -625,6 +627,14 @@ class MemberDefImpl
     MemberDef *categoryRelation;
 
     unsigned tagDataWritten;
+
+    //added by guanghui
+    bool hasJsFunName;
+    bool hasLuaFunName;
+    bool bIsOmitJsFun;
+    bool bIsOmitLuaFun;
+    QCString  renameJsFunName;
+    QCString renameLuaFunName;
 };
 
 MemberDefImpl::MemberDefImpl() :
@@ -638,7 +648,9 @@ MemberDefImpl::MemberDefImpl() :
     defTmpArgLists(0),
     classSectionSDict(0),
     category(0),
-    categoryRelation(0)
+    categoryRelation(0),
+    hasJsFunName(false),
+    hasLuaFunName(false)
 {
 }
 
@@ -879,7 +891,55 @@ MemberDef *MemberDef::deepCopy() const
   }
   return result;
 }
-
+//added by guanghui
+void MemberDef::setOmitJsFun(bool flag)
+{
+    this->m_impl->bIsOmitJsFun = flag;
+}
+bool MemberDef::getIsOmitJsFun()
+{
+    return this->m_impl->bIsOmitJsFun;
+}
+void MemberDef::setOmitLuaFun(bool flag)
+{
+    this->m_impl->bIsOmitLuaFun = flag;
+}
+bool MemberDef::getIsOmitLuaFun()
+{
+    return this->m_impl->bIsOmitLuaFun;
+}
+void MemberDef::setHasJsDoc(bool flag)
+{
+    this->m_impl->hasJsFunName = flag;
+}
+bool MemberDef::getHasJsDoc()
+{
+    return this->m_impl->hasJsFunName;
+}
+void MemberDef::setHasLuaDoc(bool flag)
+{
+    this->m_impl->hasLuaFunName = flag;
+}
+bool MemberDef::getHasLuaDoc()
+{
+    return this->m_impl->hasLuaFunName;
+}
+void MemberDef::setRenameJsFunName(QCString name)
+{
+    this->m_impl->renameJsFunName = name;
+}
+QCString MemberDef::getRenameJsFunName()
+{
+    return this->m_impl->renameJsFunName;
+}
+void MemberDef::setRenameLuaFunName(QCString name)
+{
+    this->m_impl->renameLuaFunName = name;
+}
+QCString MemberDef::getRenameLuaFunName()
+{
+    return this->m_impl->renameLuaFunName; 
+}
 void MemberDef::moveTo(Definition *scope)
 {
    setOuterScope(scope);
@@ -1225,12 +1285,27 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 }
 
 void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
-                      FileDef *fd,GroupDef *gd,bool onlyText)
+                      FileDef *fd,GroupDef *gd,bool onlyText, LanguageType ltype)
 {
   SrcLangExt lang = getLanguage();
   static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
+  //added by guanghui
+  if (ltype == kLTJs)
+  {
+      if(this->getHasJsDoc())
+      {
+          n = this->getRenameJsFunName();
+      }
+  }
+  if (ltype == kLTLua)
+  {
+      if (this->getHasLuaDoc())
+      {
+          n = this->getRenameLuaFunName();
+      }
+  }
   if (!hideScopeNames)
   {
     if (m_impl->enumScope && m_impl->livesInsideEnum)
@@ -1655,32 +1730,33 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // *** write name
   if (!name().isEmpty() && name().at(0)!='@') // hide anonymous stuff 
   {
-    //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
+    /* printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable()); */
     if (!(name().isEmpty() || name().at(0)=='@') && // name valid
         (hasDocumentation() || isReference()) && // has docs
         !(m_impl->prot==Private && !Config_getBool("EXTRACT_PRIVATE") && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
         !(isStatic() && m_impl->classDef==0 && !Config_getBool("EXTRACT_STATIC")) // hidden due to static-ness
        )
     {
-      if (m_impl->annMemb)
-      {
-        //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-        m_impl->annMemb->writeLink(ol,
-            m_impl->annMemb->getClassDef(),
-            m_impl->annMemb->getNamespaceDef(),
-            m_impl->annMemb->getFileDef(),
-            m_impl->annMemb->getGroupDef()
-                          );
-        m_impl->annMemb->setAnonymousUsed();
-        setAnonymousUsed();
-      }
-      else
-      {
-        //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
-        ClassDef *rcd = cd;
-        if (isReference() && m_impl->classDef) rcd = m_impl->classDef; 
-        writeLink(ol,rcd,nd,fd,gd);
-      }
+        if (m_impl->annMemb)
+        {
+            /* printf("WriteDeclartion m_iple->annMemb"); */
+            m_impl->annMemb->writeLink(ol,
+                    m_impl->annMemb->getClassDef(),
+                    m_impl->annMemb->getNamespaceDef(),
+                    m_impl->annMemb->getFileDef(),
+                    m_impl->annMemb->getGroupDef()
+                    );
+            m_impl->annMemb->setAnonymousUsed();
+            setAnonymousUsed();
+        }
+        else
+        {
+            /* printf("writeLink %s->%d\n",name().data(),hasDocumentation()); */
+            ClassDef *rcd = cd;
+            if (isReference() && m_impl->classDef) rcd = m_impl->classDef; 
+            //added by guanghui
+            writeLink(ol,rcd,nd,fd,gd,false,multipleLang);
+        }
     }
     else if (isDocumentedFriendClass())
       // if the member is an undocumented friend declaration for some class, 
@@ -1928,39 +2004,121 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 TRUE,FALSE,0,TRUE,FALSE);
 
     //added by guanghui, reduce repeative generate more links
-    if (rootNode && !rootNode->isEmpty() && multipleLang == kLTCpp)
-    {
-      ol.startMemberDescription(anchor(),inheritId);
-      ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+        if (multipleLang == kLTCpp)
+        {
+            if (rootNode && !rootNode->isEmpty() )
+            {
+                /* ol.startMemberDescription(anchor(),inheritId); */
+                //added by guanghui
+                ol.startCppMemberDescription(anchor(), inheritId);
+                ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
 
-      if (detailsVisible ) 
-      {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        //ol.endEmphasis();
-        ol.docify(" ");
-        if (m_impl->group!=0 && gd==0) // forward link to the group
-        {
-          ol.startTextLink(getOutputFileBase(),anchor());
+                if (detailsVisible ) 
+                {
+                    ol.pushGeneratorState();
+                    ol.disableAllBut(OutputGenerator::Html);
+                    //ol.endEmphasis();
+                    ol.docify(" ");
+                    if (m_impl->group!=0 && gd==0) // forward link to the group
+                    {
+                        ol.startTextLink(getOutputFileBase(),anchor());
+                    }
+                    else // local link
+                    {
+                        ol.startTextLink(0,anchor());
+                    }
+                    ol.parseText(theTranslator->trMore());
+                    ol.endTextLink();
+                    //ol.startEmphasis();
+                    ol.popGeneratorState();
+                }
+                // for RTF we need to add an extra empty paragraph
+                ol.pushGeneratorState();
+                ol.disableAllBut(OutputGenerator::RTF);
+                ol.startParagraph();
+                ol.endParagraph();
+                ol.popGeneratorState();
+                ol.endMemberDescription();
+            }
+            delete rootNode;
         }
-        else // local link
+        if (multipleLang == kLTJs && !this->getIsOmitJsFun())
         {
-          ol.startTextLink(0,anchor());
+            if (rootNode && !rootNode->isEmpty() )
+            {
+                /* ol.startMemberDescription(anchor(),inheritId); */
+                //added by guanghui
+                ol.startJsMemberDescription(anchor(), inheritId);
+                ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+
+                if (detailsVisible ) 
+                {
+                    ol.pushGeneratorState();
+                    ol.disableAllBut(OutputGenerator::Html);
+                    //ol.endEmphasis();
+                    ol.docify(" ");
+                    if (m_impl->group!=0 && gd==0) // forward link to the group
+                    {
+                        ol.startTextLink(getOutputFileBase(),anchor());
+                    }
+                    else // local link
+                    {
+                        ol.startTextLink(0,anchor());
+                    }
+                    ol.parseText(theTranslator->trMore());
+                    ol.endTextLink();
+                    //ol.startEmphasis();
+                    ol.popGeneratorState();
+                }
+                // for RTF we need to add an extra empty paragraph
+                ol.pushGeneratorState();
+                ol.disableAllBut(OutputGenerator::RTF);
+                ol.startParagraph();
+                ol.endParagraph();
+                ol.popGeneratorState();
+                ol.endMemberDescription();
+            }
+            delete rootNode;
         }
-        ol.parseText(theTranslator->trMore());
-        ol.endTextLink();
-        //ol.startEmphasis();
-        ol.popGeneratorState();
-      }
-      // for RTF we need to add an extra empty paragraph
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::RTF);
-      ol.startParagraph();
-      ol.endParagraph();
-      ol.popGeneratorState();
-      ol.endMemberDescription();
-    }
-    delete rootNode;
+        if (multipleLang == kLTLua && !this->getIsOmitLuaFun())
+        {
+            if (rootNode && !rootNode->isEmpty() )
+            {
+                /* ol.startMemberDescription(anchor(),inheritId); */
+                //added by guanghui
+                ol.startLuaMemberDescription(anchor(), inheritId);
+                ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+
+                if (detailsVisible ) 
+                {
+                    ol.pushGeneratorState();
+                    ol.disableAllBut(OutputGenerator::Html);
+                    //ol.endEmphasis();
+                    ol.docify(" ");
+                    if (m_impl->group!=0 && gd==0) // forward link to the group
+                    {
+                        ol.startTextLink(getOutputFileBase(),anchor());
+                    }
+                    else // local link
+                    {
+                        ol.startTextLink(0,anchor());
+                    }
+                    ol.parseText(theTranslator->trMore());
+                    ol.endTextLink();
+                    //ol.startEmphasis();
+                    ol.popGeneratorState();
+                }
+                // for RTF we need to add an extra empty paragraph
+                ol.pushGeneratorState();
+                ol.disableAllBut(OutputGenerator::RTF);
+                ol.startParagraph();
+                ol.endParagraph();
+                ol.popGeneratorState();
+                ol.endMemberDescription();
+            }
+            delete rootNode;
+        }
+
   }
 
   ol.endMemberDeclaration(anchor(),inheritId);
@@ -2672,7 +2830,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       int ni=ldef.find("::",si);
       if (ni>=ei) ei=ni+2;
       //added by guanghui, ToDO:
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-ei));
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-ei), multipleLang);
     }
   }
   else // not an enum value or anonymous compound
@@ -2811,7 +2969,22 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                preStr = "var";
            }
            ldef = ldef.mid(matchIndex,matchLen - matchIndex);
+           if (multipleLang == kLTJs)
+           {
+               if (this->getHasJsDoc())
+               {
+                   ldef = this->getRenameJsFunName(); 
+               }
+           }
+           if (multipleLang == kLTLua)
+           {
+               if (this->getHasLuaDoc())
+               {
+                   ldef = this->getRenameLuaFunName();
+               }
+           }
            ldef = preStr + " " +  ldef;
+           printf("zilongshanren niucha v587: %s\n", ldef.data());
            
        }
       linkifyText(TextGeneratorOLImpl(ol),

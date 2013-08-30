@@ -52,6 +52,8 @@
 
 // forward declarations
 static bool handleBrief(const QCString &);
+/* static bool handleJs(const QCString &); */
+/* static bool handleLua(const QCString &); */
 static bool handleFn(const QCString &);
 static bool handleDef(const QCString &);
 static bool handleOverload(const QCString &);
@@ -131,6 +133,8 @@ static DocCmdMap docCmdMap[] =
 {
   // command name      handler function         ends brief description
   { "brief",           &handleBrief,            FALSE },
+  /* { "js",           &handleJs,            FALSE }, */
+  /* { "lua",           &handleLua,            FALSE }, */
   { "short",           &handleBrief,            FALSE },
   { "fn",              &handleFn,               FALSE },
   { "var",             &handleFn,               FALSE },
@@ -2017,7 +2021,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
 					  else // overload declaration
 					  {
-                                            makeStructuralIndicator(Entry::OVERLOADDOC_SEC);
+                          makeStructuralIndicator(Entry::OVERLOADDOC_SEC);
 					    langParser->parsePrototype(functionProto);
 					  }
 					  BEGIN( Comment );
@@ -2145,6 +2149,22 @@ static bool handleBrief(const QCString &)
   return FALSE;
 }
 
+/* static bool handleJs(const QCString &jsFun) */
+/* { */
+/*   current->hasJsFunName = true; */
+/*   current->renameJsFunName =  jsFun; */
+/*   printf("current name = %s, current type = %s, jsFun=%s\n", (current->name).data(), */ 
+/*             (current->type).data(), jsFun.data()); */
+/*   return FALSE; */
+/* } */
+/* static bool handleLua(const QCString & luaFn) */
+/* { */
+/*     current->hasLuaFunName = true; */
+/*     current->renameLuaFunName = luaFn; */
+/*   printf("current name = %s, current type = %s, jsFun=%s\n", (current->name).data(), */ 
+/*         (current->type).data(), luaFn.data()); */
+/*   return FALSE; */
+/* } */
 static bool handleFn(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::MEMBERDOC_SEC);
