@@ -2235,173 +2235,174 @@ LUACMD      {CMD}("lua")
 				          BEGIN(FindMembers);
 			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
-                                          if (insideCpp || insideObjC) 
-                                          {
-                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
-                                          }
-					  yyBegColNr=yyColNr;
-					  yyBegLineNr=yyLineNr;
-					  lineCount();
-                                          if (insideIDL && yyleng==9 && qstrcmp(yytext,"cpp_quote")==0)
-					  {
-					    BEGIN(CppQuote);
-					  }
-					  else if ((insideIDL || insideJava || insideD) && yyleng==6 && qstrcmp(yytext,"import")==0)
-					  {
-					    if (insideIDL)
-					      BEGIN(NextSemi);
-					    else // insideJava or insideD
-					      BEGIN(JavaImport);
-					  }
-					  else if (insidePHP && qstrcmp(yytext,"use")==0)
-					  {
-					    BEGIN(PHPUse);
-					  }
-					  else if (insideJava && qstrcmp(yytext,"package")==0)
-					  {
-  					    lineCount();
-					    BEGIN(PackageName);
-					  }
-					  else if (insideIDL && qstrcmp(yytext,"case")==0)
-					  {
-					    BEGIN(IDLUnionCase);
-					  }
-					  else if (insideTryBlock && qstrcmp(yytext,"catch")==0)
-					  {
-					    insideTryBlock=FALSE;
-					    BEGIN(TryFunctionBlock);
-					  }
-                                          else if (insideCpp && qstrcmp(yytext,"alignas")==0)
-                                          {
-                                            lastAlignAsContext = YY_START;
-                                            BEGIN(AlignAs);
-                                          }
-					  else if (insideJS && qstrcmp(yytext,"var")==0)
-					  { // javascript variable
-					    current->type="var";
-					  }
-					  else if (insideJS && qstrcmp(yytext,"function")==0)
-					  { // javascript function
-					    current->type="function";
-					  }
-					  else if (insideCS && qstrcmp(yytext,"this")==0)
-					  {
-					    // C# indexer
-					    addType( current ) ;
-					    current->name="this";
-					    BEGIN(CSIndexer);
-					  }
-                                          else if (insideCpp && qstrcmp(yytext,"static_assert")==0)
-                                          {
-                                            // C++11 static_assert
-                                            BEGIN(StaticAssert);
-                                          }
-                                          else if (insideCpp && qstrcmp(yytext,"decltype")==0)
-                                          {
-                                            // C++11 decltype(x)
-					    current->type+=yytext;
-                                            BEGIN(DeclType);
-                                          }
-					  else
-					  {
-					    if (YY_START==FindMembers)
-					    {
-					      addType( current ) ;
-					    }
-					    bool javaLike = insideJava || insideCS || insideD || insidePHP || insideJS;
-					    if (javaLike && qstrcmp(yytext,"public")==0)
-					    {
-					      current->protection = Public;
-					    }
-					    else if (javaLike && qstrcmp(yytext,"protected")==0)
-					    {
-					      current->protection = Protected;
-					    }
-					    else if (javaLike && qstrcmp(yytext,"internal")==0)
-					    {
-					      current->protection = Package;
-					    }
-					    else if (javaLike && qstrcmp(yytext,"private")==0)
-					    {
-					      current->protection = Private;
-					    }
-					    else if (javaLike && qstrcmp(yytext,"static")==0)
-					    {
-                            if (YY_START==FindMembers)
-                                current->name  = yytext;
-                            else
-                                current->name += yytext;
-                            current->stat = TRUE;
-					    }
-					    else
-					    {
-                            if (YY_START==FindMembers)
-                                current->name  = yytext;
-                            else
-                                current->name += yytext;
+    if (insideCpp || insideObjC) 
+    {
+        current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+    }
+    yyBegColNr=yyColNr;
+    yyBegLineNr=yyLineNr;
+    lineCount();
+    if (insideIDL && yyleng==9 && qstrcmp(yytext,"cpp_quote")==0)
+    {
+        BEGIN(CppQuote);
+    }
+    else if ((insideIDL || insideJava || insideD) && yyleng==6 && qstrcmp(yytext,"import")==0)
+    {
+        if (insideIDL)
+            BEGIN(NextSemi);
+        else // insideJava or insideD
+            BEGIN(JavaImport);
+    }
+    else if (insidePHP && qstrcmp(yytext,"use")==0)
+    {
+        BEGIN(PHPUse);
+    }
+    else if (insideJava && qstrcmp(yytext,"package")==0)
+    {
+        lineCount();
+        BEGIN(PackageName);
+    }
+    else if (insideIDL && qstrcmp(yytext,"case")==0)
+    {
+        BEGIN(IDLUnionCase);
+    }
+    else if (insideTryBlock && qstrcmp(yytext,"catch")==0)
+    {
+        insideTryBlock=FALSE;
+        BEGIN(TryFunctionBlock);
+    }
+    else if (insideCpp && qstrcmp(yytext,"alignas")==0)
+    {
+        lastAlignAsContext = YY_START;
+        BEGIN(AlignAs);
+    }
+    else if (insideJS && qstrcmp(yytext,"var")==0)
+    { // javascript variable
+        current->type="var";
+    }
+    else if (insideJS && qstrcmp(yytext,"function")==0)
+    { // javascript function
+        current->type="function";
+    }
+    else if (insideCS && qstrcmp(yytext,"this")==0)
+    {
+        // C# indexer
+        addType( current ) ;
+        current->name="this";
+        BEGIN(CSIndexer);
+    }
+    else if (insideCpp && qstrcmp(yytext,"static_assert")==0)
+    {
+        // C++11 static_assert
+        BEGIN(StaticAssert);
+    }
+    else if (insideCpp && qstrcmp(yytext,"decltype")==0)
+    {
+        // C++11 decltype(x)
+        current->type+=yytext;
+        BEGIN(DeclType);
+    }
+    else
+    {
+        if (YY_START==FindMembers)
+        {
+            addType( current ) ;
+        }
+        bool javaLike = insideJava || insideCS || insideD || insidePHP || insideJS;
+        if (javaLike && qstrcmp(yytext,"public")==0)
+        {
+            current->protection = Public;
+        }
+        else if (javaLike && qstrcmp(yytext,"protected")==0)
+        {
+            current->protection = Protected;
+        }
+        else if (javaLike && qstrcmp(yytext,"internal")==0)
+        {
+            current->protection = Package;
+        }
+        else if (javaLike && qstrcmp(yytext,"private")==0)
+        {
+            current->protection = Private;
+        }
+        else if (javaLike && qstrcmp(yytext,"static")==0)
+        {
+            if (YY_START==FindMembers)
+                current->name  = yytext;
+            else
+                current->name += yytext;
+            current->stat = TRUE;
+        }
+        else
+        {
+            if (YY_START==FindMembers)
+                current->name  = yytext;
+            else
+                current->name += yytext;
 
-                            if (current->name.left(7)=="static ")
-                            {
-                                current->stat = TRUE;
-                                current->name= current->name.mid(7);
-                            }
-                            else if (current->name.left(7)=="inline ")
-                            {
-                                if (current->type.isEmpty())
-                                {
-                                    current->type="inline";
-                                }
-                                else
-                                {
-                                    current->type+="inline ";
-                                }
-                                current->name= current->name.mid(7);
-                            }
-                            else if (current->name.left(6)=="const ")
-                            {
-                                if (current->type.isEmpty())
-                                {
-                                    current->type="const";
-                                }
-                                else
-                                {
-                                    current->type+="const ";
-                                }
-                                current->name=current->name.mid(6);
-                            }
+                if(!g_renameJsFunName.isEmpty())
+                {
+                    g_findMemberContext = -1;
+                    current->renameJsFunName = g_renameJsFunName;
+                    current->hasJsFunName = true;
+                }
+                else 
+                {
+                    current->bIsOmitJsFun = g_bOmitJsFun;
+                }
+                if(!g_renameLuaFunName.isEmpty())
+                {
+                    g_findMemberContext = -1;
+                    current->renameLuaFunName = g_renameLuaFunName;
+                    current->hasLuaFunName = true;
+                }
+                else                 current->bIsOmitLuaFun = g_bOmitLuaFun;
 
-                            if(g_findMemberContext == FindMembers)
-                            {
-                                
-                                if(!g_renameJsFunName.isEmpty())
-                                {
-                                    g_findMemberContext = -1;
-                                    current->renameJsFunName = g_renameJsFunName;
-                                    current->hasJsFunName = true;
-                                }
-                                current->bIsOmitJsFun = g_bOmitJsFun;
-                                current->bIsOmitLuaFun = g_bOmitLuaFun;
-                                if(!g_renameLuaFunName.isEmpty())
-                                {
-                                    g_findMemberContext = -1;
-                                    current->renameLuaFunName = g_renameLuaFunName;
-                                    current->hasLuaFunName = true;
-                                }
-                            }
-                            else {
-                                g_findMemberContext = FindMembers;
-                            }
-					    }
-					    QCString tmp=yytext;
-					    if (nameIsOperator(tmp))
-                        {
-                            BEGIN( Operator );
-                        }
-					    else
-                        {
-                            BEGIN(FindMembers);
-                        }
-					  }
+
+                if(g_bOmitJsFun)
+                /* printf("scanner.l rename js name is %s, yytext=%s\n", g_renameJsFunName.data(), ( current->name).data() ); */
+
+            if (current->name.left(7)=="static ")
+            {
+                current->stat = TRUE;
+                current->name= current->name.mid(7);
+            }
+            else if (current->name.left(7)=="inline ")
+            {
+                if (current->type.isEmpty())
+                {
+                    current->type="inline";
+                }
+                else
+                {
+                    current->type+="inline ";
+                }
+                current->name= current->name.mid(7);
+            }
+            else if (current->name.left(6)=="const ")
+            {
+                if (current->type.isEmpty())
+                {
+                    current->type="const";
+                }
+                else
+                {
+                    current->type+="const ";
+                }
+                current->name=current->name.mid(6);
+            }
+
+        }
+        QCString tmp=yytext;
+        if (nameIsOperator(tmp))
+        {
+            BEGIN( Operator );
+        }
+        else
+        {
+            BEGIN(FindMembers);
+        }
+    }
 					}
 <StaticAssert>"("                       {
 					  lastSkipRoundContext = FindMembers;
@@ -6257,7 +6258,7 @@ LUACMD      {CMD}("lua")
                                   else
                                     {
                                         docBlock+=yytext;
-                                        printf("docBlock = %s, yytext=%s\n", docBlock.data(), yytext);
+                                        /* printf("docBlock = %s, yytext=%s\n", docBlock.data(), yytext); */
                                     }
   					}
 <DocBlock>\n				{ // newline
