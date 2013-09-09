@@ -205,6 +205,7 @@ static bool   g_bHaveJsRenameFun = false;
 static bool    g_bHaveLuaRenameFun = false;
 static bool   g_bOmitJsFun   = false;
 static bool g_bOmitLuaFun = false;
+static const QCString OMIT_SIMBOL = "NA";
 static QCString  g_renameJsFunName;
 static QCString g_renameLuaFunName;
 static int last_jsdoc_state;
@@ -2342,24 +2343,34 @@ LUACMD      {CMD}("lua")
 
                 if(!g_renameJsFunName.isEmpty())
                 {
-                    g_findMemberContext = -1;
-                    current->renameJsFunName = g_renameJsFunName;
-                    current->hasJsFunName = true;
+                   if(g_renameJsFunName != OMIT_SIMBOL)
+                   {
+                       g_findMemberContext = -1;
+                       current->renameJsFunName = g_renameJsFunName;
+                       current->hasJsFunName = true;
+                   }
+                   else 
+                   {
+                       current->bIsOmitJsFun = g_bOmitJsFun;
+                   }
                 }
-                else 
-                {
-                    current->bIsOmitJsFun = g_bOmitJsFun;
-                }
+
                 if(!g_renameLuaFunName.isEmpty())
                 {
-                    g_findMemberContext = -1;
-                    current->renameLuaFunName = g_renameLuaFunName;
-                    current->hasLuaFunName = true;
+                    if(g_renameLuaFunName != OMIT_SIMBOL)
+                    {
+                        g_findMemberContext = -1;
+                        current->renameLuaFunName = g_renameLuaFunName;
+                        current->hasLuaFunName = true;
+                    }
+                    else 
+                    {
+                        current->bIsOmitLuaFun = g_bOmitLuaFun;
+                    }
                 }
-                else                 current->bIsOmitLuaFun = g_bOmitLuaFun;
 
 
-                if(g_bOmitJsFun)
+                /* if(g_bOmitJsFun) */
                 /* printf("scanner.l rename js name is %s, yytext=%s\n", g_renameJsFunName.data(), ( current->name).data() ); */
 
             if (current->name.left(7)=="static ")
@@ -6182,7 +6193,7 @@ LUACMD      {CMD}("lua")
                 g_bHasJsDoc = true;
                 g_bHaveJsRenameFun = false;
                 g_bOmitJsFun = false;
-                printf("js v1");
+                /* printf("js v1"); */
                 last_jsdoc_state = DocBlock;
             }
 <DocBlock>{LUACMD} {
@@ -6240,8 +6251,8 @@ LUACMD      {CMD}("lua")
                                      g_renameJsFunName = g_renameJsFunName.stripWhiteSpace();
                                      g_bHasJsDoc = false;
 
-                                    if(g_renameJsFunName.isEmpty())g_bOmitJsFun = true;
-                                     printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size());
+                                    if(g_renameJsFunName == OMIT_SIMBOL)g_bOmitJsFun = true;
+                                     /* printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size()); */
 
                                    }  
                                    if(g_bHasLuaDoc)
@@ -6250,7 +6261,7 @@ LUACMD      {CMD}("lua")
                                        g_bHaveLuaRenameFun = true;
                                         g_renameLuaFunName = g_renameLuaFunName.stripWhiteSpace();
                                        g_bHasLuaDoc = false;
-                                       if(g_renameLuaFunName.isEmpty())g_bOmitLuaFun = true;
+                                       if(g_renameLuaFunName == OMIT_SIMBOL)g_bOmitLuaFun = true;
                                   }
                                   if(last_jsdoc_state == DocBlock || last_luadoc_state == DocBlock)
                                   {
