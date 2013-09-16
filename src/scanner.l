@@ -197,15 +197,17 @@ static int              g_column;
 static int              g_fencedSize=0;
 
 //added by guanghui
-static bool  g_bHasJsDoc = false;
-static bool  g_bHasLuaDoc = false;
-static int   g_findMemberContext;
+static bool                               g_bHasJsDoc = false;
+static bool                               g_bHasLuaDoc = false;
+static int                                g_findMemberContext;
 
-static bool   g_bHaveJsRenameFun = false;
-static bool    g_bHaveLuaRenameFun = false;
-static bool   g_bOmitJsFun   = false;
-static bool g_bOmitLuaFun = false;
-static const QCString OMIT_SIMBOL = "NA";
+static bool                               g_bHaveJsRenameFun = false;
+static bool                               g_bHaveLuaRenameFun = false;
+static bool                               g_bOmitJsFun   = false;
+static bool                               g_bOmitLuaFun = false;
+static bool                               g_bOmitClass = false;
+static const                              QCString OMIT_SIMBOL = "NA";
+
 static QCString  g_renameJsFunName;
 static QCString g_renameLuaFunName;
 static int last_jsdoc_state;

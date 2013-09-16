@@ -62,6 +62,8 @@ Entry::Entry()
   this->hasLuaFunName = false;
   this->bIsOmitJsFun = false;
   this->bIsOmitLuaFun = false;
+  this->bIsOmitJsClass = false;
+  this->bIsOmitLuaClass = false;
   reset();
 }
 

@@ -290,6 +290,8 @@ class Entry
     bool    bIsOmitLuaFun;
     QCString  renameJsFunName; 
     QCString  renameLuaFunName;
+    bool    bIsOmitJsClass;
+    bool    bIsOmitLuaClass;
 
 
 

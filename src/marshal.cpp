@@ -398,12 +398,15 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalBool(s,e->artificial);
   marshalInt(s,(int)e->groupDocType);
   marshalQCString(s,e->id);
+  //added by guanghui
   marshalBool(s,e->hasJsFunName);
   marshalBool(s,e->hasLuaFunName);
   marshalBool(s,e->bIsOmitJsFun);
   marshalBool(s,e->bIsOmitLuaFun);
   marshalQCString(s,e->renameJsFunName);
   marshalQCString(s,e->renameLuaFunName);
+  marshalBool(s, e->bIsOmitJsClass);
+  marshalBool(s, e->bIsOmitLuaClass);
 }
 
 void marshalEntryTree(StorageIntf *s,Entry *e)
@@ -796,6 +799,8 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->bIsOmitLuaFun    = unmarshalBool(s);
   e->renameJsFunName  = unmarshalQCString(s);
   e->renameLuaFunName = unmarshalQCString(s);
+  e->bIsOmitJsClass   = unmarshalBool(s);
+  e->bIsOmitLuaClass  = unmarshalBool(s);
 
   return e;
 }
