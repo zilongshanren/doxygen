@@ -64,6 +64,7 @@ class MemberList : public QList<MemberDef>
                const char *title,const char *subtitle,const DefinitionIntf::DefType compoundType,
                bool showEnumValues=FALSE,bool showInline=FALSE,
                ClassDef *inheritedFrom=0);
+    //added by guanghui
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeSimpleDocumentation(OutputList &ol,Definition *container);

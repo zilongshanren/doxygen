@@ -1643,32 +1643,25 @@ LUACMD      {CMD}("lua")
 					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
                       //added by guanghui
-                     if(g_bHasJsDoc)
-                     {
-
+                      printf("zilongshanren : %s\n", g_renameJsFunName.data());
                          if(!g_renameJsFunName.isEmpty())
                          {
                              if(g_renameJsFunName == OMIT_SIMBOL)
                              {
                                  current->bIsOmitJsClass = true;
-                                 printf("omit js class");
+                                 printf("omit js class\n");
                              }
                          }
-                         /* resetMultipleLanDocParserState(); */
-                     }
 
-                     if(g_bHasLuaDoc)
-                     {
                          if(!g_renameLuaFunName.isEmpty())
                          {
+                             printf("omit lua class : %s\n", g_renameLuaFunName.data());
                              if(g_renameLuaFunName == OMIT_SIMBOL)
                              {
                                  current->bIsOmitLuaClass = true;
-                                 printf("omit lua class");
+                                 printf("omit lua class\n");
                              }
                          }
-                         /* resetMultipleLanDocParserState(); */
-                     }
 
                      
 
@@ -6234,7 +6227,7 @@ LUACMD      {CMD}("lua")
                 g_bHasJsDoc = true;
                 g_bHaveJsRenameFun = false;
                 g_bOmitJsFun = false;
-                /* printf("js v1"); */
+                printf("js v1");
                 last_jsdoc_state = DocBlock;
             }
 <DocBlock>{LUACMD} {
@@ -6293,7 +6286,7 @@ LUACMD      {CMD}("lua")
                                      g_bHasJsDoc = false;
 
                                     if(g_renameJsFunName == OMIT_SIMBOL)g_bOmitJsFun = true;
-                                     /* printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size()); */
+                                     printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size());
 
                                    }  
                                    if(g_bHasLuaDoc)

@@ -645,7 +645,8 @@ void MemberList::writeDeclarations(OutputList &ol,
 
 void MemberList::writeDocumentation(OutputList &ol,
                      const char *scopeName, Definition *container,
-                     const char *title,bool showEnumValues,bool showInline)
+                     const char *title,bool showEnumValues,bool showInline
+                     )
 {
   //printf("MemberList::writeDocumentation()\n");
 
@@ -670,11 +671,12 @@ void MemberList::writeDocumentation(OutputList &ol,
   {
       //added by guanghui
     md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTCpp);
-    if (!md->getClassDef()->isOmitJsDoc() && !md->getIsOmitJsFun())
+    if (!md->getIsOmitJsFun())
     {
         md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTJs);
     }
-    if (!md->getClassDef()->isOmitLuaDoc() && !md->getIsOmitLuaFun())
+
+    if ( !md->getIsOmitLuaFun())
     {
         md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTLua);
     }
