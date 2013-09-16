@@ -188,6 +188,10 @@ class ClassDefImpl
     bool isGeneric;
 
     uint64 spec;
+
+    //added by guanghui
+    bool isOmitJsClass;
+    bool isOmitLuaClass;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -248,6 +252,10 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
     isLocal=FALSE;
   }
   isGeneric = lang==SrcLangExt_CSharp && QCString(name).find('<')!=-1;
+
+  //added by guanghui
+    isOmitJsClass = false;
+    isOmitLuaClass = false;
 }
 
 ClassDefImpl::ClassDefImpl() : vhdlSummaryTitles(17)
@@ -273,6 +281,27 @@ ClassDefImpl::~ClassDefImpl()
   delete tempArgs;
   delete typeConstraints;
   delete taggedInnerClasses;
+}
+
+//added by guanghui
+void ClassDef::omitJsDoc(bool flag)
+{
+    this->m_impl->isOmitJsClass = flag;
+}
+
+void ClassDef::omitLuaDoc(bool flag)
+{
+    this->m_impl->isOmitLuaClass = flag;
+}
+
+bool ClassDef::isOmitJsDoc()
+{
+    return this->m_impl->isOmitJsClass;
+}
+
+bool ClassDef::isOmitLuaDoc()
+{
+    return this->m_impl->isOmitLuaClass;
 }
 
 // constructs a new class definition

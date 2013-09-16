@@ -412,6 +412,12 @@ class ClassDef : public Definition
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
     void addClassAttributes(OutputList &ol);
+
+    //added by guanghui
+    void omitJsDoc(bool flag);
+    void omitLuaDoc(bool flag);
+    bool isOmitJsDoc();
+    bool isOmitLuaDoc();
     
     ClassDefImpl *m_impl;
 
