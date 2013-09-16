@@ -205,7 +205,8 @@ static bool                               g_bHaveJsRenameFun = false;
 static bool                               g_bHaveLuaRenameFun = false;
 static bool                               g_bOmitJsFun   = false;
 static bool                               g_bOmitLuaFun = false;
-static bool                               g_bOmitClass = false;
+static bool                               g_bOmitJsClass = false;
+static bool                               g_bOmitLuaClass = false;
 static const                              QCString OMIT_SIMBOL = "NA";
 
 static QCString  g_renameJsFunName;
@@ -224,6 +225,17 @@ static int last_luadoc_state;
 //static void handleGroupEndCommand();
 
 //-----------------------------------------------------------------------------
+//added by guanghui
+static void resetMultipleLanDocParserState()
+{
+
+    g_renameJsFunName="";
+    g_renameLuaFunName = "";
+    last_jsdoc_state = -1;
+    last_luadoc_state = -1;
+    g_bOmitJsFun = false;
+    g_bOmitLuaFun = false;
+}
 
 static void initParser()
 {
@@ -1630,6 +1642,12 @@ LUACMD      {CMD}("lua")
 					  current->startLine = yyLineNr;
 					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
+                      //added by guanghui
+                      /* if(!g_renameJsFunName.isEmpty()) */
+                     
+
+
+
 					  if (yytext[0]=='@')
 					  {
 					    language = current->lang = SrcLangExt_ObjC;
@@ -4197,12 +4215,7 @@ LUACMD      {CMD}("lua")
                                     if (!current->name.isEmpty())
                                       {
                                         //added by guanghui
-                                         g_renameJsFunName="";
-                                         g_renameLuaFunName = "";
-                                        last_jsdoc_state = -1;
-                                        last_luadoc_state = -1;
-                                         g_bOmitJsFun = false;
-                                         g_bOmitLuaFun = false;
+                                        resetMultipleLanDocParserState();
 
                                           current->args = yytext;
                                           current->bodyLine = yyLineNr;
