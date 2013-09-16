@@ -1326,11 +1326,10 @@ static void addClassToContext(EntryNav *rootNav)
 
     // the empty string test is needed for extract all case     
     cd->insertUsedFile(root->fileName);
-    //added by guanghui  TODO:
-    if (root->bIsOmitJsClass)
-    {
-        printf("zilongshanren v5");
-    }
+    //added by guanghui  
+    cd->omitJsDoc(root->bIsOmitJsClass);
+    cd->omitLuaDoc(root->bIsOmitLuaClass);
+
 
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());

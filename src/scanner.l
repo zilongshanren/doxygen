@@ -205,8 +205,8 @@ static bool                               g_bHaveJsRenameFun = false;
 static bool                               g_bHaveLuaRenameFun = false;
 static bool                               g_bOmitJsFun   = false;
 static bool                               g_bOmitLuaFun = false;
-static bool                               g_bOmitJsClass = false;
-static bool                               g_bOmitLuaClass = false;
+/* static bool                               g_bOmitJsClass = false; */
+/* static bool                               g_bOmitLuaClass = false; */
 static const                              QCString OMIT_SIMBOL = "NA";
 
 static QCString  g_renameJsFunName;
