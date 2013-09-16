@@ -1643,23 +1643,34 @@ LUACMD      {CMD}("lua")
 					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
                       //added by guanghui
-                      if(!g_renameJsFunName.isEmpty())
-                      {
-                          if(g_renameJsFunName == OMIT_SIMBOL)
-                          {
-                             current->bIsOmitJsClass = true;
-                          }
-                      }
+                     if(g_bHasJsDoc)
+                     {
 
-                      if(!g_renameLuaFunName.isEmpty())
-                      {
-                        if(g_renameLuaFunName == OMIT_SIMBOL)
-                        {
-                            current->bIsOmitLuaClass = true;
-                        }
-                      }
+                         if(!g_renameJsFunName.isEmpty())
+                         {
+                             if(g_renameJsFunName == OMIT_SIMBOL)
+                             {
+                                 current->bIsOmitJsClass = true;
+                                 printf("omit js class");
+                             }
+                         }
+                         /* resetMultipleLanDocParserState(); */
+                     }
+
+                     if(g_bHasLuaDoc)
+                     {
+                         if(!g_renameLuaFunName.isEmpty())
+                         {
+                             if(g_renameLuaFunName == OMIT_SIMBOL)
+                             {
+                                 current->bIsOmitLuaClass = true;
+                                 printf("omit lua class");
+                             }
+                         }
+                         /* resetMultipleLanDocParserState(); */
+                     }
+
                      
-                     resetMultipleLanDocParserState();
 
 
 

@@ -349,11 +349,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                     md->memberType() == MemberType_Variable )
             {
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
-                if (!md->getIsOmitJsFun())
+                if (!cd->isOmitJsDoc() && !md->getIsOmitJsFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId);
                 }
-                if (!md->getIsOmitLuaFun())
+                if (!cd->isOmitLuaDoc() && !md->getIsOmitLuaFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
                 }
@@ -670,11 +670,11 @@ void MemberList::writeDocumentation(OutputList &ol,
   {
       //added by guanghui
     md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTCpp);
-    if (!md->getIsOmitJsFun())
+    if (!md->getClassDef()->isOmitJsDoc() && !md->getIsOmitJsFun())
     {
         md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTJs);
     }
-    if (!md->getIsOmitLuaFun())
+    if (!md->getClassDef()->isOmitLuaDoc() && !md->getIsOmitLuaFun())
     {
         md->writeDocumentation(this,ol,scopeName,container, m_inGroup,showEnumValues,showInline,kLTLua);
     }

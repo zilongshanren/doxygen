@@ -369,6 +369,11 @@ class ClassDef : public Definition
     int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
     
     bool visited;
+    //added by guanghui
+    void omitJsDoc(bool flag);
+    void omitLuaDoc(bool flag);
+    bool isOmitJsDoc();
+    bool isOmitLuaDoc();
 
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
@@ -413,11 +418,6 @@ class ClassDef : public Definition
     void writeAdditionalInheritedMembers(OutputList &ol);
     void addClassAttributes(OutputList &ol);
 
-    //added by guanghui
-    void omitJsDoc(bool flag);
-    void omitLuaDoc(bool flag);
-    bool isOmitJsDoc();
-    bool isOmitLuaDoc();
     
     ClassDefImpl *m_impl;
 
