@@ -45,6 +45,9 @@ struct TagInfo;
 class MemberDef : public Definition
 {
   public:
+      //added by guanghui
+      bool isOmitJsClass;
+      bool isOmitLuaClass;
     
     MemberDef(const char *defFileName,int defLine,int defColumn,
               const char *type,const char *name,const char *args,

@@ -348,15 +348,24 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             if (md->memberType() == MemberType_Function || 
                     md->memberType() == MemberType_Variable )
             {
+                //added by guanghui
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
                 bool isOmitJsClass = (cd != NULL && cd->isOmitJsDoc() );
+                if (isOmitJsClass)
+                {
+                    md->isOmitJsClass = true;
+                }
                 
-                if (!isOmitJsClass && !md->getIsOmitJsFun())
+                if (!md->isOmitJsClass && !isOmitJsClass  && !md->getIsOmitJsFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId);
                 }
                 bool isOmitLuaClass = (cd != NULL && cd->isOmitLuaDoc());
-                if (!isOmitLuaClass && !md->getIsOmitLuaFun())
+                if (isOmitLuaClass) //this is for omit inherited members
+                {
+                    md->isOmitLuaClass = true;
+                }
+                if (!md->isOmitLuaClass && !isOmitLuaClass && !md->getIsOmitLuaFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
                 }
