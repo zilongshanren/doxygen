@@ -349,11 +349,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                     md->memberType() == MemberType_Variable )
             {
                 md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTCpp,inheritedFrom,inheritId);
-                if (!cd->isOmitJsDoc() && !md->getIsOmitJsFun())
+                bool isOmitJsClass = (cd != NULL && cd->isOmitJsDoc() );
+                
+                if (!isOmitJsClass && !md->getIsOmitJsFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTJs,inheritedFrom,inheritId);
                 }
-                if (!cd->isOmitLuaDoc() && !md->getIsOmitLuaFun())
+                bool isOmitLuaClass = (cd != NULL && cd->isOmitLuaDoc());
+                if (!isOmitLuaClass && !md->getIsOmitLuaFun())
                 {
                     md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,kLTLua,inheritedFrom,inheritId);
                 }
