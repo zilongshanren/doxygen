@@ -6223,7 +6223,7 @@ LUACMD      {CMD}("lua")
                 g_bHasJsDoc = true;
                 g_bHaveJsRenameFun = false;
                 g_bOmitJsFun = false;
-                printf("js v1");
+                /* printf("js v1"); */
                 last_jsdoc_state = DocBlock;
             }
 <DocBlock>{LUACMD} {
@@ -6282,7 +6282,7 @@ LUACMD      {CMD}("lua")
                                      g_bHasJsDoc = false;
 
                                     if(g_renameJsFunName == OMIT_SIMBOL)g_bOmitJsFun = true;
-                                     printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size());
+                                     /* printf("v2:%s, size() = %d\n", g_renameJsFunName.data(), g_renameJsFunName.size()); */
 
                                    }  
                                    if(g_bHasLuaDoc)
