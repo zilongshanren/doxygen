@@ -1643,29 +1643,25 @@ LUACMD      {CMD}("lua")
 					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
                       //added by guanghui
-                      printf("zilongshanren : %s\n", g_renameJsFunName.data());
+                      /* printf("zilongshanren : %s\n", g_renameJsFunName.data()); */
                          if(!g_renameJsFunName.isEmpty())
                          {
                              if(g_renameJsFunName == OMIT_SIMBOL)
                              {
                                  current->bIsOmitJsClass = true;
-                                 printf("omit js class\n");
+                                 /* printf("omit js class\n"); */
                              }
                          }
 
                          if(!g_renameLuaFunName.isEmpty())
                          {
-                             printf("omit lua class : %s\n", g_renameLuaFunName.data());
+                             /* printf("omit lua class : %s\n", g_renameLuaFunName.data()); */
                              if(g_renameLuaFunName == OMIT_SIMBOL)
                              {
                                  current->bIsOmitLuaClass = true;
-                                 printf("omit lua class\n");
+                                 /* printf("omit lua class\n"); */
                              }
                          }
-
-                     
-
-
 
 					  if (yytext[0]=='@')
 					  {
