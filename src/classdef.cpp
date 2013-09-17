@@ -4295,7 +4295,8 @@ void ClassDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const Q
 {
   //printf("%s: ClassDef::writeMemberDocumentation()\n",name().data());
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,displayName(),this,title,FALSE,showInline);
+  if (ml) ml->writeDocumentation(ol,displayName(),this,title,FALSE,showInline,
+          this->isOmitJsDoc(), this->isOmitLuaDoc());
 }
 
 void ClassDef::writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt)

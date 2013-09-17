@@ -66,7 +66,7 @@ class MemberList : public QList<MemberDef>
                ClassDef *inheritedFrom=0);
     //added by guanghui
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
+               Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE, bool isOmitJsDoc = false, bool isOmitLuaDoc = false);
     void writeSimpleDocumentation(OutputList &ol,Definition *container);
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
