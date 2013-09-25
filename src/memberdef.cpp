@@ -2041,6 +2041,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 ol.endMemberDescription();
             }
             delete rootNode;
+            ol.endMemberDeclaration(anchor(),inheritId);
         }
         if (multipleLang == kLTJs && !this->getIsOmitJsFun())
         {
@@ -2079,6 +2080,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 ol.endMemberDescription();
             }
             delete rootNode;
+            ol.endMemberDeclaration(anchor(),inheritId);
         }
         if (multipleLang == kLTLua && !this->getIsOmitLuaFun())
         {
@@ -2117,11 +2119,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 ol.endMemberDescription();
             }
             delete rootNode;
+            ol.endMemberDeclaration(anchor(),inheritId);
         }
 
   }
 
-  ol.endMemberDeclaration(anchor(),inheritId);
 
   warnIfUndocumented();
 }
