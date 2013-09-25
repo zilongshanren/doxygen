@@ -380,6 +380,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDescription() = 0;
     virtual void startMemberDeclaration() = 0;
     virtual void endMemberDeclaration(const char *anchor,const char *inheritId) = 0;
+    //added by guanghui
+    virtual void endCppMemberDeclaration(const char *anchor,const char *inheritId) {}
+    virtual void endJsMemberDeclaration(const char *anchor,const char *inheritId) {}
+    virtual void endLuaMemberDeclaration(const char *anchor,const char *inheritId) {}
+    //====
     virtual void writeInheritedSectionTitle(const char *id,const char *ref,
                                             const char *file,const char *anchor,
                                             const char *title,const char *name) = 0;

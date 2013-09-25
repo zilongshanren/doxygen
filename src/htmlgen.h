@@ -204,7 +204,11 @@ class HtmlGenerator : public OutputGenerator
      //===================================================
     void endMemberDescription();
     void startMemberDeclaration() {}
+    //added by guanghui
     void endMemberDeclaration(const char *anchor,const char *inheritId);
+    void endCppMemberDeclaration(const char *anchor,const char *inheritId);
+    void endJsMemberDeclaration(const char *anchor,const char *inheritId);
+    void endLuaMemberDeclaration(const char *anchor,const char *inheritId);
     void writeInheritedSectionTitle(const char *id,   const char *ref,
                                     const char *file, const char *anchor,
                                     const char *title,const char *name);

@@ -3572,6 +3572,33 @@ void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritI
   t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
+void HtmlGenerator::endCppMemberDeclaration(const char *anchor,const char *inheritId)
+{
+  t << "<tr name = \"cpp\" class=\"separator:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+}
+void HtmlGenerator::endJsMemberDeclaration(const char *anchor,const char *inheritId)
+{
+  t << "<tr name = \"js\" class=\"separator:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+}
+void HtmlGenerator::endLuaMemberDeclaration(const char *anchor,const char *inheritId)
+{
+  t << "<tr name=\"lua\" class=\"separator:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+}
 void HtmlGenerator::setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile)
 {
   if (Doxygen::searchIndex)

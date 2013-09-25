@@ -338,6 +338,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDeclaration); }
     void endMemberDeclaration(const char *anchor,const char *inheritId)
     { forall(&OutputGenerator::endMemberDeclaration,anchor,inheritId); }
+    void endCppMemberDeclaration(const char *anchor,const char *inheritId)
+    { forall(&OutputGenerator::endCppMemberDeclaration,anchor,inheritId); }
+    void endJsMemberDeclaration(const char *anchor,const char *inheritId)
+    { forall(&OutputGenerator::endJsMemberDeclaration,anchor,inheritId); }
+    void endLuaMemberDeclaration(const char *anchor,const char *inheritId)
+    { forall(&OutputGenerator::endLuaMemberDeclaration,anchor,inheritId); }
     void writeInheritedSectionTitle(const char *id,   const char *ref,
                                     const char *file, const char *anchor,
                                     const char *title,const char *name)
