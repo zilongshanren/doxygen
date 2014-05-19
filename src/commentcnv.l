@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -52,6 +52,13 @@ struct CondCtx
   bool skip;
 };
   
+struct CommentCtx
+{
+  CommentCtx(int line) 
+    : lineNr(line) {}
+  int lineNr;
+};
+  
 static BufStr * g_inBuf;
 static BufStr * g_outBuf;
 static int      g_inBufPos;
@@ -64,6 +71,7 @@ static QCString g_fileName;
 static int      g_lineNr;
 static int      g_condCtx;
 static QStack<CondCtx> g_condStack;
+static QStack<CommentCtx> g_commentStack;
 static QCString g_blockName;
 static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
@@ -78,6 +86,7 @@ static int      g_blockCount;
 static bool     g_lastEscaped;
 static int      g_lastBlockContext;
 static bool     g_pythonDocString;
+static int      g_nestingCount;
 
 static SrcLangExt g_lang;
 static bool       isFixedForm; // For Fortran
@@ -240,9 +249,12 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^"'!\/\n\\#\\-]*           { /* eat anything that is not " / or \n */ 
-                                     copyToOutput(yytext,(int)yyleng); 
-				   }
+<Scan>[^"'!\/\n\\#-,]*              { /* eat anything that is not " / , or \n */ 
+                                       copyToOutput(yytext,(int)yyleng);
+                                    }
+<Scan>[,]                           { /* eat , so we have a nice separator in long initialization lines */ 
+                                       copyToOutput(yytext,(int)yyleng);
+                                    }
 <Scan>"\"\"\""!                     { /* start of python long comment */
                                      if (g_lang!=SrcLangExt_Python)
 				     {
@@ -251,8 +263,11 @@ void replaceComment(int offset);
 				     else
 				     {
                                        g_pythonDocString = TRUE;
-                                       copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
+                                       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
                                    }
 <Scan>![><!]/.*\n	   {
@@ -263,7 +278,10 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>[Cc\*][><!]/.*\n	   {
@@ -277,7 +295,10 @@ void replaceComment(int offset);
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
+                                         g_nestingCount=0;
+                                         g_commentStack.clear(); /*  to be on the save side */
 				         BEGIN(CComment);
+                                         g_commentStack.push(new CommentCtx(g_lineNr));
 				       }
 				       else
 				       {
@@ -320,7 +341,10 @@ void replaceComment(int offset);
 <Scan>'				   {
                                      copyToOutput(yytext,(int)yyleng); 
 				     g_charContext = YY_START;
-				     BEGIN(SkipChar);
+                                     if (g_lang!=SrcLangExt_VHDL)
+                                     {
+				       BEGIN(SkipChar);
+                                     }
   				   }
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,(int)yyleng); 
@@ -362,10 +386,16 @@ void replaceComment(int offset);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
+<Scan>"/**/"                       { /* avoid matching next rule for empty C comment, see bug 711723 */
+                                     copyToOutput(yytext,(int)yyleng);
+                                   }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
   			             g_specialComment=(int)yyleng==3;
+                                     g_nestingCount=0;
+                                     g_commentStack.clear(); /*  to be on the save side */
                                      copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(CComment); 
+                                     g_commentStack.push(new CommentCtx(g_lineNr));
                                    }
 <Scan>"#"("#")?		           {
                                      if (g_lang!=SrcLangExt_Python)
@@ -375,7 +405,10 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>"--!"		           {
@@ -386,7 +419,10 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>![><!]		           {
@@ -397,7 +433,10 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <CComment>"{@code"/[ \t\n]	   {
@@ -561,7 +600,7 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 
-<CComment>[^\\!@*\n{\"]*           { /* anything that is not a '*' or command */ 
+<CComment>[^\\!@*\n{\"\/]*           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
@@ -587,6 +626,11 @@ void replaceComment(int offset);
 				       BEGIN(Scan);
 				     }
                                    }
+<CComment>"/"+"*"                  { /* nested C comment */
+                                     g_nestingCount++;
+                                     g_commentStack.push(new CommentCtx(g_lineNr));
+                                     copyToOutput(yytext,(int)yyleng); 
+                                   }
 <CComment>"*"+"/"                  { /* end of C comment */
                                      if (g_lang==SrcLangExt_Python)
 				     {
@@ -595,7 +639,15 @@ void replaceComment(int offset);
 				     else
 				     {
 				       copyToOutput(yytext,(int)yyleng);
-				       BEGIN(Scan);
+                                       if (g_nestingCount<=0)
+                                       {
+				         BEGIN(Scan);
+                                       }
+                                       else
+                                       {
+                                         g_nestingCount--;
+                                         delete g_commentStack.pop();
+                                       }
 				     }
                                    }
 <CComment>"\n"/[ \t]*[^#]	   { /* end of Python comment */
@@ -703,7 +755,7 @@ void replaceComment(int offset);
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,(int)yyleng);
   				   }
-<CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
+<CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     g_condCtx = YY_START; 
   				     BEGIN(CondLine);
   				   }
@@ -923,7 +975,10 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_lineNr   = 1;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+  g_commentStack.clear();
+  g_commentStack.setAutoDelete(TRUE);
 
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   isFixedForm = FALSE;
   if (g_lang==SrcLangExt_Fortran)
   {
@@ -932,7 +987,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 
   if (g_lang==SrcLangExt_Markdown)
   {
+    g_nestingCount=0;
     BEGIN(CComment);
+    g_commentStack.push(new CommentCtx(g_lineNr));
   }
   else
   {
@@ -947,11 +1004,29 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }
+  if (g_nestingCount>0 || (YY_START==CComment && g_lang!=SrcLangExt_Markdown))
+  {
+    QCString tmp= "(probable line reference: ";
+    bool first = TRUE;
+    while (!g_commentStack.isEmpty())
+    {
+      CommentCtx *ctx = g_commentStack.pop();
+      if (!first) tmp += ", ";
+      tmp += QCString().setNum(ctx->lineNr);
+      first = FALSE;
+      delete ctx;
+    }
+    tmp += ")";
+    warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
+        "Nesting level %d %s",g_nestingCount+1,tmp.data()); // add one for "normal" expected end of comment
+  }
+  g_commentStack.clear();
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';
     msg("-------------\n%s\n-------------\n",g_outBuf->data());
   }
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 

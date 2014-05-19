@@ -49,6 +49,7 @@
 #include "classlist.h"
 #include "filedef.h"
 #include "namespacedef.h"
+#include "tooltip.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -131,6 +132,7 @@ static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
 static Definition   *g_searchCtx;
+static bool          g_collectXRefs;
 static bool          g_isFixedForm;
 
 static bool          g_insideBody;      //!< inside subprog/program body? => create links
@@ -152,12 +154,14 @@ static int 	     bracketCount = 0;
 
 // simplified way to know if this is fixed form
 // duplicate in fortranscanner.l
-static bool recognizeFixedForm(const char* contents)
+static bool recognizeFixedForm(const char* contents, FortranFormat format)
 {
   int column=0;
   bool skipLine=FALSE;
 
-  for (int i=0;;i++) 
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
+  for (int i=0;;i++)
   {
     column++;
 
@@ -168,6 +172,9 @@ static bool recognizeFixedForm(const char* contents)
         skipLine=FALSE;
         break;
       case ' ':
+        break;
+      case '#':
+        skipLine=TRUE;
         break;
       case '\000':
         return FALSE;
@@ -337,9 +344,18 @@ static void codifyLines(QCString str)
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                  const char *ref,const char *file,
-                  const char *anchor,const char *text)
+                  Definition *d,const char *text)
 {
+  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  TooltipManager::instance()->addTooltip(d);
+  QCString ref  = d->getReference();
+  QCString file = d->getOutputFileBase();
+  QCString anchor = d->anchor();
+  QCString tooltip; 
+  if (!sourceTooltips) // fall back to simple "title" tooltips
+  {
+    tooltip = d->briefDescriptionAsTooltip();
+  }
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -352,7 +368,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       g_yyLineNr++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,0);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
@@ -362,42 +378,12 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,0);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
 }
 
-#if 0
-static QCString fileLocation() 
-{
-  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
-  result+=":"+QCString().setNum(g_yyLineNr);
-  result+=":"+QCString().setNum(1);
-  return result;
-}
-
-
-/**
-  generates dictionay entries that are used if REFERENCED_BY_RELATION ... options are set
-  (e.g. the "referenced by ..." list after the function documentation) 
-*/
-
-static void addDocCrossReference(MemberDef *src, MemberDef *dst)
-{
-  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
- //printf("======= addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if ((Config_getBool("REFERENCED_BY_RELATION") || Config_getBool("CALLER_GRAPH")) && 
-      (src->isFunction()))
-  {
-    dst->addSourceReferencedBy(src,fileLocation());
-  }
-  if ((Config_getBool("REFERENCES_RELATION") || Config_getBool("CALL_GRAPH")) && (src->isFunction()))
-  {
-    src->addSourceReferences(dst,fileLocation());
-  }
-}
-#endif
 
 //-------------------------------------------------------------------------------
 /**
@@ -456,9 +442,11 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   // look in local variables
-  for (Scope *scope=scopeStack.last(); scope!=NULL; scope=scopeStack.prev())
+  QListIterator<Scope> it(scopeStack);
+  Scope *scope;
+  for (it.toLast();(scope=it.current());--it)
   {
-    if(scope->localVars.find(memberName))
+    if (scope->localVars.find(memberName))
       return FALSE;
   }
 
@@ -555,14 +543,12 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
-      if (g_currentDefinition && g_currentMemberDef && md!=g_currentMemberDef && g_insideBody)
+      if (g_currentDefinition && g_currentMemberDef && 
+          md!=g_currentMemberDef && g_insideBody && g_collectXRefs)
       { 
 	addDocCrossReference(g_currentMemberDef,md); 
       }     
-      writeMultiLineCodeLink(ol,md->getReference(),
-	                        md->getOutputFileBase(),
-	                        md->anchor(),
-				text ? text : memberText);
+      writeMultiLineCodeLink(ol,md,text ? text : memberText);
       addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
@@ -587,7 +573,7 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
     } 
     else 
     { // write type or interface link
-      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),tmp);
+      writeMultiLineCodeLink(ol,cd,tmp);
       addToSearchIndex(tmp.data());
     }
   }
@@ -657,13 +643,13 @@ static void endScope()
 static void addUse(const QCString &moduleName) 
 {
   if (!scopeStack.isEmpty())
-    scopeStack.last()->useNames.append(moduleName);
+    scopeStack.getLast()->useNames.append(moduleName);
 }
 
 static void addLocalVar(const QCString &varName) 
 {
   if (!scopeStack.isEmpty())
-    scopeStack.last()->localVars.insert(varName, (void*)1);
+    scopeStack.getLast()->localVars.insert(varName, (void*)1);
 }
 
 //----------------------------------------------------------------------------
@@ -702,17 +688,18 @@ NUM_TYPE  (complex|integer|logical|real)
 LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR})
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|PROCEDURE)
+TYPE_PREFIX ((TYPE|CLASS|PROCEDURE){BS}"(")
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|ELEMENTAL)
+ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED)
 ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-FLOW  (DO|SELECT|CASE|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
-COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|DEALLOCATE|SIZE|INQUIRE|OPEN|CLOSE|DATA|COMMON)
-IGNORE (CALL)
-PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTAL)?
+FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
+COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
+IGNORE    (CALL)
+PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 
 /* |  */
 
@@ -730,6 +717,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 %x DocBlock
 %x Use
 %x UseOnly
+%x Import
 %x TypeDecl
 %x Declaration
 %x DeclContLine
@@ -747,13 +735,13 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
  /*-------- inner construct ---------------------------------------------------*/
  
-<Start>{COMMANDS}/[,( \t\n].*           {  // highlight
+<Start>{COMMANDS}/{BS}[,( \t\n]         {  // highlight
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>{FLOW}/[,( \t\n].*               {
+<Start>{FLOW}/{BS}[,( \t\n]               {
                                           if (g_isFixedForm)
                                           {
                                             if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
@@ -763,6 +751,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
   					  codifyLines(yytext);
 					  endFontClass();
 					}
+<Start>{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
+                                          startFontClass("keywordflow");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                        }
 <Start>"end"({BS}{FLOW})?/[ \t\n]       { // list is a bit long as not all have possible end
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
@@ -773,6 +766,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
   					  startFontClass("keywordtype"); 
   					  codifyLines(yytext);
 					  endFontClass();
+                                        }
+<Start>^{BS}"namelist"/[//]             {  // Namelist specification
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
                                         }
  /*-------- use statement -------------------------------------------*/
 <Start>"use"{BS_}                       { 
@@ -805,21 +803,32 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           yy_push_state(YY_START);
 					  BEGIN(UseOnly);     
                                         }           
-<UseOnly>{BS},{BS}                      { codifyLines(yytext); }
-<UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); YY_FTN_RESET}
+<UseOnly,Import>{BS},{BS}               { codifyLines(yytext); }
+<UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext); YY_FTN_RESET}
 <UseOnly>{ID}                           {
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
                                           useEntry->onlyNames.append(yytext);
                                         }
-<Use,UseOnly>"\n"                       {
+<Use,UseOnly,Import>"\n"                {
                                           unput(*yytext);
                                           yy_pop_state();YY_FTN_RESET
                                         }
-       
+<Start>"import"{BS_}                    {
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          yy_push_state(YY_START);
+                                          BEGIN(Import);
+                                        }
+<Import>{ID}                            {
+                                          g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+                                          g_insideBody=FALSE;
+                                        }
  /*-------- fortran module  -----------------------------------------*/
-<Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
+<Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
 					  startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);
@@ -837,6 +846,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
  					}
+<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable deklaration
+              startFontClass("keyword");
+            g_code->codify(yytext);
+            endFontClass();
+            }
 <ClassName>\n				{ // interface may be without name
                                           yy_pop_state();
 					  YY_FTN_REJECT;
@@ -891,7 +905,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
-<Start>"type"{BS}"("                    {
+<Start>^{BS}{TYPE_PREFIX}/{ID}          {
                                           yy_push_state(YY_START);
 					  BEGIN(TypeDecl);
    					  startFontClass("keywordtype");
@@ -1126,7 +1140,8 @@ void resetFortranCodeParserState() {}
 void parseFortranCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
-		  MemberDef *memberDef,bool,Definition *searchCtx)
+		  MemberDef *memberDef,bool,Definition *searchCtx,
+                  bool collectXRefs, FortranFormat format)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
 
@@ -1135,13 +1150,16 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   (void)className;
 
   if (s.isEmpty()) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
+  TooltipManager::instance()->clearTooltips();
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
-  g_isFixedForm = recognizeFixedForm((const char*)s);
+  g_isFixedForm = recognizeFixedForm((const char*)s,format);
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
   g_searchCtx = searchCtx;
+  g_collectXRefs = collectXRefs;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
   else
@@ -1174,13 +1192,17 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   startCodeLine();
   g_parmName.resize(0);
   g_parmType.resize(0);
-  fcodeYYrestart( fcodeYYin );
+  fortrancodeYYrestart( fortrancodeYYin );
   BEGIN( Start );
-  fcodeYYlex();
+  fortrancodeYYlex();
   if (g_needsTermination)
   {
     endFontClass();
     g_code->endCodeLine();
+  }
+  if (fd)
+  {
+    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (exBlock && g_sourceFileDef)
   {
@@ -1188,18 +1210,19 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
-  void fcodeYYdummy() { yy_flex_realloc(0,0); } 
+  void fortrancodeYYdummy() { yy_flex_realloc(0,0); } 
 }
 #elif YY_FLEX_SUBMINOR_VERSION<33
 #error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
 #else
 extern "C" { // some bogus code to keep the compiler happy
-  void fcodeYYdummy() { yy_top_state(); } 
+  void fortrancodeYYdummy() { yy_top_state(); } 
 }
 #endif
 

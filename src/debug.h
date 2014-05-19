@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -36,12 +36,14 @@ class Debug
                      Time         = 0x00000200,
                      ExtCmd       = 0x00000400,
                      Markdown     = 0x00000800,
-                     FilterOutput = 0x00001000
+                     FilterOutput = 0x00001000,
+                     Lex          = 0x00002000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
-    static void setFlag(const char *label);
+    static int  setFlag(const char *label);
     static void clearFlag(const char *label);
     static bool isFlagSet(DebugMask mask);
+    static void printFlags(void);
     static void setPriority(int p);
     
   private:

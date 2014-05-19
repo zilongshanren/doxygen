@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -236,7 +236,6 @@ class DotCallGraph
     DotNode        *m_startNode;
     static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
-    int             m_recDepth;
     bool            m_inverse;
     QCString        m_diskName;
     Definition *    m_scope;
@@ -406,11 +405,10 @@ class DotRunnerQueue
 class DotWorkerThread : public QThread
 {
   public:
-    DotWorkerThread(int id,DotRunnerQueue *queue);
+    DotWorkerThread(DotRunnerQueue *queue);
     void run();
     void cleanup();
   private:
-    int m_id;
     DotRunnerQueue *m_queue;
     QList<DotRunner::CleanupItem> m_cleanupItems;
 };

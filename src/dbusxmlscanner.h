@@ -42,6 +42,7 @@ public:
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char *exampleName=0,
                    FileDef *fileDef=0,
@@ -50,7 +51,8 @@ public:
                    bool inlineFragment=FALSE,
                    MemberDef *memberDef=0,
                    bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0
+                   Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
                   );
 
     void resetCodeParserState();

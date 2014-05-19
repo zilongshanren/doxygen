@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 1997-2013 by Dimitri van Heesch.
+# Copyright (C) 1997-2014 by Dimitri van Heesch.
 # 
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=8
-doxygen_version_revision=4
+doxygen_version_revision=7
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
@@ -29,25 +29,40 @@ f_shared=YES
 f_make=NO
 f_dot=NO
 f_perl=NO
+f_python=NO
 f_plf_auto=NO
 f_prefix=/usr/local
 f_insttool=NO
 f_english=NO
 f_wizard=NO
 f_app=NO
+f_doxmlparser=NO
 f_thread=NO
 f_flex=NO
 f_bison=NO
 f_search=NO
-f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
 f_sqlite3=NO
+f_sqlite3static=NO
+f_sqlite3_path=NO
 f_libclang=NO
 f_libclangstatic=NO
 
+#
+# first setup the list with availabe languages, so we cannot forget any
+# list will be in case as specified (f_langs) and in uppercase (f_ulangs) as used in the internal perl script
+#
+f_langs=`ls -1 src/translator_??.h | sed -e 's%src/translator_%%g' | sed -e 's/\.h//' | tr '\012' ','`
+
 while test -n "$1";  do
   case $1 in
+    --prefix=*)
+       f_prefix=`echo $1 | sed 's/^--prefix=//'`
+       ;;
     --prefix | -prefix)
        shift; f_prefix=$1
+       ;;
+    --docdir=*)
+       f_docdir=`echo $1 | sed 's/^--docdir=//'`
        ;;
     --docdir | -docdir)
        shift; f_docdir=$1
@@ -67,26 +82,56 @@ while test -n "$1";  do
     --english-only | -english-only)
        f_english=YES
        ;;
+    --enable-langs=*)
+       f_langs=`echo $1 | sed 's/^--enable-langs=//'`
+       ;;
     --enable-langs | -enable-langs)
        shift; f_langs=$1
+       ;;
+    --platform=*)
+       f_platform=`echo $1 | sed 's/^--platform=//'`
        ;;
     --platform | -platform)
        shift; f_platform=$1
        ;;
+    --make=*)
+       f_make=`echo $1 | sed 's/^--make=//'`
+       ;;
     --make | -make)
        shift; f_make=$1
+       ;;
+    --dot=*)
+       f_dot=`echo $1 | sed 's/^--dot=//'`
        ;;
     --dot | -dot)
        shift; f_dot=$1
        ;;
+    --python=*)
+       f_python=`echo $1 | sed 's/^--python=//'`
+       ;;
+    --python | -python)
+       shift; f_python=$1
+       ;;
+    --perl=*)
+       f_perl=`echo $1 | sed 's/^--perl=//'`
+       ;;
     --perl | -perl)
        shift; f_perl=$1
+       ;;
+    --flex=*)
+       f_flex=`echo $1 | sed 's/^--flex=//'`
        ;;
     --flex | -flex)
        shift; f_flex=$1
        ;;
+    --bison=*)
+       f_bison=`echo $1 | sed 's/^--bison=//'`
+       ;;
     --bison | -bison)
        shift; f_bison=$1
+       ;;
+    --install=*)
+       f_insttool=`echo $1 | sed 's/^--install=//'`
        ;;
     --install | -install)
        shift; f_insttool=$1
@@ -97,11 +142,24 @@ while test -n "$1";  do
     --with-doxyapp | -with-doxyapp)
        f_app=YES
        ;;
+    --with-doxmlparser | -with-doxmlparser)
+       f_doxmlparser=YES
+       ;;
     --with-doxysearch | -with-doxysearch)
        f_search=YES
        ;;
     --with-sqlite3 | -with-sqlite3)
        f_sqlite3=YES
+       ;;
+    --with-sqlite3-static | -with-sqlite3-static)
+       f_sqlite3=YES
+       f_sqlite3static=YES
+       ;;
+    --sqlite3-path=*)
+       f_sqlite3_path=`echo $1 | sed 's/^--sqlite3-path=//'`
+       ;;
+    --sqlite3-path | -sqlite3-path)
+       shift; f_sqlite3_path=$1
        ;;
     --with-libclang | -with-libclang)
        f_libclang=YES
@@ -124,12 +182,14 @@ done
 
 if test "$f_help" = y; then
   cat <<EOF
-Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
+Usage: $0 [--help] [--shared] [--static] [--release] [--debug] [--python name]
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
           [--install name] [--english-only] [--enable-langs list] 
-          [--with-sqlite3] [--with-libclang]
+          [--with-sqlite3] [--with-sqlite3-static] [--sqlite3-path]
+          [--with-libclang] [--with-libclang-static]
           [--with-doxywizard] [--with-doxysearch] [--with-doxyapp]
+          [--with-doxxmlparser]
 
 Options: 
 
@@ -138,6 +198,8 @@ Options:
 		        [default: shared]
   --release | --debug   Build for release or debug 
 		        [default: release]
+  --python name         Use \`name' as the name of the python interpreter 
+		        [default: autodetect]
   --perl name           Use \`name' as the name of the perl interpreter 
 		        [default: autodetect]
   --flex name           Use \`name' as the name of the GNU lexical scanner 
@@ -168,6 +230,7 @@ Options:
   --with-doxysearch     Build external search tools (doxysearch and doxyindexer)
                         requires Xapian library version 1.2
   --with-doxyapp        Example showing how to embed doxygen in an application.
+  --with-doxmlparser    Example showing how to parse doxygen's XML output.
 
 EOF
   test "$f_error" = y && exit 1
@@ -256,6 +319,9 @@ if test -z "$f_platform"; then
     Cygwin:*|CYGWIN*)
       f_platform=win32-g++
       ;;
+    MINGW32_NT*)
+      f_platform=win32-mingw
+      ;;
     *MiNT:*)
       f_platform=m68k-atari-mint-g++
       ;;
@@ -299,11 +365,18 @@ if test "$f_wizard" = YES; then
     for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4} /usr; do
       if test -x "$d/bin/qmake"; then
         QTDIR=$d
+        break 2
       fi
     done
   else
-    echo "  Detected Qt via the QTDIR environment variable..."
-    printf "                    "
+    if test -e "$QTDIR/bin/qmake"; then
+      printf "  Detected Qt via the QTDIR environment variable..."
+    else
+      printf "ERROR Detected Qt via the QTDIR environment variable..."
+      echo ", but $QTDIR/bin/qmake does not exist."
+      echo "      Set the QTDIR environment variable such that \$QTDIR/bin/qmake exists."
+      exit 2
+    fi
   fi
   if test -z "$QTDIR"; then
     echo "QTDIR not set and Qt not found at standard locations!"
@@ -312,6 +385,7 @@ if test "$f_wizard" = YES; then
     echo "check the Qt installation instructions!"
     exit 2
   fi
+  echo using $QTDIR
 fi
 
 #- check for xapian -----------------------------------------------------------
@@ -322,13 +396,24 @@ if test "$f_search" = YES; then
     for d in /usr /usr/local /opt/local; do
       if test -e "$d/include/xapian.h"; then
         XAPIAN=$d
+        break 2
       fi
     done
+  else
+    if test -e "$XAPIAN/include/xapian.h"; then
+      printf "  Detected Xapian via the XAPIAN environment variable..."
+    else
+      printf "ERROR Detected Xapian via the XAPIAN environment variable..."
+      echo ", but $XAPIAN/include/xapian.h does not exist."
+      echo "      Set the XAPIAN environment variable such that \$XAPIAN/include/xapian.h exists."
+      exit 2
+    fi
   fi
   if test -z "$XAPIAN"; then
     echo "XAPIAN not set and xapian.h not found at standard locations!"
     exit 2;
   fi
+  echo using $XAPIAN
 fi
    
 # - check for make ------------------------------------------------------------
@@ -420,9 +505,18 @@ fi
 
 if test "$f_sqlite3" = YES; then
   printf "  Checking for sqlite3 ... "
-  sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-  sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
-  sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
+  if test "$f_sqlite3_path" = NO; then
+    sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
+    sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu /usr/lib64"
+  else
+    sqlite3_hdr_dir="$f_sqlite3_path/include"
+    sqlite3_lib_dir="$f_sqlite3_path/lib"
+  fi
+  if test "$f_sqlite3static" = NO; then
+    sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a libsqlite3.dll.a"
+  else
+    sqlite3_lib_name="libsqlite3.a"
+  fi
   sqlite3_hdr=NO
   sqlite3_lib=NO
   sqlite3_link=
@@ -435,9 +529,14 @@ if test "$f_sqlite3" = YES; then
   for i in $sqlite3_lib_dir; do
     if test "$sqlite3_lib" = NO; then
       for j in $sqlite3_lib_name; do
-        if test -f "$i/$j"; then
-          sqlite3_lib="$i/$j"
-          sqlite3_link="-L $i -lsqlite3"
+        if test -e "$i/$j"; then
+          if test "$f_sqlite3static" = NO; then
+            sqlite3_lib="$i/$j"
+            sqlite3_link="-L$i -lsqlite3"
+          else
+            sqlite3_lib="$i/$j"
+            sqlite3_link="$i/$j -ldl"
+          fi
           break
         fi
       done
@@ -445,6 +544,7 @@ if test "$f_sqlite3" = YES; then
   done
   if test "$sqlite3_hdr" = NO -o "$sqlite3_lib" = NO; then
     echo "not found!";
+    exit 1
   else
     echo "using header $sqlite3_hdr and library $sqlite3_lib...";
   fi
@@ -455,9 +555,9 @@ fi
 if test "$f_libclang" = YES; then
   printf "  Checking for libclang ... "
   libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-  libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
+  libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib64/llvm /usr/lib/llvm"
   if test "$f_libclangstatic" = NO; then
-    libclang_lib_name="libclang.so libclang.dylib libclang.a"
+    libclang_lib_name="libclang.so libclang.dylib libclang.a libclang.dll.a"
   else
     libclang_lib_name="libclang.a"
   fi
@@ -491,6 +591,39 @@ if test "$f_libclang" = YES; then
     echo "using header $libclang_hdr and library $libclang_lib...";
   fi
 fi
+
+# - check for python ----------------------------------------------------------
+
+printf "  Checking for python... "
+if test "$f_python" = NO; then
+  python_names="python2 python"
+  python_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
+  python_prog=NO
+  python_found=NO
+  for i in $python_names; do
+    for j in $python_dirs; do
+      if test -x "$j/$i"; then
+        python_found=YES
+        if test `$j/$i -c "import sys; print sys.version_info[0]"` = 2; then
+          python_prog="$j/$i"
+          break 2
+        fi
+      fi
+    done
+  done
+  f_python="$python_prog" 
+fi
+
+if test "$f_python" = NO; then
+  if test "$python_found" = YES; then
+    echo "version should be python 2."
+  else
+    echo "not found!";
+  fi
+  echo
+  exit 2
+fi
+echo "using $f_python";
 
 # - check for perl ------------------------------------------------------------
 
@@ -575,15 +708,28 @@ fi
 
 # -----------------------------------------------------------------------------
 
+mkdir -p generated_src/doxygen
+if test "$f_wizard" = YES; then
+  mkdir -p generated_src/doxywizard
+fi
+
 #
 # Make VERSION file
 #
-echo "  Creating VERSION file."
-# Output should be something like 1.4.5-20051010
-if test "x$doxygen_version_mmn" = "xNO"; then
-  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision" > VERSION
-else
-  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision-$doxygen_version_mmn" > VERSION
+test -f "VERSION" && chmod u+w VERSION
+test -f "generated_src/doxygen/version.cpp" && chmod u+w generated_src/doxygen/version.cpp
+echo "  Generating generated_src/doxygen/version.cpp and VERSION..."
+cd src
+$f_python version.py ../generated_src/doxygen
+cd ..
+if test "$f_wizard" = YES; then
+  test -f "VERSION" && chmod u+w VERSION
+  test -f "generated_src/doxywizard/version.cpp" && chmod u+w generated_src/doxywizard/version.cpp
+  echo "  Generating generated_src/doxywizard/version.cpp and VERSION..."
+  cd src
+  $f_python version.py ../generated_src/doxywizard
+  cd ..
+
 fi
 
 test -f .makeconfig && rm .makeconfig
@@ -597,7 +743,9 @@ TMAKEPATH = $configPWD/tmake/lib/$f_platform
 ENV       = env TMAKEPATH="\$(TMAKEPATH)"
 TMAKE     = $configPWD/tmake/bin/tmake
 MAKE      = $f_make
+PYTHON    = $f_python
 PERL      = $f_perl
+LEX       = $f_flex
 RM        = rm -f
 CP        = cp
 VERSION   = `cat VERSION`
@@ -701,12 +849,6 @@ TMAKE_MOC = $QTDIR/bin/moc
 EOF
 fi
 
-if test "$f_english" = YES; then
-  cat >> .tmakeconfig <<EOF
-TMAKE_CXXFLAGS += -DENGLISH_ONLY
-EOF
-fi
-
 if test "$f_search" = YES; then
   cat >> .tmakeconfig <<EOF
 LIBS += -L$XAPIAN/lib
@@ -736,7 +878,7 @@ EOF
 #       if test $f_search = YES; then
 #         EXTRADEPS="$EXTRADEPS doxysearch"
 #       fi
-       echo "all: src/version.cpp $EXTRADEPS" >> $DST
+       echo "all: generated_src/doxygen/version.cpp $EXTRADEPS" >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C libmd5" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
@@ -749,14 +891,19 @@ EOF
        if test $f_app = YES; then
          echo "	\$(MAKE) -C addon/doxyapp" >> $DST
        fi
+       if test $f_doxmlparser = YES; then
+         echo "	\$(MAKE) -C addon/doxmlparser/src" >> $DST
+         echo "	\$(MAKE) -C addon/doxmlparser/test" >> $DST
+         echo "	\$(MAKE) -C addon/doxmlparser/examples/metrics" >> $DST
+       fi
        echo "" >> $DST
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
-         echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard install" >> $DST
+         echo "	\$(MAKE) INSTALL=\$(DESTDIR)\$(INSTALL) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard install" >> $DST
        fi
        echo "doxysearch_install:" >> $DST
        if test $f_search = YES; then
-         echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxysearch install" >> $DST
+         echo "	\$(MAKE) INSTALL=\$(DESTDIR)\$(INSTALL) MAN1DIR=\$(MAN1DIR) -C addon/doxysearch install" >> $DST
        fi
        echo "" >> $DST
      fi
@@ -768,8 +915,8 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-cat src/libdoxycfg.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" > src/libdoxycfg.t
-cat src/libdoxygen.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" > src/libdoxygen.t
+cat src/libdoxycfg.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" -e "s|%%PYTHON%%|$f_python|g" > src/libdoxycfg.t
+cat src/libdoxygen.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" -e "s|%%PYTHON%%|$f_python|g" > src/libdoxygen.t
 
 f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in addon/doxysearch/doxysearch.pro.in addon/doxysearch/doxyindexer.pro.in" 
 
@@ -791,51 +938,37 @@ EOF
      #if test "$f_thread" = YES; then
      #  realopts="$realopts thread"
      #fi
-     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_INC%%;$sqlite3_hdr_dir;g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 
-# - generating src/lang_cfg.h 
+# - generating generated_src/doxygen/doxygen/lang_cfg.h 
+# use consistent method on Linux and Windows
 
-if test -f "src/lang_cfg.h"; then
-    chmod u+w src/lang_cfg.h   # make sure file can be overwritten
+if test -f "generated_src/doxygen/lang_cfg.h"; then
+    chmod u+w generated_src/doxygen/lang_cfg.h   # make sure file can be overwritten
 fi
-echo "  Generating src/lang_cfg.h..."
-echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
-        chomp @l; 
-	@allowed=(split(/,/,"NL,SV,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC,VI,TR,EO,AM"));
-	foreach my $elem (@l){ 
-	     $elem =~ tr/a-z/A-Z/;
-	     $r=0;
-	     foreach my $tst (@allowed){
-		if ($tst eq $elem) { $r=1; last; } 		
-	     }	    
-	     if ($r!=1) { die "ERROR: Invalid language $elem was selected!\n"; } 
-	     print "#define LANG_$elem\n";
-        };' > ./src/lang_cfg.h   
+echo "  Generating generated_src/doxygen/lang_cfg.h..."
+if test "$f_english" = YES; then
+   $f_python src/lang_cfg.py ENONLY > generated_src/doxygen/lang_cfg.h
+else
+   f_ulangs=`echo $f_langs | tr '[a-z,]' '[A-Z ]'`
+   $f_python src/lang_cfg.py $f_ulangs > generated_src/doxygen/lang_cfg.h
+fi
 
-if test -f "src/config.h"; then
-    chmod u+w src/config.h
+if test -f "generated_src/doxygen/settings.h"; then
+    chmod u+w generated_src/doxygen/settings.h
 fi
-echo "  Generating src/settings.h..."
-echo "#ifndef SETTINGS_H" > src/settings.h
-echo "#define SETTINGS_H" >> src/settings.h
-echo "" >> src/settings.h
-if test "$f_sqlite3" != NO; then
-echo "#define USE_SQLITE3  1" >> src/settings.h
-else
-echo "#define USE_SQLITE3  0" >> src/settings.h
+echo "  Generating generated_src/doxygen/settings.h..."
+$f_python src/settings.py $f_sqlite3 $f_libclang generated_src/doxygen
+
+if test "$f_wizard" = YES; then
+  if test -f "generated_src/doxywizard/settings.h"; then
+      chmod u+w generated_src/doxywizard/settings.h
+  fi
+  echo "  Generating generated_src/doxywizard/settings.h..."
+  $f_python src/settings.py $f_sqlite3 $f_libclang generated_src/doxywizard
 fi
-if test "$f_libclang" != NO; then
-echo "#define USE_LIBCLANG 1" >> src/settings.h
-else
-echo "#define USE_LIBCLANG 0" >> src/settings.h
-fi
-echo "" >> src/settings.h
-echo "#define IS_SUPPORTED(x) \\" >> src/settings.h
-echo "  ((USE_SQLITE3  && strcmp(\"USE_SQLITE3\",(x))==0)  || \\" >> src/settings.h 
-echo "   (USE_LIBCLANG && strcmp(\"USE_LIBCLANG\",(x))==0) || \\" >> src/settings.h 
-echo "  0)" >> src/settings.h 
-echo "" >> src/settings.h
-echo "#endif" >> src/settings.h
-echo
+
+cd ..
+echo "  Finished"

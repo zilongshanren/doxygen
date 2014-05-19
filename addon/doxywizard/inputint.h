@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -39,10 +39,12 @@ class InputInt : public QObject, public Input
     Kind kind() const { return Int; }
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
+    QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
     void writeValue(QTextStream &t,QTextCodec *codec);
+    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
   public slots:
     void reset();
@@ -66,6 +68,7 @@ class InputInt : public QObject, public Input
     QVariant  m_value;
     QString   m_docs;
     QString   m_id;
+    QString   m_tdocs;
 };
 
 #endif

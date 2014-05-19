@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -38,7 +38,7 @@
 #include "filename.h"
 
 static const char doxygenLatexStyle[] =
-#include "doxygen_sty.h"
+#include "doxygen.sty.h"
 ;
 
 //static QCString filterTitle(const char *s)
@@ -126,7 +126,7 @@ static void writeLatexMakefile()
     }
     t << "\techo \"Rerunning latex....\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
-      << "\tlatex_count=5 ; \\" << endl
+      << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
@@ -154,7 +154,7 @@ static void writeLatexMakefile()
       t << "\tpdflatex refman" << endl;
     }
     t << "\tpdflatex refman" << endl
-      << "\tlatex_count=5 ; \\" << endl
+      << "\tlatex_count=8 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
@@ -199,7 +199,7 @@ static void writeMakeBat()
       t << latex_command << " refman.tex\n";
     }
     t << "setlocal enabledelayedexpansion\n";
-    t << "set count=5\n";
+    t << "set count=8\n";
     t << ":repeat\n";
     t << "set content=X\n";
     t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
@@ -231,7 +231,7 @@ static void writeMakeBat()
     t << "echo ----\n";
     t << "pdflatex refman\n\n";
     t << "setlocal enabledelayedexpansion\n";
-    t << "set count=5\n";
+    t << "set count=8\n";
     t << ":repeat\n";
     t << "set content=X\n";
     t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
@@ -293,7 +293,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
        "\\usepackage{multirow}\n"
+       "\\usepackage{fixltx2e}\n" // for \textsubscript
+       "\\PassOptionsToPackage{warn}{textcomp}\n"
        "\\usepackage{textcomp}\n"
+       "\\usepackage[nointegrals]{wasysym}\n"
        "\\usepackage[table]{xcolor}\n"
        "\n";
 
@@ -323,6 +326,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "  \\fontseries{bc}\\selectfont%\n"
        "  \\color{darkgray}%\n"
        "}\n"
+       "\\newcommand{\\+}{\\discretionary{\\mbox{\\scriptsize$\\hookleftarrow$}}{}{}}\n"
        "\n";
 
   // Define page & text layout
@@ -366,8 +370,12 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\n";
 
   // Headers & footers
-  QCString genString =
-        theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"));
+  QGString genString;
+  FTextStream tg(&genString);
+  filterLatexString(tg,
+                    theTranslator->trGeneratedAt(dateToString(TRUE),
+                       Config_getString("PROJECT_NAME")),
+                    FALSE,FALSE,FALSE);
   t << "% Headers & footers\n"
        "\\usepackage{fancyhdr}\n"
        "\\pagestyle{fancyplain}\n"
@@ -460,7 +468,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     // To avoid duplicate page anchors due to reuse of same numbers for
     // the index (be it as roman numbers)
-    t << "\\hypersetup{pageanchor=false}\n";
+    t << "\\hypersetup{pageanchor=false,\n"
+      << "             bookmarks=true,\n"
+      << "             bookmarksnumbered=true,\n"
+      << "             pdfencoding=unicode\n"
+      << "            }\n";
   }
   t << "\\pagenumbering{roman}\n"
        "\\begin{titlepage}\n"
@@ -521,10 +533,15 @@ static void writeDefaultFooter(FTextStream &t)
   Doxygen::citeDict->writeLatexBibliography(t);
 
   // Index
+  QCString unit;
+  if (Config_getBool("COMPACT_LATEX"))
+    unit = "section";
+  else
+    unit = "chapter";
   t << "% Index\n"
        "\\newpage\n"
        "\\phantomsection\n"
-       "\\addcontentsline{toc}{part}{" << theTranslator->trRTFGeneralIndex() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
        "\\printindex\n"
        "\n"
        "\\end{document}\n";
@@ -583,6 +600,14 @@ void LatexGenerator::startProjectNumber()
   t << "\\\\[1ex]\\large "; 
 }
 
+static QCString convertToLaTeX(const QCString &s)
+{
+  QGString result;
+  FTextStream t(&result);
+  filterLatexString(t,s,FALSE,FALSE,FALSE);
+  return result.data();
+}
+
 void LatexGenerator::startIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
@@ -598,10 +623,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
         else
         {
           QCString header = fileToString(latexHeader);
-          t << substituteKeywords(header,0,
-              Config_getString("PROJECT_NAME"),
-              Config_getString("PROJECT_NUMBER"),
-              Config_getString("PROJECT_BRIEF"));
+          t << substituteKeywords(header,"",
+                   convertToLaTeX(Config_getString("PROJECT_NAME")),
+                   convertToLaTeX(Config_getString("PROJECT_NUMBER")),
+                   convertToLaTeX(Config_getString("PROJECT_BRIEF")));
         }
       }
       break;
@@ -717,11 +742,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList->first();
-        while (fn)
+        FileNameListIterator fnli(*Doxygen::inputNameList); 
+        FileName *fn;
+        for (fnli.toFirst();(fn=fnli.current());++fnli)
         {
-          FileDef *fd=fn->first();
-          while (fd)
+          FileNameIterator fni(*fn);
+          FileDef *fd;
+          for (;(fd=fni.current());++fni)
           {
             if (fd->isLinkableInProject())
             {
@@ -733,9 +760,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
                 break;
               }
             }
-            fd=fn->next();
           }
-          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -910,11 +935,13 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList->first();
-        while (fn)
+        FileNameListIterator fnli(*Doxygen::inputNameList); 
+        FileName *fn;
+        for (fnli.toFirst();(fn=fnli.current());++fnli)
         {
-          FileDef *fd=fn->first();
-          while (fd)
+          FileNameIterator fni(*fn);
+          FileDef *fd;
+          for (;(fd=fni.current());++fni)
           {
             if (fd->isLinkableInProject())
             {
@@ -940,9 +967,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
                 }
               }
             }
-            fd=fn->next();
           }
-          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -996,10 +1021,10 @@ void LatexGenerator::endIndexSection(IndexSections is)
       else
       {
         QCString footer = fileToString(latexFooter);
-        t << substituteKeywords(footer,0,
-              Config_getString("PROJECT_NAME"),
-              Config_getString("PROJECT_NUMBER"),
-              Config_getString("PROJECT_BRIEF"));
+        t << substituteKeywords(footer,"",
+                   convertToLaTeX(Config_getString("PROJECT_NAME")),
+                   convertToLaTeX(Config_getString("PROJECT_NUMBER")),
+                   convertToLaTeX(Config_getString("PROJECT_BRIEF")));
       }
       break;
   }
@@ -1353,8 +1378,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "}";
     if (clname)
     {
-      t << "!" << clname << "@{";
-      docify(clname);
+      t << "!";
+      escapeLabelName(clname);
+      t << "@{";
+      escapeMakeIndexChars(clname);
       t << "}"; 
     }
     t << "}" << endl;
@@ -1991,13 +2018,18 @@ void LatexGenerator::escapeLabelName(const char *s)
   {
     switch (c)
     {
+      case '|': t << "\\texttt{\"|}"; break;
+      case '!': t << "\"!"; break;
       case '%': t << "\\%";       break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
       // NOTE: adding a case here, means adding it to while below as well!
       default:  
         i=0;
         // collect as long string as possible, before handing it to docify
         result[i++]=c;
-        while ((c=*p) && c!='%')
+        while ((c=*p) && c!='|' && c!='!' && c!='%' && c!='{' && c!='}' && c!='~')
         {
           result[i++]=c;
           p++;
@@ -2020,16 +2052,20 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
   {
     switch (c)
     {
+      case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
       case '@': t << "\"@"; break;
+      case '|': t << "\\texttt{\"|}"; break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
       // NOTE: adding a case here, means adding it to while below as well!
       default:  
         i=0;
         // collect as long string as possible, before handing it to docify
         result[i++]=c;
-        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']')
+        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
         {
           result[i++]=c;
           p++;
@@ -2053,6 +2089,8 @@ void LatexGenerator::endCodeFragment()
 
 void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
 {
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   if (m_prettyCode)
   {
     QCString lineNumber;
@@ -2063,9 +2101,12 @@ void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const 
       QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(sourceFileName);
-      startCodeAnchor(lineAnchor);
+      //if (!m_prettyCode) return;
+      if (usePDFLatex && pdfHyperlinks)
+      {
+        t << "\\hypertarget{" << stripPath(lineAnchor) << "}{}";
+      }
       writeCodeLink(ref,fileName,anchor,lineNumber,0);
-      endCodeAnchor();
     }
     else
     { 
@@ -2099,21 +2140,6 @@ void LatexGenerator::endFontClass()
 {
   //if (!m_prettyCode) return;
   t << "}";
-}
-
-void LatexGenerator::startCodeAnchor(const char *name) 
-{
-  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  //if (!m_prettyCode) return;
-  if (usePDFLatex && pdfHyperlinks)
-  {
-    t << "\\hypertarget{" << stripPath(name) << "}{}";
-  }
-}
-
-void LatexGenerator::endCodeAnchor() 
-{
 }
 
 void LatexGenerator::startInlineHeader()

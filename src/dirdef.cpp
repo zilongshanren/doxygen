@@ -150,6 +150,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
         // ol.newParagraph();  // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
+        ol.enable(OutputGenerator::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -224,8 +225,9 @@ void DirDef::writeSubDirList(OutputList &ol)
     ol.parseText(theTranslator->trDir(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    DirDef *dd=m_subdirs.first();
-    while (dd)
+    QListIterator<DirDef> it(m_subdirs);
+    DirDef *dd;
+    for (;(dd=it.current());++it)
     {
       ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),0);
@@ -250,7 +252,6 @@ void DirDef::writeSubDirList(OutputList &ol)
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
-      dd=m_subdirs.next();
     }
 
     ol.endMemberList();
@@ -266,8 +267,9 @@ void DirDef::writeFileList(OutputList &ol)
     ol.parseText(theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    FileDef *fd=m_fileList->first();
-    while (fd)
+    QListIterator<FileDef> it(*m_fileList);
+    FileDef *fd;
+    for (;(fd=it.current());++it)
     {
       ol.startMemberDeclaration();
       ol.startMemberItem(fd->getOutputFileBase(),0);
@@ -313,7 +315,6 @@ void DirDef::writeFileList(OutputList &ol)
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
-      fd=m_fileList->next();
     }
     ol.endMemberList();
   }
@@ -329,12 +330,22 @@ void DirDef::endMemberDeclarations(OutputList &ol)
   ol.endMemberSections();
 }
 
+QCString DirDef::shortTitle() const
+{
+  return theTranslator->trDirReference(m_shortName);
+}
+
+bool DirDef::hasDetailedDescription() const
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+}
+
 void DirDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   
-  QCString shortTitle=theTranslator->trDirReference(m_shortName);
   QCString title=theTranslator->trDirReference(m_dispName);
   startFile(ol,getOutputFileBase(),name(),title,HLI_None,!generateTreeView);
 
@@ -348,7 +359,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.parseText(shortTitle);
+    ol.parseText(shortTitle());
     ol.enableAll();
     ol.disable(OutputGenerator::Html);
     ol.parseText(title);
@@ -580,10 +591,8 @@ bool DirDef::depGraphIsTrivial() const
 
 //----------------------------------------------------------------------
 
-int FilePairDict::compareItems(QCollection::Item item1,QCollection::Item item2)
+int FilePairDict::compareValues(const FilePair *left,const FilePair *right) const
 {
-  FilePair *left  = (FilePair*)item1;
-  FilePair *right = (FilePair*)item2;
   int orderHi = qstricmp(left->source()->name(),right->source()->name());
   int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
   return orderHi==0 ? orderLo : orderHi;

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -41,6 +41,7 @@ class CLanguageScanner : public ParserInterface
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char *exampleName=0,
                    FileDef *fileDef=0,
@@ -49,7 +50,8 @@ class CLanguageScanner : public ParserInterface
                    bool inlineFragment=FALSE,
                    MemberDef *memberDef=0,
                    bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0
+                   Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
                   );
     void resetCodeParserState();
     void parsePrototype(const char *text);

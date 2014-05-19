@@ -141,9 +141,7 @@
 	$project{"VER_MIN"} =~ s/^\d+\.//;
     }    
     if ( Config("staticlib") ) {
-	$project{"TARGET"} = $project{"DESTDIR"} . "lib" . $project{"TARGET"};
-    } else {
-	$project{"TARGET"} = $project{"DESTDIR"} . $project{"TARGET"};
+	$project{"TARGET"} = "lib" . $project{"TARGET"};
     }
 #$}
 #!
@@ -203,7 +201,7 @@ TARGET	=	#$ ExpandGlue("TARGET",$project{"DESTDIR"},"",$project{"TARGET_EXT"});
 
 all: #$ ExpandGlue("ALL_DEPS",""," "," "); $text .= '$(TARGET)';
 
-$(TARGET): $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
+$(TARGET): $(HEADERS) $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
 #$ Project("TMAKE_APP_OR_DLL") || DisableOutput();
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS)
 #$ Project("TMAKE_APP_OR_DLL") || EnableOutput();

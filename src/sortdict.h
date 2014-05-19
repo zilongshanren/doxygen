@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -73,7 +73,7 @@ const uint SDict_primes[] =
 template<class T> class SDict;
 template<class T> class SIntDict;
 
-/** internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareValues() to the 
  *  dictionary 
  */
 template<class T>
@@ -82,9 +82,9 @@ class SList : public QList<T>
   public:
     SList(SDict<T> *owner) : m_owner(owner) {}
     virtual ~SList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const T *item1,const T *item2) const
     {
-      return m_owner->compareItems(item1,item2);
+      return m_owner->compareValues(item1,item2);
     }
   private:
     SDict<T> *m_owner;  
@@ -108,7 +108,7 @@ class SDict
      *  \param caseSensitive indicated whether the keys should be sorted
      *         in a case sensitive way.
      */
-    SDict(int size,bool caseSensitive=TRUE) : m_sizeIndex(0)
+    SDict(int size=17,bool caseSensitive=TRUE) : m_sizeIndex(0)
     {
       m_list = new SList<T>(this);
 #if AUTORESIZE
@@ -264,7 +264,7 @@ class SDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
+    virtual int compareValues(const T *item1,const T *item2) const
     {
       return item1!=item2;
     }
@@ -421,7 +421,7 @@ class SDict
     };
 };
 
-/** internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareValues() to the 
  *  dictionary 
  */
 template<class T>
@@ -430,11 +430,11 @@ class SIntList : public QList<T>
   public:
     SIntList(SIntDict<T> *owner) : m_owner(owner) {}
     virtual ~SIntList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
-    {
-      return m_owner->compareItems(item1,item2);
-    }
   private:
+    int compareValues(const T *item1,const T *item2) const
+    {
+      return m_owner->compareValues(item1,item2);
+    }
     SIntDict<T> *m_owner;  
 };
 
@@ -454,7 +454,7 @@ class SIntDict
      *  \param size The size of the dictionary. Should be a prime number for
      *              best distribution of elements.
      */
-    SIntDict(int size) : m_sizeIndex(0)
+    SIntDict(int size=17) : m_sizeIndex(0)
     {
       m_list = new SIntList<T>(this);
 #if AUTORESIZE
@@ -573,7 +573,7 @@ class SIntDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
+    virtual int compareValues(const T *item1,const T *item2) const
     {
       return item1!=item2;
     }
@@ -636,7 +636,7 @@ class SIntDict
         {
           return m_li->current();
         }
-        
+
         /*! Moves the iterator to the next element.
          *  \return the new "current" element, or zero if the iterator was
          *          already pointing at the last element.
@@ -657,6 +657,76 @@ class SIntDict
 
       private:
         QListIterator<T> *m_li;
+    };
+
+    class IteratorDict;         // first forward declare
+    friend class IteratorDict;  // then make it a friend
+    /*! Simple iterator for SDict. It iterates over the dictionary elements
+     *  in an unsorted way, but does provide information about the element's key.
+     */
+    class IteratorDict
+    {
+      public:
+        /*! Create an iterator given the dictionary. */
+        IteratorDict(const SIntDict<T> &dict)
+        {
+          m_di = new QIntDictIterator<T>(*dict.m_dict);
+        }
+
+        /*! Destroys the dictionary */
+        virtual ~IteratorDict()
+        {
+          delete m_di;
+        }
+
+        /*! Set the iterator to the first element in the list. 
+         *  \return The first compound, or zero if the list was empty. 
+         */
+        T *toFirst() const
+        {
+          return m_di->toFirst();
+        }
+
+        /*! Set the iterator to the last element in the list. 
+         *  \return The first compound, or zero if the list was empty. 
+         */
+        T *toLast() const
+        {
+          return m_di->toLast();
+        }
+
+        /*! Returns the current compound */
+        T *current() const
+        {
+          return m_di->current();
+        }
+        
+        /*! Returns the current key */
+        int currentKey() const
+        {
+          return m_di->currentKey();
+        }
+        
+        /*! Moves the iterator to the next element.
+         *  \return the new "current" element, or zero if the iterator was
+         *          already pointing at the last element.
+         */
+        T *operator++()
+        {
+          return m_di->operator++();
+        }
+
+        /*! Moves the iterator to the previous element.
+         *  \return the new "current" element, or zero if the iterator was
+         *          already pointing at the first element.
+         */
+        T *operator--()
+        {
+          return m_di->operator--();
+        }
+
+      private:
+        QDictIterator<T> *m_di;
     };
 
 };

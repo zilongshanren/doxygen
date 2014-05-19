@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -32,6 +32,8 @@
 #include "config.h"
 #include "filedef.h"
 #include "msc.h"
+#include "dia.h"
+#include "htmlentity.h"
 
 DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
@@ -72,109 +74,14 @@ void DocbookDocVisitor::visit(DocWhiteSpace *w)
 void DocbookDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  switch(s->symbol())
+  const char *res = HtmlEntityMapper::instance()->docbook(s->symbol());
+  if (res)
   {
-    case DocSymbol::BSlash:  m_t << "\\"; break;
-    case DocSymbol::At:      m_t << "@"; break;
-    case DocSymbol::Less:    m_t << "&lt;"; break;
-    case DocSymbol::Greater: m_t << "&gt;"; break;
-    case DocSymbol::Amp:     m_t << "&amp;"; break;
-    case DocSymbol::Dollar:  m_t << "$"; break;
-    case DocSymbol::Hash:    m_t << "#"; break;
-    case DocSymbol::DoubleColon: m_t << "::"; break;
-    case DocSymbol::Percent: m_t << "%"; break;
-    case DocSymbol::Copy:    m_t << "&#x00A9;"; break;
-    case DocSymbol::Tm:      m_t << "&#8482;"; break;
-    case DocSymbol::Reg:     m_t << "&#174;"; break;
-    case DocSymbol::Apos:    m_t << "&apos;"; break;
-    case DocSymbol::Quot:    m_t << "&quot;"; break;
-    case DocSymbol::Lsquo:   m_t << "&#8216;"; break;
-    case DocSymbol::Rsquo:   m_t << "&#8217;"; break;
-    case DocSymbol::Ldquo:   m_t << "&#8220;"; break;
-    case DocSymbol::Rdquo:   m_t << "&#8221;"; break;
-    case DocSymbol::Ndash:   m_t << "&#8211;"; break;
-    case DocSymbol::Mdash:   m_t << "&#8212;"; break;
-    case DocSymbol::Uml:     m_t << "&#168;"; break;
-    case DocSymbol::Acute:   m_t << "&#180;"; break;
-    case DocSymbol::Grave:   m_t << "&#192;"; break;
-    case DocSymbol::Circ:    m_t << "&#710;"; break;
-    case DocSymbol::Tilde:   m_t << "&#732;"; break;
-    case DocSymbol::Szlig:   m_t << "&#223;"; break;
-    case DocSymbol::Cedil:   m_t << "&#184;"; break;
-    case DocSymbol::Ring:    m_t << "&#197;"; break;
-    case DocSymbol::Slash:   m_t << "&#216;"; break;
-    case DocSymbol::Nbsp:    m_t << "&#160;"; break;
-    case DocSymbol::Aelig:   m_t << "&#230;"; break;
-    case DocSymbol::AElig:   m_t << "&#198;"; break;
-    case DocSymbol::GrkGamma:      m_t << "&#915;"; break;
-    case DocSymbol::GrkDelta:      m_t << "&#916;"; break;
-    case DocSymbol::GrkTheta:      m_t << "&#920;"; break;
-    case DocSymbol::GrkLambda:     m_t << "&#923;"; break;
-    case DocSymbol::GrkXi:         m_t << "&#926;"; break;
-    case DocSymbol::GrkPi:         m_t << "&#928;"; break;
-    case DocSymbol::GrkSigma:      m_t << "&#931;"; break;
-    case DocSymbol::GrkUpsilon:    m_t << "&#933;"; break;
-    case DocSymbol::GrkPhi:        m_t << "&#934;"; break;
-    case DocSymbol::GrkPsi:        m_t << "&#936;"; break;
-    case DocSymbol::GrkOmega:      m_t << "&#937;"; break;
-    case DocSymbol::Grkalpha:      m_t << "&#945;"; break;
-    case DocSymbol::Grkbeta:       m_t << "&#946;"; break;
-    case DocSymbol::Grkgamma:      m_t << "&#947;"; break;
-    case DocSymbol::Grkdelta:      m_t << "&#948;"; break;
-    case DocSymbol::Grkepsilon:    m_t << "&#949;"; break;
-    case DocSymbol::Grkzeta:       m_t << "&#950;"; break;
-    case DocSymbol::Grketa:        m_t << "&#951;"; break;
-    case DocSymbol::Grktheta:      m_t << "&#952;"; break;
-    case DocSymbol::Grkiota:       m_t << "&#953;"; break;
-    case DocSymbol::Grkkappa:      m_t << "&#954;"; break;
-    case DocSymbol::Grklambda:     m_t << "&#955;"; break;
-    case DocSymbol::Grkmu:         m_t << "&#956;"; break;
-    case DocSymbol::Grknu:         m_t << "&#957;"; break;
-    case DocSymbol::Grkxi:         m_t << "&#958;"; break;
-    case DocSymbol::Grkpi:         m_t << "&#960;"; break;
-    case DocSymbol::Grkrho:        m_t << "&#961;"; break;
-    case DocSymbol::Grksigma:      m_t << "&#963;"; break;
-    case DocSymbol::Grktau:        m_t << "&#964;"; break;
-    case DocSymbol::Grkupsilon:    m_t << "&#965;"; break;
-    case DocSymbol::Grkphi:        m_t << "&#966;"; break;
-    case DocSymbol::Grkchi:        m_t << "&#967;"; break;
-    case DocSymbol::Grkpsi:        m_t << "&#968;"; break;
-    case DocSymbol::Grkomega:      m_t << "&#969;"; break;
-    case DocSymbol::Grkvarsigma:   m_t << "&#962;"; break;
-    case DocSymbol::Section:       m_t << "<simplesect/>"; break;
-    case DocSymbol::Degree:        m_t << "&#176;"; break;
-    case DocSymbol::Prime:         m_t << "&#8242;"; break;
-    case DocSymbol::DoublePrime:   m_t << "&#8243;"; break;
-    case DocSymbol::Infinity:      m_t << "&#8734;"; break;
-    case DocSymbol::EmptySet:      m_t << "&#8709;"; break;
-    case DocSymbol::PlusMinus:     m_t << "&#177;"; break;
-    case DocSymbol::Times:         m_t << "&#215;"; break;
-    case DocSymbol::Minus:         m_t << "&#8722;"; break;
-    case DocSymbol::CenterDot:     m_t << "&#8901;"; break;
-    case DocSymbol::Partial:       m_t << "&#8706;"; break;
-    case DocSymbol::Nabla:         m_t << "&#8711;"; break;
-    case DocSymbol::SquareRoot:    m_t << "&#8730;"; break;
-    case DocSymbol::Perpendicular: m_t << "&#8869;"; break;
-    case DocSymbol::Sum:           m_t << "&#8721;"; break;
-    case DocSymbol::Integral:      m_t << "&#8747;"; break;
-    case DocSymbol::Product:       m_t << "&#8719;"; break;
-    case DocSymbol::Similar:       m_t << "&#8764;"; break;
-    case DocSymbol::Approx:        m_t << "&#8776;"; break;
-    case DocSymbol::NotEqual:      m_t << "&#8800;"; break;
-    case DocSymbol::Equivalent:    m_t << "&#8801;"; break;
-    case DocSymbol::Proportional:  m_t << "&#8733;"; break;
-    case DocSymbol::LessEqual:     m_t << "&#8804;"; break;
-    case DocSymbol::GreaterEqual:  m_t << "&#8805;"; break;
-    case DocSymbol::LeftArrow:     m_t << "&#8592;"; break;
-    case DocSymbol::RightArrow:    m_t << "&#8594;"; break;
-    case DocSymbol::SetIn:         m_t << "&#8712;"; break;
-    case DocSymbol::SetNotIn:      m_t << "&#8713;"; break;
-    case DocSymbol::LeftCeil:      m_t << "&#8968;"; break;
-    case DocSymbol::RightCeil:     m_t << "&#8969;"; break;
-    case DocSymbol::LeftFloor:     m_t << "&#8970;"; break;
-    case DocSymbol::RightFloor:    m_t << "&#8971;"; break;
-    default:
-                                   err("unknown symbol found\n");
+    m_t << res;
+  }
+  else
+  {
+    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 
@@ -249,12 +156,13 @@ void DocbookDocVisitor::visit(DocStyleChange *s)
 void DocbookDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>";
       Doxygen::parserManager->getParser(m_langExt)
-        ->parseCode(m_ci,s->context(),s->text(),
+        ->parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
       break;
@@ -346,6 +254,7 @@ void DocbookDocVisitor::visit(DocAnchor *anc)
 void DocbookDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -356,6 +265,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
         Doxygen::parserManager->getParser(inc->extension())
           ->parseCode(m_ci,inc->context(),
               inc->text(),
+              langExt,
               inc->isExample(),
               inc->exampleFile(), &fd);
         m_t << "</programlisting>";
@@ -366,6 +276,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
       Doxygen::parserManager->getParser(inc->extension())
         ->parseCode(m_ci,inc->context(),
             inc->text(),
+            langExt,
             inc->isExample(),
             inc->exampleFile());
       m_t << "</programlisting>";
@@ -373,6 +284,8 @@ void DocbookDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude:
       break;
     case DocInclude::HtmlInclude:
+      break;
+    case DocInclude::LatexInclude:
       break;
     case DocInclude::VerbInclude:
       m_t << "<verbatim>";
@@ -385,6 +298,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
         ->parseCode(m_ci,
             inc->context(),
             extractBlock(inc->text(),inc->blockId()),
+            langExt,
             inc->isExample(),
             inc->exampleFile()
             );
@@ -404,6 +318,7 @@ void DocbookDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide = TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip)
   {
     popEnabled();
@@ -411,7 +326,7 @@ void DocbookDocVisitor::visit(DocIncOperator *op)
     {
       Doxygen::parserManager->getParser(m_langExt)
         ->parseCode(m_ci,op->context(),
-            op->text(),op->isExample(),
+            op->text(),langExt,op->isExample(),
             op->exampleFile());
     }
     pushEnabled();
@@ -446,7 +361,7 @@ void DocbookDocVisitor::visit(DocIndexEntry *ie)
 
 void DocbookDocVisitor::visit(DocSimpleSectSep *)
 {
-  m_t << "<simplesect/>";
+  m_t << "<simplesectsep/>";
 }
 
 void DocbookDocVisitor::visit(DocCite *cite)
@@ -1001,6 +916,18 @@ void DocbookDocVisitor::visitPost(DocMscFile *df)
   if (m_hide) return;
   endMscFile(df->hasCaption());
 }
+void DocbookDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
+}
+
+void DocbookDocVisitor::visitPost(DocDiaFile *df)
+{
+  if (m_hide) return;
+  endDiaFile(df->hasCaption());
+}
+
 void DocbookDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1141,6 +1068,7 @@ void DocbookDocVisitor::visitPost(DocParamList *)
 void DocbookDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   m_t << "<para><link linkend=\"";
   m_t << x->file() << "_1" << x->anchor();
   m_t << "\">";
@@ -1149,9 +1077,10 @@ void DocbookDocVisitor::visitPre(DocXRefItem *x)
   m_t << " ";
 }
 
-void DocbookDocVisitor::visitPost(DocXRefItem *)
+void DocbookDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   m_t << "</para>";
 }
 
@@ -1216,6 +1145,15 @@ void DocbookDocVisitor::visitPost(DocVhdlFlow *)
 {
   // TODO: to be implemented
 }
+
+void DocbookDocVisitor::visitPre(DocParBlock *)
+{
+}
+
+void DocbookDocVisitor::visitPost(DocParBlock *)
+{
+}
+
 
 void DocbookDocVisitor::filter(const char *str)
 {
@@ -1309,6 +1247,80 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
 }
 
 void DocbookDocVisitor::endMscFile(bool hasCaption)
+{
+  if (m_hide) return;
+  m_t << "endl";
+  if (hasCaption)
+  {
+    m_t << "        </caption>" << endl;
+  }
+  m_t << "        </mediaobject>" << endl;
+  m_t << "    </figure>" << endl;
+  m_t << "</para>" << endl;
+}
+
+void DocbookDocVisitor::writeDiaFile(const QCString &baseName)
+{
+  QCString shortName = baseName;
+  int i;
+  if ((i=shortName.findRev('/'))!=-1)
+  {
+    shortName=shortName.right(shortName.length()-i-1);
+  }
+  QCString outDir = Config_getString("DOCBOOK_OUTPUT");
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
+  m_t << "                <imagedata";
+  m_t << " align=\"center\" fileref=\"" << shortName << ".png" << "\">";
+  m_t << "</imagedata>" << endl;
+}
+
+void DocbookDocVisitor::startDiaFile(const QCString &fileName,
+    const QCString &width,
+    const QCString &height,
+    bool hasCaption
+    )
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.find('.'))!=-1)
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("msc_");
+  QCString outDir = Config_getString("DOCBOOK_OUTPUT");
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+  m_t << "<para>" << endl;
+  m_t << "    <figure>" << endl;
+  m_t << "        <title></title>" << endl;
+  m_t << "        <mediaobject>" << endl;
+  m_t << "            <imageobject>" << endl;
+  m_t << "                <imagedata";
+  if (!width.isEmpty())
+  {
+    m_t << " width=\"";
+    m_t << width;
+    m_t << "\"";
+  }
+  else if (!height.isEmpty())
+  {
+    m_t << " depth=\"";
+    m_t << height;
+    m_t << "\"";
+  }
+  m_t << " align=\"center\" fileref=\"" << baseName << ".png" << "\">";
+  m_t << "</imagedata>" << endl;
+  m_t << "            </imageobject>" << endl;
+  if (hasCaption)
+  {
+    m_t << "        <caption>" << endl;
+  }
+}
+
+void DocbookDocVisitor::endDiaFile(bool hasCaption)
 {
   if (m_hide) return;
   m_t << "endl";

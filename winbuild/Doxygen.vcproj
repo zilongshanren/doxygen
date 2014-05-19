@@ -19,28 +19,66 @@
 		<ToolFile
 			RelativePath=".\Lex.rules"
 		/>
+		<ToolFile
+			RelativePath=".\Settings.rules"
+		/>
+		<ToolFile
+			RelativePath=".\Unistd.rules"
+		/>
+		<ToolFile
+			RelativePath=".\Version.rules"
+		/>
+		<ToolFile
+			RelativePath=".\Config.rules"
+		/>
+		<ToolFile
+			RelativePath=".\Gen_head.rules"
+		/>
+		<ToolFile
+			RelativePath=".\Languages.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\bin\Debug"
-			IntermediateDirectory=".\Debug"
+			IntermediateDirectory=".\Debug\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="version.bat"
+			/>
+			<Tool
+				Name="Config_dw"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Unistd"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
 				Name="Lex"
-				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -50,22 +88,22 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug\Doxygen.tlb"
+				TypeLibraryName=".\Debug\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/Doxygen.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				PrecompiledHeaderFile=".\Debug\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Debug\doxygen/"
+				ObjectFile=".\Debug\doxygen/"
+				ProgramDataBaseFileName=".\Debug\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -89,9 +127,9 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Debug"
 				GenerateManifest="false"
-				IgnoreDefaultLibraryNames="libcmt.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/Doxygen.pdb"
+				ProgramDatabaseFile=".\Debug\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -110,7 +148,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/Doxygen.bsc"
+				OutputFile=".\Debug\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -125,19 +163,40 @@
 		<Configuration
 			Name="Debug|x64"
 			OutputDirectory="..\bin\Debug64"
-			IntermediateDirectory=".\Debug64"
+			IntermediateDirectory=".\Debug64\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="version.bat"
+			/>
+			<Tool
+				Name="Config_dw"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Unistd"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
 			/>
 			<Tool
 				Name="Lex"
@@ -151,22 +210,22 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Debug64\Doxygen.tlb"
+				TypeLibraryName=".\Debug64\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 /bigobj"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
-				AssemblerListingLocation=".\Debug64/"
-				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64/"
+				PrecompiledHeaderFile=".\Debug64\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Debug64\doxygen/"
+				ObjectFile=".\Debug64\doxygen/"
+				ProgramDataBaseFileName=".\Debug64\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -191,7 +250,7 @@
 				AdditionalLibraryDirectories="Debug64"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug64/Doxygen.pdb"
+				ProgramDatabaseFile=".\Debug64\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -210,7 +269,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug64/Doxygen.bsc"
+				OutputFile=".\Debug64\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -225,23 +284,43 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\bin\Release"
-			IntermediateDirectory=".\Release"
+			IntermediateDirectory=".\Release\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="version.bat"
+			/>
+			<Tool
+				Name="Config_dw"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Unistd"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
 				Name="Lex"
-				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -251,7 +330,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release\Doxygen.tlb"
+				TypeLibraryName=".\Release\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -261,15 +340,15 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/Doxygen.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile=".\Release\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Release\doxygen/"
+				ObjectFile=".\Release\doxygen/"
+				ProgramDataBaseFileName=".\Release\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -293,7 +372,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release"
-				ProgramDatabaseFile=".\Release/Doxygen.pdb"
+				ProgramDatabaseFile=".\Release\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -312,7 +391,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/Doxygen.bsc"
+				OutputFile=".\Release\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -327,19 +406,40 @@
 		<Configuration
 			Name="Release|x64"
 			OutputDirectory="..\bin\Release64"
-			IntermediateDirectory=".\Release64"
+			IntermediateDirectory=".\Release64\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="version.bat"
+			/>
+			<Tool
+				Name="Config_dw"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Unistd"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
 			/>
 			<Tool
 				Name="Lex"
@@ -353,7 +453,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Release64\Doxygen.tlb"
+				TypeLibraryName=".\Release64\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -363,15 +463,15 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release64/Doxygen.pch"
-				AssemblerListingLocation=".\Release64/"
-				ObjectFile=".\Release64/"
-				ProgramDataBaseFileName=".\Release64/"
+				PrecompiledHeaderFile=".\Release64\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Release64\doxygen/"
+				ObjectFile=".\Release64\doxygen/"
+				ProgramDataBaseFileName=".\Release64\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -395,7 +495,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release64"
-				ProgramDatabaseFile=".\Release64/Doxygen.pdb"
+				ProgramDatabaseFile=".\Release64\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -414,7 +514,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release64/Doxygen.bsc"
+				OutputFile=".\Release64\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -439,48 +539,8 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\ce_lex.cpp"
+				RelativePath="$(IntDir)\ce_parse.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\src\ce_parse.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\cite.cpp"
@@ -493,386 +553,50 @@
 			<File
 				RelativePath="..\src\classdef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\classlist.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\cmdmapper.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\code.cpp"
+				RelativePath="$(IntDir)\code.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\code.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\commentcnv.cpp"
+				RelativePath="$(IntDir)\commentcnv.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\commentcnv.l"
+				RelativePath="$(IntDir)\commentscan.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\src\commentscan.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\commentscan.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\condparser.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\config.cpp"
+				RelativePath="$(IntDir)\config.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\config.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\configoptions.cpp"
+				RelativePath="$(IntDir)\configoptions.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\constexp.l"
+				RelativePath="$(IntDir)\constexp.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
-						AdditionalDependencies="$(InputDir)constexp.l"
-						Output="$(InputDir)ce_lex.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
-						AdditionalDependencies="$(InputDir)constexp.l"
-						Output="$(InputDir)ce_lex.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
-						AdditionalDependencies="$(InputDir)constexp.l"
-						Output="$(InputDir)ce_lex.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
-						AdditionalDependencies="$(InputDir)constexp.l"
-						Output="$(InputDir)ce_lex.cpp"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\constexp.y"
+				RelativePath="..\src\context.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\cppvalue.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\dbusxmlscanner.cpp"
@@ -881,322 +605,38 @@
 			<File
 				RelativePath="..\src\debug.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\declinfo.cpp"
+				RelativePath="$(IntDir)\declinfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\declinfo.l"
+				RelativePath="$(IntDir)\defargs.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\defargs.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\defargs.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\defgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\define.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\definition.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\dia.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\diagram.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\dirdef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\docbookgen.cpp"
@@ -1209,202 +649,22 @@
 			<File
 				RelativePath="..\src\docparser.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\docsets.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\doctokenizer.cpp"
+				RelativePath="$(IntDir)\doctokenizer.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\src\doctokenizer.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\dot.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\doxygen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\eclipsehelp.cpp"
@@ -1413,242 +673,26 @@
 			<File
 				RelativePath="..\src\entry.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\filedef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\filename.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\formula.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\fortrancode.cpp"
+				RelativePath="$(IntDir)\fortrancode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\fortrancode.l"
+				RelativePath="$(IntDir)\fortranscanner.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\fortranscanner.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\fortranscanner.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\ftextstream.cpp"
@@ -1657,442 +701,50 @@
 			<File
 				RelativePath="..\src\ftvhelp.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\groupdef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\htags.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\htmldocvisitor.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\htmlentity.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\htmlgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\htmlhelp.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\image.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\index.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\language.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\latexdocvisitor.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\latexgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\layout.cpp"
@@ -2105,162 +757,18 @@
 			<File
 				RelativePath="..\src\logos.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\main.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\mandocvisitor.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\mangen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\markdown.cpp"
@@ -2273,242 +781,26 @@
 			<File
 				RelativePath="..\libmd5\md5.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\memberdef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\membergroup.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\memberlist.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\membername.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\message.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\msc.cpp"
@@ -2517,42 +809,6 @@
 			<File
 				RelativePath="..\src\namespacedef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\objcache.cpp"
@@ -2561,162 +817,18 @@
 			<File
 				RelativePath="..\src\outputgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\outputlist.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\pagedef.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\perlmodgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\portable.cpp"
@@ -2727,447 +839,47 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\pre.cpp"
+				RelativePath="$(IntDir)\pre.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\pre.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex  -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\pycode.cpp"
+				RelativePath="$(IntDir)\pycode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\pycode.l"
+				RelativePath="$(IntDir)\pyscanner.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\pyscanner.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\pyscanner.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\qhp.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\qhpxmlwriter.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\reflist.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\rtfdocvisitor.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\rtfgen.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\rtfstyle.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\scanner.cpp"
+				RelativePath="$(IntDir)\scanner.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\src\scanner.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\searchindex.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\store.cpp"
 				>
 			</File>
 			<File
@@ -3175,47 +887,225 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\store.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\tagreader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\tclscanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\template.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\textdocvisitor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\textdocvisitor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\tooltip.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\util.cpp"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\version.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdldocgen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\xmldocvisitor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\xmlgen.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Yacc Files"
+			Filter="y"
+			>
+			<File
+				RelativePath="..\src\constexp.y"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Lex Files"
+			Filter="l"
+			>
+			<File
+				RelativePath="..\src\code.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\commentcnv.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\commentscan.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\config.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\constexp.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\declinfo.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\defargs.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\doctokenizer.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortrancode.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\tclscanner.cpp"
+				RelativePath="..\src\fortranscanner.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Lex"
+						Case="true"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\pre.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pycode.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pyscanner.l"
+				>
+			</File>
+			<File
+				RelativePath="..\src\scanner.l"
 				>
 			</File>
 			<File
@@ -3226,7 +1116,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3234,7 +1124,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3242,7 +1132,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3250,131 +1140,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\textdocvisitor.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\translator.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\util.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\version.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Case="true"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3386,7 +1152,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3394,7 +1160,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3402,7 +1168,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3410,53 +1176,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\vhdldocgen.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\vhdlparser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\vhdlparser.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\vhdlparser.y"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\vhdlparser.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\vhdlparser.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\vhdlparser.cpp"
+						Case="true"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3468,7 +1188,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3476,7 +1196,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3484,7 +1204,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3492,87 +1212,980 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						Case="true"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Python Files"
+			>
+			<File
+				RelativePath="..\src\lang_cfg.py"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Languages"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\xmldocvisitor.cpp"
+				RelativePath="..\src\settings.py"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="unistd.py"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\version.py"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="XML Files"
+			Filter="xml"
+			>
+			<File
+				RelativePath="..\src\config.xml"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Generating header Files"
+			>
+			<File
+				RelativePath="..\src\bib2xhtml.pl"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\xmlgen.cpp"
+				RelativePath="..\src\compound.xsd"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|x64"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\doxygen.bst"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\doxygen.css"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\doxygen.sty"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\dynsections.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\extsearch.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\footer.html"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\header.html"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\index.xsd"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_fx.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p1.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p2.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p3.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_pt.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_ui.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\layout_default.xml"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\navtree.css"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\navtree.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\resize.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search.css"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search_functions.php"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search_opensearch.php"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\svgpan.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3586,7 +2199,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\bib2xhtml.h"
+				RelativePath="$(IntDir)\bib2xhtml.pl.h"
 				>
 			</File>
 			<File
@@ -3630,7 +2243,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\compound_xsd.h"
+				RelativePath="$(IntDir)\compound_xsd.h"
 				>
 			</File>
 			<File
@@ -3643,6 +2256,10 @@
 			</File>
 			<File
 				RelativePath="..\src\constexp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\context.h"
 				>
 			</File>
 			<File
@@ -3675,6 +2292,10 @@
 			</File>
 			<File
 				RelativePath="..\src\definition.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\dia.h"
 				>
 			</File>
 			<File
@@ -3718,11 +2339,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\doxygen_bst.h"
+				RelativePath="$(IntDir)\doxygen_bst.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\doxygen_css.h"
+				RelativePath="$(IntDir)\doxygen_css.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\doxygen_sty.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\dynsections_js.h"
 				>
 			</File>
 			<File
@@ -3738,11 +2367,19 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\extsearch_js.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\filedef.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\filename.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\footer_html.h"
 				>
 			</File>
 			<File
@@ -3770,6 +2407,10 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\header_html.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\htags.h"
 				>
 			</File>
@@ -3779,6 +2420,10 @@
 			</File>
 			<File
 				RelativePath="..\src\htmldocvisitor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\htmlentity.h"
 				>
 			</File>
 			<File
@@ -3802,7 +2447,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\index_xsd.h"
+				RelativePath="$(INtDir)\index_xsd.h"
 				>
 			</File>
 			<File
@@ -3810,7 +2455,31 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\lang_cfg.h"
+				RelativePath="$(IntDir)\jquery_fx_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p1_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p2_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p3_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_pt_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_ui_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\lang_cfg.h"
 				>
 			</File>
 			<File
@@ -3827,6 +2496,10 @@
 			</File>
 			<File
 				RelativePath="..\src\layout.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\layout_default_xml.h"
 				>
 			</File>
 			<File
@@ -3894,7 +2567,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\navtree_js.h"
+				RelativePath="$(IntDir)\navtree_js.h"
 				>
 			</File>
 			<File
@@ -3958,6 +2631,10 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\resize_js.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\rtfdocvisitor.h"
 				>
 			</File>
@@ -3974,15 +2651,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_css.h"
+				RelativePath="$(IntDir)\search_css.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_js.h"
+				RelativePath="$(IntDir)\search_js.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_php.h"
+				RelativePath="$(IntDir)\search_functionsjs.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\search_opensearch_js.h"
 				>
 			</File>
 			<File
@@ -3994,7 +2675,15 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\settings.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\sortdict.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\svgpan_js.h"
 				>
 			</File>
 			<File
@@ -4010,7 +2699,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\textdocvisitor.h"
+				RelativePath="..\src\template.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\tooltip.h"
 				>
 			</File>
 			<File
@@ -4019,6 +2712,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_adapter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translator_am.h"
 				>
 			</File>
 			<File
@@ -4114,6 +2811,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\translator_lv.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\translator_mk.h"
 				>
 			</File>
@@ -4146,10 +2847,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\translator_se.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\translator_si.h"
 				>
 			</File>
@@ -4159,6 +2856,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_sr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translator_sv.h"
 				>
 			</File>
 			<File
@@ -4182,52 +2883,8 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\translatordecoder.h"
+				RelativePath="$(IntDir)\unistd.h"
 				>
-			</File>
-			<File
-				RelativePath="..\src\unistd.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\ce_lex.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\ce_lex.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\ce_lex.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\ce_lex.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\util.h"
@@ -4238,7 +2895,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlcode.cpp"
+				RelativePath="$(IntDir)\vhdlcode.cpp"
 				>
 			</File>
 			<File
@@ -4250,7 +2907,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlscanner.cpp"
+				RelativePath="$(IntDir)\vhdlscanner.cpp"
 				>
 			</File>
 			<File

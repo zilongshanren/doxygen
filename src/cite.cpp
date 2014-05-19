@@ -26,11 +26,11 @@
 //--------------------------------------------------------------------------
 
 static const char *doxygen_bst =
-#include "doxygen_bst.h"
+#include "doxygen.bst.h"
 ;
 
 static const char *bib2xhtml_pl =
-#include "bib2xhtml.h"
+#include "bib2xhtml.pl.h"
 ;
 
 //--------------------------------------------------------------------------
@@ -94,10 +94,15 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
   QCString style = Config_getString("LATEX_BIB_STYLE");
   if (style.isEmpty())
     style="plain";
+  QCString unit;
+  if (Config_getBool("COMPACT_LATEX"))
+    unit = "section";
+  else
+    unit = "chapter";
   t << "% Bibliography\n"
        "\\newpage\n"
        "\\phantomsection\n"
-       "\\addcontentsline{toc}{part}{" << theTranslator->trCiteReferences() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n"
        "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{" << getListOfBibFiles(",",TRUE) << "}\n"
        "\n";
@@ -234,6 +239,7 @@ void CiteDict::generatePage() const
   QFileInfo fi(citeListFile);
   QCString input(fi.size()+1);
   f.readBlock(input.data(),fi.size());
+  f.close();
   input.at(fi.size())='\0';
   int p=0,s;
   //printf("input=[%s]\n",input.data());
@@ -305,7 +311,7 @@ void CiteDict::generatePage() const
   thisDir.remove(bib2xhtmlFile);
   while (!tempFiles.isEmpty()) 
   {
-    QCString *s=tempFiles.take();
+    QCString *s=tempFiles.take(0);
     thisDir.remove(*s);
   }
 }

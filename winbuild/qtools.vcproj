@@ -19,13 +19,14 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory=".\Release\qtools"
+			IntermediateDirectory=".\Release\qtools"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -53,10 +54,10 @@
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/qtools.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile=".\Release\qtools/qtools.pch"
+				AssemblerListingLocation=".\Release\qtools/"
+				ObjectFile=".\Release\qtools/"
+				ProgramDatabaseFileName=".\Release\qtools\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -86,7 +87,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/qtools.bsc"
+				OutputFile=".\Release\qtools/qtools.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -97,13 +98,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory=".\Release64"
-			IntermediateDirectory=".\Release64"
+			OutputDirectory=".\Release64\qtools"
+			IntermediateDirectory=".\Release64\qtools"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -132,10 +134,10 @@
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release64/qtools.pch"
-				AssemblerListingLocation=".\Release64/"
-				ObjectFile=".\Release64/"
-				ProgramDataBaseFileName=".\Release64/"
+				PrecompiledHeaderFile=".\Release64\qtools/qtools.pch"
+				AssemblerListingLocation=".\Release64\qtools/"
+				ObjectFile=".\Release64\qtools/"
+				ProgramDatabaseFileName=".\Release64\qtools\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -165,7 +167,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release64/qtools.bsc"
+				OutputFile=".\Release64\qtools/qtools.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -176,13 +178,14 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory=".\Debug\qtools"
+			IntermediateDirectory=".\Debug\qtools"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -208,10 +211,10 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/qtools.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				PrecompiledHeaderFile=".\Debug\qtools/qtools.pch"
+				AssemblerListingLocation=".\Debug\qtools/"
+				ObjectFile=".\Debug\qtools/"
+				ProgramDatabaseFileName=".\Debug\qtools\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -241,7 +244,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/qtools.bsc"
+				OutputFile=".\Debug\qtools/qtools.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -252,13 +255,14 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory=".\Debug64"
-			IntermediateDirectory=".\Debug64"
+			OutputDirectory=".\Debug64\qtools"
+			IntermediateDirectory=".\Debug64\qtools"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -285,10 +289,10 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/qtools.pch"
-				AssemblerListingLocation=".\Debug64/"
-				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64/"
+				PrecompiledHeaderFile=".\Debug64\qtools/qtools.pch"
+				AssemblerListingLocation=".\Debug64\qtools/"
+				ObjectFile=".\Debug64\qtools/"
+				ProgramDatabaseFileName=".\Debug64\qtools\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -318,7 +322,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug64/qtools.bsc"
+				OutputFile=".\Debug64\qtools/qtools.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

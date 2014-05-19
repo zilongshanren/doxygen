@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -94,11 +94,13 @@ class MemberDef : public Definition
     int initializerLines() const;
     uint64 getMemberSpecifiers() const;
     MemberList *getSectionList(Definition *d) const;
+    QCString    displayDefinition() const;
 
     // scope query members
     ClassDef *getClassDef() const;
     FileDef  *getFileDef() const;
     NamespaceDef* getNamespaceDef() const;
+    ClassDef *accessorClass() const;
 
     // grabbing the property read/write accessor names
     const char *getReadAccessor() const;
@@ -188,6 +190,7 @@ class MemberDef : public Definition
     bool hasMultiLineInitializer() const;
     bool protectionVisible() const;
     bool showInCallGraph() const;
+    bool isStrongEnumValue() const;
 
     // output info
     bool isLinkableInProject() const;
@@ -234,6 +237,7 @@ class MemberDef : public Definition
 
     bool fromAnonymousScope() const;
     bool anonymousDeclShown() const;
+    MemberDef *fromAnonymousMember() const;
 
     // callgraph related members
     bool hasCallGraph() const;
@@ -259,6 +263,16 @@ class MemberDef : public Definition
     MemberDef *categoryRelation() const;
 
     QCString displayName(bool=TRUE) const;
+    QCString getDeclType() const;
+    void getLabels(QStrList &sl,Definition *container) const;
+
+    const ArgumentList *typeConstraints() const;
+
+    // overrules
+    QCString documentation() const;
+    QCString briefDescription(bool abbr=FALSE) const;
+    QCString fieldType() const;
+
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -404,7 +418,7 @@ class MemberDef : public Definition
     void _computeLinkableInProject();
     void _computeIsConstructor();
     void _computeIsDestructor();
-    void _getLabels(QStrList &sl,Definition *container) const;
+    void _writeGroupInclude(OutputList &ol,bool inGroup);
     void _writeCallGraph(OutputList &ol);
     void _writeCallerGraph(OutputList &ol);
     void _writeReimplements(OutputList &ol);

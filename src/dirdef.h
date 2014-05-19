@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,7 +37,7 @@ class DirDef;
 class DirList : public QList<DirDef>
 {
   public:
-   int compareItems(QCollection::Item item1,QCollection::Item item2);
+   int compareValues(const DirDef *item1,const DirDef *item2) const;
 };
 
 /** A model of a directory symbol. */
@@ -66,6 +66,8 @@ class DirDef : public Definition
     const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
     bool isParentOf(DirDef *dir) const;
     bool depGraphIsTrivial() const;
+    QCString shortTitle() const;
+    bool hasDetailedDescription() const;
 
     // generate output
     void writeDocumentation(OutputList &ol);
@@ -121,7 +123,8 @@ class FilePairDict : public SDict<FilePair>
 {
   public:
     FilePairDict(int size) : SDict<FilePair>(size) {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2);
+  private:
+    int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
 
 /** Usage information of a directory. */
@@ -159,9 +162,9 @@ class DirRelation
     UsedDir *m_dst;
 };
 
-inline int DirList::compareItems(QCollection::Item item1,QCollection::Item item2)
+inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
 {
-  return qstricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+  return qstricmp(item1->shortName(),item2->shortName());
 }
 
 /** A sorted dictionary of DirDef objects. */
@@ -169,9 +172,9 @@ class DirSDict : public SDict<DirDef>
 {
   public:
     DirSDict(int size) : SDict<DirDef>(size) {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const DirDef *item1,const DirDef *item2) const
     {
-      return qstricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+      return qstricmp(item1->shortName(),item2->shortName());
     }
 };
 

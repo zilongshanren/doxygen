@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -107,6 +107,8 @@ class RTFDocVisitor : public DocVisitor
     void visitPost(DocDotFile *);
     void visitPre(DocMscFile *);
     void visitPost(DocMscFile *);
+    void visitPre(DocDiaFile *);
+    void visitPost(DocDiaFile *);
     void visitPre(DocLink *);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);
@@ -131,6 +133,8 @@ class RTFDocVisitor : public DocVisitor
     void visitPost(DocHtmlBlockQuote *);
     void visitPre(DocVhdlFlow *);
     void visitPost(DocVhdlFlow *);
+    void visitPre(DocParBlock *);
+    void visitPost(DocParBlock *);
 
   private:
 
@@ -150,6 +154,7 @@ class RTFDocVisitor : public DocVisitor
     void popEnabled();
     void writeDotFile(const QCString &fileName);
     void writeMscFile(const QCString &fileName);
+    void writeDiaFile(const QCString &fileName);
 
     //--------------------------------------
     // state variables

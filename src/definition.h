@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -130,22 +130,25 @@ class Definition : public DefinitionIntf
     /*! Returns the anchor within a page where this item can be found */
     virtual QCString anchor() const = 0;
 
-    /*! Returns the name of the source listing of this file. */
-    virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
+    /*! Returns the name of the source listing of this definition. */
+    virtual QCString getSourceFileBase() const;
+
+    /*! Returns the anchor of the source listing of this definition. */
+    virtual QCString getSourceAnchor() const;
 
     /*! Returns the detailed description of this definition */
-    QCString documentation() const;
-    
+    virtual QCString documentation() const;
+
     /*! Returns the line number at which the detailed documentation was found. */
     int docLine() const;
 
-    /*! Returns the file in which the detailed documentation block was found. 
+    /*! Returns the file in which the detailed documentation block was found.
      *  This can differ from getDefFileName().
      */
     QCString docFile() const;
 
     /*! Returns the brief description of this definition. This can include commands. */
-    QCString briefDescription(bool abbreviate=FALSE) const;
+    virtual QCString briefDescription(bool abbreviate=FALSE) const;
 
     /*! Returns a plain text version of the brief description suitable for use
      *  as a tool tip. 
@@ -240,7 +243,7 @@ class Definition : public DefinitionIntf
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    FileDef *getBodyDef();
+    FileDef *getBodyDef() const;
 
     /** Returns the programming language this definition was written in. */
     SrcLangExt getLanguage() const;
@@ -256,6 +259,10 @@ class Definition : public DefinitionIntf
     MemberSDict *getReferencedByMembers() const;
 
     bool hasSections() const;
+    bool hasSources() const;
+
+    /** returns TRUE if this class has a brief description */
+    bool hasBriefDescription() const;
 
     QCString id() const;
 
@@ -349,7 +356,7 @@ class Definition : public DefinitionIntf
     void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
     void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const char *d,const char *docFile,int docLine);
-    bool _docsAlreadyAdded(const QCString &doc);
+    bool _docsAlreadyAdded(const QCString &doc,QCString &sigList);
     DefinitionImpl *m_impl; // internal structure holding all private data
     QCString m_name;
     bool m_isSymbol;
@@ -364,11 +371,9 @@ class DefinitionList : public QList<Definition>, public DefinitionIntf
   public:
     ~DefinitionList() {}
     DefType definitionType() const { return TypeSymbolList; }
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const Definition *item1,const Definition *item2) const
     {
-      return qstricmp(((Definition *)item1)->name(),
-                     ((Definition *)item2)->name()
-                    );
+      return qstricmp(item1->name(),item2->name());
     }
 
 };

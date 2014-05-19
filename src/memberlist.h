@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -36,11 +36,10 @@ class MemberList : public QList<MemberDef>
     MemberList(MemberListType lt);
    ~MemberList();
     MemberListType listType() const { return m_listType; }
-    QCString listTypeAsString() const;
+    static QCString listTypeAsString(MemberListType type);
     bool insert(uint index,const MemberDef *md);
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
-    int compareItems(QCollection::Item item1,QCollection::Item item2);
     int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
     int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
     int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
@@ -63,8 +62,8 @@ class MemberList : public QList<MemberDef>
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                const char *title,const char *subtitle,const DefinitionIntf::DefType compoundType,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               ClassDef *inheritedFrom=0);
-    //added by guanghui
+               ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods);
+    
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE, bool isOmitJsDoc = false, bool isOmitLuaDoc = false);
     void writeSimpleDocumentation(OutputList &ol,Definition *container);
@@ -83,6 +82,7 @@ class MemberList : public QList<MemberDef>
     void unmarshal(StorageIntf *s);
 
   private:
+    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
     int m_varCnt;
     int m_funcCnt;
     int m_enumCnt;
@@ -122,7 +122,8 @@ class MemberSDict : public SDict<MemberDef>
   public:
     MemberSDict(int size=17) : SDict<MemberDef>(size) {}
     virtual ~MemberSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2);
+  private:
+    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
 };
 
 

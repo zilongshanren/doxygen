@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -33,30 +33,25 @@ ClassList::~ClassList()
 {
 }
 
-static int compItems(void *item1,void *item2)
+static int compItems(const ClassDef *c1,const ClassDef *c2)
 {
-  ClassDef *c1=(ClassDef *)item1;
-  ClassDef *c2=(ClassDef *)item2;
   static bool b = Config_getBool("SORT_BY_SCOPE_NAME");
-  //printf("compItems: %d %s<->%s\n",b,c1->name().data(),c2->name().data());
-  if (b) 
-  { 
-     return qstricmp(c1->name(),
-                    c2->name());
+  if (b)
+  {
+     return qstricmp(c1->name(), c2->name());
   }
   else
   {
-     return qstricmp(c1->className(),
-                    c2->className());
+     return qstricmp(c1->className(), c2->className());
   }
 }
 
-int ClassList::compareItems(QCollection::Item item1, QCollection::Item item2)
+int ClassList::compareValues(const ClassDef *item1, const ClassDef *item2) const
 {
   return compItems(item1,item2);
 }
 
-int ClassSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
+int ClassSDict::compareValues(const ClassDef *item1, const ClassDef *item2) const
 {
   return compItems(item1,item2);
 }
@@ -76,13 +71,13 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
     ClassDef *cd=0;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
-      if (cd->name().find('@')==-1 && 
+      if (cd->name().find('@')==-1 &&
           (filter==0 || *filter==cd->compoundType())
          )
       {
         bool isLink = cd->isLinkable();
-        if (isLink || 
-             (!hideUndocClasses && 
+        if (isLink ||
+             (!hideUndocClasses &&
               (!cd->isLocal() || extractLocalClasses)
              )
            )
@@ -107,8 +102,8 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
-      if (cd->name().find('@')==-1 && 
-          !cd->isExtension() && 
+      if (cd->name().find('@')==-1 &&
+          !cd->isExtension() &&
           (cd->protection()!=Private || extractPrivate) &&
           (filter==0 || *filter==cd->compoundType())
          )
@@ -119,7 +114,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     if (found) ol.endMemberList();
   }
 }
-  
+
 void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
 {
   static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -140,7 +135,7 @@ void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
       //  cd->name().data(),cd->getOuterScope(),cd->isEmbeddedInOuterScope(),
       //  container);
 
-      if (cd->name().find('@')==-1 && 
+      if (cd->name().find('@')==-1 &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
           (container==0 || cd->partOfGroups()==0) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group

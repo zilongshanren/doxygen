@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -67,6 +67,7 @@ class DefinitionImpl
     DocInfo   *inbodyDocs; // not exported
     BriefInfo *brief;      // not exported
     BodyInfo  *body;       // not exported
+    QCString   briefSignatures;
     QCString   docSignatures;
 
     QCString localName;      // local (unqualified) name of the definition
@@ -416,8 +417,9 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
 {
   if (!anchorList) return;
   //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
-  SectionInfo *si=anchorList->first();
-  while (si)
+  QListIterator<SectionInfo> it(*anchorList);
+  SectionInfo *si;
+  for (;(si=it.current());++it)
   {
     //printf("Add section `%s' to definition `%s'\n",
     //    si->label.data(),name().data());
@@ -428,7 +430,7 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
       gsi = new SectionInfo(*si);
       Doxygen::sectionDict->append(si->label,gsi);
     }
-    if (m_impl->sectionDict==0) 
+    if (m_impl->sectionDict==0)
     {
       m_impl->sectionDict = new SectionDict(17);
     }
@@ -437,7 +439,6 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
       m_impl->sectionDict->append(gsi->label,gsi);
       gsi->definition = this;
     }
-    si=anchorList->next();
   }
 }
 
@@ -536,7 +537,7 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-bool Definition::_docsAlreadyAdded(const QCString &doc)
+bool Definition::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
 {
   uchar md5_sig[16];
   QCString sigStr(33);
@@ -545,9 +546,11 @@ bool Definition::_docsAlreadyAdded(const QCString &doc)
   QCString docStr = doc.simplifyWhiteSpace();
   MD5Buffer((const unsigned char *)docStr.data(),docStr.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
-  if (m_impl->docSignatures.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
+  //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
+  //    name().data(),doc.data(),sigStr.data(),sigList.data());
+  if (sigList.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
   {
-    m_impl->docSignatures+=":"+sigStr;
+    sigList+=":"+sigStr;
     return FALSE;
   }
   else
@@ -570,7 +573,7 @@ void Definition::_setDocumentation(const char *d,const char *docFile,int docLine
   {
     doc=d;
   }
-  if (!_docsAlreadyAdded(doc))
+  if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
     //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
     if (m_impl->details==0)
@@ -644,29 +647,36 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
     }
   }
 
-  if (m_impl->brief && !m_impl->brief->doc.isEmpty())
+  if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
   {
-      //printf("adding to details\n");
-      _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
-  }
-  else if (!_docsAlreadyAdded(brief))
-  {
-    //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-    if (m_impl->brief==0)
+    if (m_impl->brief && !m_impl->brief->doc.isEmpty())
     {
-      m_impl->brief = new BriefInfo;
-    }
-    m_impl->brief->doc=brief;
-    if (briefLine!=-1)
-    {
-      m_impl->brief->file = briefFile;
-      m_impl->brief->line = briefLine;
+       //printf("adding to details\n");
+       _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
     }
     else
     {
-      m_impl->brief->file = briefFile;
-      m_impl->brief->line = 1;
+      //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
+      if (m_impl->brief==0)
+      {
+        m_impl->brief = new BriefInfo;
+      }
+      m_impl->brief->doc=brief;
+      if (briefLine!=-1)
+      {
+        m_impl->brief->file = briefFile;
+        m_impl->brief->line = briefLine;
+      }
+      else
+      {
+        m_impl->brief->file = briefFile;
+        m_impl->brief->line = 1;
+      }
     }
+  }
+  else
+  {
+    //printf("do nothing!\n");
   }
 }
 
@@ -867,24 +877,53 @@ bool readCodeFragment(const char *fileName,
   return found;
 }
 
+QCString Definition::getSourceFileBase() const
+{ 
+  ASSERT(definitionType()!=Definition::TypeFile); // file overloads this method
+  QCString fn;
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  if (sourceBrowser && 
+      m_impl->body && m_impl->body->startLine!=-1 && m_impl->body->fileDef)
+  {
+    fn = m_impl->body->fileDef->getSourceFileBase();
+  }
+  return fn;
+}
+
+QCString Definition::getSourceAnchor() const
+{
+  QCString anchorStr;
+  if (m_impl->body && m_impl->body->startLine!=-1)
+  {
+    if (Htags::useHtags)
+    {
+      anchorStr.sprintf("L%d",m_impl->body->startLine);
+    }
+    else
+    {
+      anchorStr.sprintf("l%05d",m_impl->body->startLine);
+    }
+  }
+  return anchorStr;
+}
+
 /*! Write a reference to the source code defining this definition */
 void Definition::writeSourceDef(OutputList &ol,const char *)
 {
-  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
   static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (sourceBrowser && 
-      m_impl->body && m_impl->body->startLine!=-1 && m_impl->body->fileDef)
+  QCString fn = getSourceFileBase();
+  if (!fn.isEmpty())
   {
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
     int lineMarkerPos = refText.find("@0");
     int fileMarkerPos = refText.find("@1");
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
-      QCString lineStr,anchorStr;
+      QCString lineStr;
       lineStr.sprintf("%d",m_impl->body->startLine);
-      anchorStr.sprintf(Htags::useHtags ? "L%d" : "l%05d",m_impl->body->startLine);
+      QCString anchorStr = getSourceAnchor();
       ol.startParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
@@ -898,8 +937,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
           ol.disable(OutputGenerator::Latex);
         }
         // write line link (HTML, LaTeX optionally)
-        ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
-            anchorStr,lineStr);
+        ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
@@ -921,9 +959,8 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write line link (HTML, LaTeX optionally)
-        ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
-            0,m_impl->body->fileDef->name());
+        // write file link (HTML, LaTeX optionally)
+        ol.writeObjectLink(0,fn,0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
@@ -950,8 +987,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
           ol.disable(OutputGenerator::Latex);
         }
         // write file link (HTML only)
-        ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
-            0,m_impl->body->fileDef->name());
+        ol.writeObjectLink(0,fn,0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
@@ -975,8 +1011,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         }
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
-            anchorStr,lineStr);
+        ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         if (latexSourceCode) 
@@ -1015,6 +1050,13 @@ void Definition::setBodyDef(FileDef *fd)
   m_impl->body->fileDef=fd; 
 }
 
+bool Definition::hasSources() const
+{
+  return m_impl->body && m_impl->body->startLine!=-1 &&
+         m_impl->body->endLine>=m_impl->body->startLine &&
+         m_impl->body->fileDef;
+}
+
 /*! Write code of this definition into the documentation */
 void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
@@ -1022,9 +1064,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        m_startBodyLine,m_endBodyLine,m_bodyDef);
-  if (inlineSources && 
-      m_impl->body && m_impl->body->startLine!=-1 && 
-      m_impl->body->endLine>=m_impl->body->startLine && m_impl->body->fileDef)
+  if (inlineSources && hasSources())
   {
     QCString codeFragment;
     int actualStart=m_impl->body->startLine,actualEnd=m_impl->body->endLine;
@@ -1044,6 +1084,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
                        codeFragment,     // input
+                       m_impl->lang,     // lang
                        FALSE,            // isExample
                        0,                // exampleName
                        m_impl->body->fileDef,  // fileDef
@@ -1668,6 +1709,7 @@ QCString abbreviate(const char *s,const char *name)
 
 QCString Definition::briefDescription(bool abbr) const 
 { 
+  //printf("%s::briefDescription(%d)='%s'\n",name().data(),abbr,m_impl->brief?m_impl->brief->doc.data():"<none>");
   return m_impl->brief ? 
          (abbr ? abbreviate(m_impl->brief->doc,displayName()) : m_impl->brief->doc) :
          QCString(""); 
@@ -1778,7 +1820,7 @@ int Definition::getEndBodyLine() const
   return m_impl->body ? m_impl->body->endLine : -1; 
 }
 
-FileDef *Definition::getBodyDef()                
+FileDef *Definition::getBodyDef() const
 { 
   return m_impl->body ? m_impl->body->fileDef : 0; 
 }
@@ -1837,6 +1879,12 @@ void Definition::setLanguage(SrcLangExt lang)
 void Definition::_setSymbolName(const QCString &name) 
 { 
   m_symbolName=name; 
+}
+
+bool Definition::hasBriefDescription() const
+{
+  static bool briefMemberDesc = Config_getBool("BRIEF_MEMBER_DESC");
+  return !briefDescription().isEmpty() && briefMemberDesc;
 }
 
 

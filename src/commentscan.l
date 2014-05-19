@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -118,6 +118,10 @@ static bool handleToc(const QCString &s);
 static bool handleInherit(const QCString &);
 static bool handleExtends(const QCString &);
 static bool handleCopyDoc(const QCString &);
+static bool handleCopyBrief(const QCString &);
+static bool handleCopyDetails(const QCString &);
+static bool handleParBlock(const QCString &);
+static bool handleEndParBlock(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
 
@@ -172,15 +176,17 @@ static DocCmdMap docCmdMap[] =
   { "relates",         &handleRelated,          TRUE  },
   { "relatedalso",     &handleRelatedAlso,      TRUE  },
   { "relatesalso",     &handleRelatedAlso,      TRUE  },
+  { "parblock",        &handleParBlock,         TRUE  },
+  { "endparblock",     &handleEndParBlock,      TRUE  },
   { "refitem",         &handleRefItem,          TRUE  },
-  { "cite",            &handleCite,             TRUE  },
+  { "cite",            &handleCite,             FALSE },
   { "subpage",         &handleSubpage,          TRUE  },
   { "section",         &handleSection,          TRUE  },
   { "subsection",      &handleSection,          TRUE  },
   { "subsubsection",   &handleSection,          TRUE  },
   { "paragraph",       &handleSection,          TRUE  },
   { "anchor",          &handleAnchor,           TRUE  },
-  { "verbatim",        &handleFormatBlock,      TRUE },
+  { "verbatim",        &handleFormatBlock,      TRUE  },
   { "latexonly",       &handleFormatBlock,      FALSE },
   { "htmlonly",        &handleFormatBlock,      FALSE },
   { "xmlonly",         &handleFormatBlock,      FALSE },
@@ -222,8 +228,8 @@ static DocCmdMap docCmdMap[] =
   { "author",          0,                       TRUE  },
   { "authors",         0,                       TRUE  },
   { "copydoc",         &handleCopyDoc,          TRUE  },
-  { "copybrief",       0,                       FALSE },
-  { "copydetails",     0,                       TRUE  },
+  { "copybrief",       &handleCopyBrief,        FALSE },
+  { "copydetails",     &handleCopyDetails,      TRUE  },
   { "copyright",       0,                       TRUE  },
   { "date",            0,                       TRUE  },
   { "dotfile",         0,                       TRUE  },
@@ -232,6 +238,7 @@ static DocCmdMap docCmdMap[] =
   { "include",         0,                       TRUE  },
   { "includelineno",   0,                       TRUE  },
   { "invariant",       0,                       TRUE  },
+  { "latexinclude",    0,                       FALSE },
   { "li",              0,                       TRUE  },
   { "line",            0,                       TRUE  },
   { "note",            0,                       TRUE  },
@@ -416,12 +423,14 @@ static bool             parseMore;
 static int              g_condCount;
 
 static int              g_commentCount;
-static bool             g_spaceBeforeCmd;
-static bool             g_spaceBeforeIf;
+static QCString         g_spaceBeforeCmd;
+static QCString         g_spaceBeforeIf;
 static QCString         g_copyDocArg;
 
 static QCString         g_guardExpr;
 static int              g_roundCount;
+
+static bool             g_insideParBlock;
 
 //-----------------------------------------------------------------------------
 
@@ -439,6 +448,7 @@ static void initParser()
   g_sectionLabel.resize(0);
   g_sectionTitle.resize(0);
   g_memberGroupHeader.resize(0);
+  g_insideParBlock = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -548,7 +558,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     item->text += " <p>";
     if (Doxygen::markdownSupport)
     {
-      item->text += processMarkdown(yyFileName,current,outputXRef);
+      item->text += processMarkdown(yyFileName,yyLineNr,current,outputXRef);
     }
     else
     {
@@ -570,7 +580,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     ASSERT(item!=0);
     if (Doxygen::markdownSupport)
     {
-      item->text = processMarkdown(yyFileName,current,outputXRef);
+      item->text = processMarkdown(yyFileName,yyLineNr,current,outputXRef);
     }
     else
     {
@@ -588,11 +598,26 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     {
       docEntry->doc += cmdString;
     }
-    SectionInfo *si=new SectionInfo(listName,anchorLabel,
-	                            g_sectionTitle,SectionInfo::Anchor,
-                                    g_sectionLevel);
-    Doxygen::sectionDict->append(anchorLabel,si);
-    docEntry->anchors->append(si);
+    SectionInfo *si = Doxygen::sectionDict->find(anchorLabel);
+    if (si)
+    {
+      if (si->lineNr != -1)
+      {
+        warn(listName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel,si->fileName.data(),si->lineNr);
+      }
+      else
+      {
+        warn(listName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel,si->fileName.data());
+      }
+    }
+    else
+    {
+      si=new SectionInfo(listName,yyLineNr,anchorLabel,
+                         g_sectionTitle,SectionInfo::Anchor,
+                         g_sectionLevel);
+      Doxygen::sectionDict->append(anchorLabel,si);
+      docEntry->anchors->append(si);
+    }
   }
   outputXRef.resize(0);
 }
@@ -638,18 +663,32 @@ static SectionInfo::SectionType sectionLevelToType(int level)
 
 static void addSection()
 {
-  // create a new section element
-  g_sectionTitle+=yytext;
-  g_sectionTitle=g_sectionTitle.stripWhiteSpace();
-  SectionInfo *si = new SectionInfo(yyFileName,g_sectionLabel,
+  SectionInfo *si = Doxygen::sectionDict->find(g_sectionLabel);
+  if (si)
+  {
+    if (si->lineNr != -1)
+    {
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",g_sectionLabel.data(),si->fileName.data(),si->lineNr);
+    }
+    else
+    {
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",g_sectionLabel.data(),si->fileName.data());
+    }
+  }
+  else
+  {
+    // create a new section element
+    g_sectionTitle+=yytext;
+    g_sectionTitle=g_sectionTitle.stripWhiteSpace();
+    si = new SectionInfo(yyFileName,yyLineNr,g_sectionLabel,
                           g_sectionTitle,sectionLevelToType(g_sectionLevel),g_sectionLevel);
 
-  // add section to this entry
-  current->anchors->append(si);
+    // add section to this entry
+    current->anchors->append(si);
 
-  // add section to the global dictionary
-  Doxygen::sectionDict->append(g_sectionLabel,si);
-
+    // add section to the global dictionary
+    Doxygen::sectionDict->append(g_sectionLabel,si);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -845,7 +884,7 @@ DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
 DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
-DCMD5     ("latexonly"|"li"|"line"|"manonly"|"name") 
+DCMD5     ("latexinclude"|"latexonly"|"li"|"line"|"manonly"|"name")
 DCMD6     ("note"|"par"|"paragraph"|"param"|"post")
 DCMD7     ("pre"|"remarks"|(("relate"[sd])("also")?))
 DCMD8     ("remarks"|("return"[s]?)|"retval"|"sa"|"section")
@@ -882,6 +921,7 @@ LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 CITEID    [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
+TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
@@ -1025,6 +1065,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(HtmlComment);
 					}
 <Comment>{B}*{CMD}"endinternal"{B}*	{
+                                          addOutput("\\endinternal "); 
                                           if (!inInternalDocs)
   					    warn(yyFileName,yyLineNr,
                                                "found \\endinternal without matching \\internal"
@@ -1035,17 +1076,17 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           // the {B}* in the front was added for bug620924
   					  QCString cmdName = QCString(yytext).stripWhiteSpace().data()+1;
 					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
-					  g_spaceBeforeCmd = yytext[0]==' ' || yytext[0]=='\t';
 					  if (cmdPtr) // special action is required
 					  {
-					    if (cmdPtr->endsBrief)
+                                            int i=0;
+                                            while (yytext[i]==' ' || yytext[i]=='\t') i++;
+					    g_spaceBeforeCmd = QCString(yytext).left(i);
+					    if (cmdPtr->endsBrief && inContext!=OutputXRef) 
 					    { 
 					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
 					    }
-                                            int i=0;
-                                            while (yytext[i]==' ' || yytext[i]=='\t') i++;
                                             //if (i>0) addOutput(QCString(yytext).left(i)); // removed for bug 689341
 					    if (cmdPtr->func && cmdPtr->func(cmdName))
 					    {
@@ -1069,7 +1110,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    {
 					      // command without handler, to be processed
 					      // later by parsedoc.cpp
-					      addOutput(yytext+i);
+					      addOutput(yytext);
 					    }
 					  }
 					  else // command not relevant
@@ -1163,6 +1204,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{B}*/\n { // horizontal line (dashed)
   				          addOutput(yytext); 
                                         }
+<Comment>{CMD}"---"                     { // escaped mdash
+                                          addOutput(yytext);
+                                        }
+<Comment>{CMD}"--"                      { // escaped mdash
+                                          addOutput(yytext);
+                                        }
 <Comment>"---"                          { // mdash
                                           addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&mdash;");
                                         }
@@ -1192,7 +1239,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  if (inContext==OutputXRef)
 					  {
 					    // see bug 613024, we need to put the newlines after ending the XRef section.
-					    setOutput(OutputDoc);
+					    if (!g_insideParBlock) setOutput(OutputDoc);
                                             int i;
                                             for (i=0;i<yyleng;)
                                             {
@@ -1344,6 +1391,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ------ handle argument of class/struct/union command --------------- */
 
+<ClassDocArg1>{SCOPENAME}{TMPLSPEC}     { 
+  					  current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
+					  BEGIN( ClassDocArg2 );
+                                        }
 <ClassDocArg1>{SCOPENAME}		{ // first argument
   					  current->name = substitute(yytext,".","::");
 					  if (current->section==Entry::PROTOCOLDOC_SEC)
@@ -1690,9 +1741,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}			{ // found argument
-                                          SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor,0);
-                                          Doxygen::sectionDict->append(yytext,si);
-  					  current->anchors->append(si);
+                                          SectionInfo *si = Doxygen::sectionDict->find(yytext);
+                                          if (si)
+                                          {
+                                            if (si->lineNr != -1)
+                                            {
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
+                                            }
+                                            else
+                                            {
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",yytext,si->fileName.data());
+                                            }
+                                          }
+                                          else
+                                          {
+                                            si = new SectionInfo(yyFileName,yyLineNr,yytext,0,SectionInfo::Anchor,0);
+                                            Doxygen::sectionDict->append(yytext,si);
+  					    current->anchors->append(si);
+                                          }
 					  addOutput(yytext);
 					  BEGIN( Comment );
   					}
@@ -1754,7 +1820,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>"("                         {
+<GuardParam>{B}*"("                         {
                                           g_guardExpr=yytext;
                                           g_roundCount=1;
                                           BEGIN(GuardExpr);
@@ -1780,7 +1846,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
-<GuardParam>[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot guard
+<GuardParam>{B}*[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot guard
                                           handleGuard(yytext);
   					}
 <GuardParam>{DOCNL}			{ // end of argument
@@ -1797,15 +1863,15 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <GuardParamEnd>{B}*{DOCNL}		{
-  					  g_spaceBeforeIf=FALSE;
+  					  g_spaceBeforeIf.resize(0);
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>{B}*			{
-  					  if (g_spaceBeforeIf) // needed for 665313 in combation with bug620924
+  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combation with bug620924
 					  {
-					    addOutput(" ");
+					    addOutput(g_spaceBeforeIf);
 					  }
-  					  g_spaceBeforeIf=FALSE;
+  					  g_spaceBeforeIf.resize(0);
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>.			{
@@ -1831,8 +1897,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
 					  else
 					  {
-					    delete guards.pop();
-					    BEGIN( GuardParamEnd );
+					    GuardedSection *s = guards.pop();
+                                            bool parentVisible = s->parentVisible();
+                                            delete s;
+                                            if (parentVisible)
+                                            {
+					      enabledSectionFound=TRUE;
+					      BEGIN( GuardParamEnd );
+                                            }
 					  }
   					}
 <SkipGuardedSection>{CMD}"else"/{NW}	{
@@ -1862,6 +1934,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    if (!enabledSectionFound && guards.top()->parentVisible())
 					    {
+                                              guardType=Guard_If;
 					      delete guards.pop();
 					      BEGIN( GuardParam );
 					    }
@@ -1926,6 +1999,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
+                                          addOutput("\\endinternal "); 
 					  BEGIN(Comment);
 					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
@@ -2014,10 +2088,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 <OverloadParam>{DOCNL}			{ // end of argument
   					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
 					  if (functionProto.stripWhiteSpace().isEmpty())
 					  { // plain overload command
 					    addOutput(getOverloadDocs());
+					    addOutput('\n');
 					  }
 					  else // overload declaration
 					  {
@@ -2399,6 +2473,36 @@ static bool handleXRefItem(const QCString &)
   return FALSE;
 }
 
+static bool handleParBlock(const QCString &)
+{
+  if (g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"found \\parblock command while already in a parblock!");
+  }
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
+  addOutput("@parblock ");
+  g_insideParBlock = TRUE;
+  return FALSE;
+}
+
+static bool handleEndParBlock(const QCString &)
+{
+  if (!g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"found \\endparblock command without matching \\parblock!");
+  }
+  addOutput("@endparblock");
+  setOutput(OutputDoc); // to end a parblock inside a xrefitem like context
+  g_insideParBlock = FALSE;
+  return FALSE;
+}
+
 static bool handleRelated(const QCString &)
 {
   BEGIN(RelatesParam1);
@@ -2448,10 +2552,10 @@ static bool handleSubpage(const QCString &s)
     warn(yyFileName,yyLineNr,
 	"found \\subpage command in a comment block that is not marked as a page!");
   }
-  if (g_spaceBeforeCmd) 
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("@"+s+" ");
   BEGIN(SubpageLabel);
@@ -2467,6 +2571,11 @@ static bool handleAnchor(const QCString &s)
 
 static bool handleCite(const QCString &s)
 {
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
   addOutput("@"+s+" ");
   BEGIN(CiteLabel);
   return FALSE;
@@ -2548,10 +2657,10 @@ static bool handleEndIf(const QCString &)
     delete guards.pop();
   }
   enabledSectionFound=FALSE;
-  if (g_spaceBeforeCmd) 
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   BEGIN( GuardParamEnd );
   return FALSE;
@@ -2694,9 +2803,43 @@ static bool handleExtends(const QCString &)
   return FALSE;
 }
 
+static bool handleCopyBrief(const QCString &)
+{
+  if (current->brief.isEmpty() && current->doc.isEmpty())
+  { // if we don't have a brief or detailed description yet,
+    // then the @copybrief should end up in the brief description.
+    // otherwise it will be copied inline (see bug691315 & bug700788)
+    setOutput(OutputBrief);
+  }
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
+  addOutput("\\copybrief ");
+  return FALSE;
+}
+
+static bool handleCopyDetails(const QCString &)
+{
+  setOutput(OutputDoc);
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
+  addOutput("\\copydetails ");
+  return FALSE;
+}
+
 static bool handleCopyDoc(const QCString &)
 {
   setOutput(OutputBrief);
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
   addOutput("\\copybrief ");
   g_copyDocArg.resize(0);
   BEGIN(CopyDoc);
@@ -2754,9 +2897,10 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   briefEndsAtDot = isAutoBriefOn;
   g_condCount    = 0;
   g_sectionLevel = 0;
-  g_spaceBeforeCmd = FALSE;
-  g_spaceBeforeIf  = FALSE;
+  g_spaceBeforeCmd.resize(0);
+  g_spaceBeforeIf.resize(0);
 
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName ? fileName.data(): NULL);
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
     current->inbodyDocs+="\n\n";
@@ -2766,9 +2910,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
                "input=[\n%s]\n",fileName.data(),lineNr,comment.data()
               );
   
-  commentScanYYrestart( commentScanYYin );
+  commentscanYYrestart( commentscanYYin );
   BEGIN( Comment );
-  commentScanYYlex();
+  commentscanYYlex();
   setOutput( OutputDoc );
 
   if (YY_START==OverloadParam) // comment ended with \overload
@@ -2779,6 +2923,12 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (!guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+  }
+
+  if (g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"Documentation block ended while inside a \\parblock. Missing \\endparblock");
   }
 
   current->doc=stripLeadingAndTrailingEmptyLines(current->doc,current->docLine);
@@ -2797,9 +2947,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   if (Doxygen::markdownSupport)
   {
-    current->brief      = processMarkdown(fileName,current,current->brief);
-    current->doc        = processMarkdown(fileName,current,current->doc);
-    current->inbodyDocs = processMarkdown(fileName,current,current->inbodyDocs);
+    current->brief      = processMarkdown(fileName,lineNr,current,current->brief);
+    current->doc        = processMarkdown(fileName,lineNr,current,current->doc);
+    current->inbodyDocs = processMarkdown(fileName,lineNr,current,current->inbodyDocs);
   }
 
   Debug::print(Debug::CommentScan,0,
@@ -2824,8 +2974,10 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (parseMore) position=inputPosition; else position=0;
 
   lineNr = yyLineNr;
-  //printf("position=%d parseMore=%d\n",position,parseMore);
+  //printf("position=%d parseMore=%d newEntryNeeded=%d\n",
+  //  position,parseMore,newEntryNeeded);
 
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName ? fileName.data(): NULL);
   return parseMore;
 }
 
@@ -3009,7 +3161,7 @@ static void groupAddDocs(Entry *e,const char *fileName)
 static void handleGuard(const QCString &expr)
 {
   CondParser prs;
-  bool sectionEnabled=prs.parse(yyFileName,yyLineNr,expr);
+  bool sectionEnabled=prs.parse(yyFileName,yyLineNr,expr.stripWhiteSpace());
   bool parentEnabled = TRUE;
   if (!guards.isEmpty()) parentEnabled = guards.top()->isEnabled();
   if (parentEnabled)
@@ -3044,7 +3196,7 @@ static void handleGuard(const QCString &expr)
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void commentScanYYdummy() { yy_flex_realloc(0,0); } 
+  void commentscanYYdummy() { yy_flex_realloc(0,0); } 
 }
 #endif
 

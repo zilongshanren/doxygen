@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -34,6 +34,10 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
 #define FORALLPROTO6(arg1,arg2,arg3,arg4,arg5,arg6) \
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6),arg1,arg2,arg3,arg4,arg5,arg6)
+#define FORALLPROTO7(arg1,arg2,arg3,arg4,arg5,arg6,arg7) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7),arg1,arg2,arg3,arg4,arg5,arg6,arg7)
+#define FORALLPROTO8(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8),arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8)
   
 class ClassDiagram;
 class DotClassGraph;
@@ -54,7 +58,7 @@ class OutputList : public OutputDocInterface
     virtual ~OutputList();
 
     void add(const OutputGenerator *);
-    uint count() const { return outputs->count(); }
+    uint count() const { return m_outputs.count(); }
     
     void disableAllBut(OutputGenerator::OutputType o);
     void enableAll();
@@ -149,6 +153,9 @@ class OutputList : public OutputDocInterface
                        const char *anchor,const char *name,
                        const char *tooltip)
     { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name,tooltip); }
+    void writeTooltip(const char *id, const DocLinkInfo &docInfo, const char *decl,
+                      const char *desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+    { forall(&OutputGenerator::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
     void startTextLink(const char *file,const char *anchor)
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()
@@ -281,10 +288,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args); }
     void endDoxyAnchor(const char *fn,const char *anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
-    void startCodeAnchor(const char *label)
-    { forall(&OutputGenerator::startCodeAnchor,label); }
-    void endCodeAnchor()
-    { forall(&OutputGenerator::endCodeAnchor); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
     void startDescription() 
@@ -514,28 +517,28 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::addWord,word,hiPriority); }
 
     void startPlainFile(const char *name)
-    { 
-      OutputGenerator *og=outputs->first();
-      while (og)
+    {
+      QListIterator<OutputGenerator> it(m_outputs);
+      OutputGenerator *og;
+      for (;(og=it.current());++it)
       {
         if (og->isEnabled()) (og->startPlainFile)(name);
-        og=outputs->next();
       }
     }
-    void endPlainFile() 
-    { 
-      OutputGenerator *og=outputs->first();
-      while (og)
+    void endPlainFile()
+    {
+      QListIterator<OutputGenerator> it(m_outputs);
+      OutputGenerator *og;
+      for (;(og=it.current());++it)
       {
         if (og->isEnabled()) (og->endPlainFile)();
-        og=outputs->next();
       }
     }
 
   private:
     void debug();
     void clear();
-    
+
     void forall(void (OutputGenerator::*func)());
     FORALLPROTO1(const char *);
     FORALLPROTO1(char);
@@ -576,9 +579,10 @@ class OutputList : public OutputDocInterface
     FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
     FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
     FORALLPROTO6(const char *,const char *,const char *,const char *,const char *,const char *);
-  
+    FORALLPROTO6(const char *,const DocLinkInfo &,const char *,const char *,const SourceLinkInfo &,const SourceLinkInfo &);
+
     OutputList(const OutputList &ol);
-    QList<OutputGenerator> *outputs;
+    QList<OutputGenerator> m_outputs;
 };
 
 #endif

@@ -2,7 +2,7 @@
 *
 * 
 *
-* Copyright (C) 1997-2012 by Dimitri van Heesch.
+* Copyright (C) 1997-2014 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -53,18 +53,6 @@
 //#define Docbook_DB(x) printf x
 // debug inside output
 //#define Docbook_DB(x) QCString __t;__t.sprintf x;m_t << __t
-
-//------------------
-
-static const char index_xsd[] =
-#include "index_xsd.h"
-;
-
-//------------------
-//
-static const char compound_xsd[] =
-#include "compound_xsd.h"
-;
 
 //------------------
 
@@ -191,8 +179,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
     DocbookCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1),
-    m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE),
-    m_insideSpecialHL(FALSE) {}
+    m_insideCodeLine(FALSE), m_insideSpecialHL(FALSE) {}
     virtual ~DocbookCodeGenerator() {}
 
     void codify(const char *text)
@@ -207,6 +194,12 @@ class DocbookCodeGenerator : public CodeOutputInterface
       Docbook_DB(("(writeCodeLink)\n"));
       writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
       col+=strlen(name);
+    }
+    void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                     )
+    {
+      Docbook_DB(("(writeToolTip)\n"));
     }
     void startCodeLine(bool)
     {
@@ -234,16 +227,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
       m_refId.resize(0);
       m_external.resize(0);
       m_insideCodeLine=FALSE;
-    }
-    void startCodeAnchor(const char *id)
-    {
-      Docbook_DB(("(startCodeAnchor)\n"));
-      m_t << "<anchor id=\"" << id << "\">";
-    }
-    void endCodeAnchor()
-    {
-      Docbook_DB(("(endCodeAnchor)\n"));
-      m_t << "</anchor>";
     }
     void startFontClass(const char * /*colorClass*/)
     {
@@ -295,7 +278,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
     bool m_isMemberRef;
     int col;
     bool m_insideCodeLine;
-    bool m_normalHLNeedStartTag;
     bool m_insideSpecialHL;
 };
 
@@ -370,11 +352,13 @@ static void writeDocbookDocBlock(FTextStream &t,
 void writeDocbookCodeBlock(FTextStream &t,FileDef *fd)
 {
   ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
   pIntf->resetCodeParserState();
   DocbookCodeGenerator *docbookGen = new DocbookCodeGenerator(t);
   pIntf->parseCode(*docbookGen,  // codeOutIntf
       0,           // scopeName
       fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+      langExt,     // lang
       FALSE,       // isExampleBlock
       0,           // exampleName
       fd,          // fileDef
@@ -1171,7 +1155,27 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
       {
         t << "<link linkend=\"" << ii->fileDef->getOutputFileBase() << "\">";
       }
-      t << "&lt;" << nm << "&gt;" << "</link>";
+      if (ii->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&lt;";
+      }
+      t << convertToXML(nm);
+      if (ii->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&gt;";
+      }
+      if (ii->fileDef && !ii->fileDef->isReference())
+      {
+        t << "</link>";
+      }
       t << "</programlisting>" << endl;
       t << "</para>" << endl;
     }
@@ -1389,7 +1393,23 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
     for (ili1.toFirst();(inc=ili1.current());++ili1)
     {
       t << "    <programlisting>#include ";
-      t << inc->includeName;
+      if (inc->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&lt;";
+      }
+      t << convertToXML(inc->includeName);
+      if (inc->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&gt;";
+      }
       t << "</programlisting>" << endl;
     }
   }

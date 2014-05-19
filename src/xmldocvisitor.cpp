@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -30,6 +30,7 @@
 #include "parserintf.h"
 #include "filename.h"
 #include "config.h"
+#include "htmlentity.h"
 
 XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -70,110 +71,14 @@ void XmlDocVisitor::visit(DocWhiteSpace *w)
 void XmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  switch(s->symbol())
+  const char *res = HtmlEntityMapper::instance()->xml(s->symbol());
+  if (res)
   {
-    case DocSymbol::BSlash:        m_t << "\\"; break;
-    case DocSymbol::At:            m_t << "@"; break;
-    case DocSymbol::Less:          m_t << "&lt;"; break;
-    case DocSymbol::Greater:       m_t << "&gt;"; break;
-    case DocSymbol::Amp:           m_t << "&amp;"; break;
-    case DocSymbol::Dollar:        m_t << "$"; break;
-    case DocSymbol::Hash:          m_t << "#"; break;
-    case DocSymbol::DoubleColon:   m_t << "::"; break;
-    case DocSymbol::Percent:       m_t << "%"; break;
-    case DocSymbol::Pipe:          m_t << "|"; break;
-    case DocSymbol::Copy:          m_t << "<copy/>"; break;
-    case DocSymbol::Tm:            m_t << "<trademark/>"; break;
-    case DocSymbol::Reg:           m_t << "<registered/>"; break;
-    case DocSymbol::Apos:          m_t << "'"; break;
-    case DocSymbol::Quot:          m_t << "\""; break;
-    case DocSymbol::Lsquo:         m_t << "<lsquo/>"; break;
-    case DocSymbol::Rsquo:         m_t << "<rsquo/>"; break;
-    case DocSymbol::Ldquo:         m_t << "<ldquo/>"; break;
-    case DocSymbol::Rdquo:         m_t << "<rdquo/>"; break;
-    case DocSymbol::Ndash:         m_t << "<ndash/>"; break;
-    case DocSymbol::Mdash:         m_t << "<mdash/>"; break;
-    case DocSymbol::Uml:           m_t << "<umlaut char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Acute:         m_t << "<acute char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Grave:         m_t << "<grave char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Circ:          m_t << "<circ char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Tilde:         m_t << "<tilde char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Szlig:         m_t << "<szlig/>"; break;
-    case DocSymbol::Cedil:         m_t << "<cedil char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Ring:          m_t << "<ring char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Slash:         m_t << "<slash char=\"" << s->letter() << "\"/>"; break;
-    case DocSymbol::Nbsp:          m_t << "<nonbreakablespace/>"; break;
-    case DocSymbol::Aelig:         m_t << "<aelig/>"; break;
-    case DocSymbol::AElig:         m_t << "<AElig/>"; break;
-    case DocSymbol::GrkGamma:      m_t << "<Gamma>"; break;
-    case DocSymbol::GrkDelta:      m_t << "<Delta>"; break;
-    case DocSymbol::GrkTheta:      m_t << "<Theta>"; break;
-    case DocSymbol::GrkLambda:     m_t << "<Lambda>"; break;
-    case DocSymbol::GrkXi:         m_t << "<Xi>"; break;
-    case DocSymbol::GrkPi:         m_t << "<Pi>"; break;
-    case DocSymbol::GrkSigma:      m_t << "<Sigma>"; break;
-    case DocSymbol::GrkUpsilon:    m_t << "<Upsilon>"; break;
-    case DocSymbol::GrkPhi:        m_t << "<Phi>"; break;
-    case DocSymbol::GrkPsi:        m_t << "<Psi>"; break;
-    case DocSymbol::GrkOmega:      m_t << "<Omega>"; break;
-    case DocSymbol::Grkalpha:      m_t << "<alpha>"; break;
-    case DocSymbol::Grkbeta:       m_t << "<beta>"; break;
-    case DocSymbol::Grkgamma:      m_t << "<gamma>"; break;
-    case DocSymbol::Grkdelta:      m_t << "<delta>"; break;
-    case DocSymbol::Grkepsilon:    m_t << "<epsilon>"; break;
-    case DocSymbol::Grkzeta:       m_t << "<zeta>"; break;
-    case DocSymbol::Grketa:        m_t << "<eta>"; break;
-    case DocSymbol::Grktheta:      m_t << "<theta>"; break;
-    case DocSymbol::Grkiota:       m_t << "<iota>"; break;
-    case DocSymbol::Grkkappa:      m_t << "<kappa>"; break;
-    case DocSymbol::Grklambda:     m_t << "<lambda>"; break;
-    case DocSymbol::Grkmu:         m_t << "<mu>"; break;
-    case DocSymbol::Grknu:         m_t << "<nu>"; break;
-    case DocSymbol::Grkxi:         m_t << "<xi>"; break;
-    case DocSymbol::Grkpi:         m_t << "<pi>"; break;
-    case DocSymbol::Grkrho:        m_t << "<rho>"; break;
-    case DocSymbol::Grksigma:      m_t << "<sigma>"; break;
-    case DocSymbol::Grktau:        m_t << "<tau>"; break;
-    case DocSymbol::Grkupsilon:    m_t << "<upsilon>"; break;
-    case DocSymbol::Grkphi:        m_t << "<phi>"; break;
-    case DocSymbol::Grkchi:        m_t << "<chi>"; break;
-    case DocSymbol::Grkpsi:        m_t << "<psi>"; break;
-    case DocSymbol::Grkomega:      m_t << "<omega>"; break;
-    case DocSymbol::Grkvarsigma:   m_t << "<sigmaf>"; break;
-    case DocSymbol::Section:       m_t << "<sect>"; break;
-    case DocSymbol::Degree:        m_t << "<deg>"; break;
-    case DocSymbol::Prime:         m_t << "<prime>"; break;
-    case DocSymbol::DoublePrime:   m_t << "<Prime>"; break;
-    case DocSymbol::Infinity:      m_t << "<infin>"; break;
-    case DocSymbol::EmptySet:      m_t << "<empty>"; break;
-    case DocSymbol::PlusMinus:     m_t << "<plusmn>"; break;
-    case DocSymbol::Times:         m_t << "<times>"; break;
-    case DocSymbol::Minus:         m_t << "<minus>"; break;
-    case DocSymbol::CenterDot:     m_t << "<sdot>"; break;
-    case DocSymbol::Partial:       m_t << "<part>"; break;
-    case DocSymbol::Nabla:         m_t << "<nabla>"; break;
-    case DocSymbol::SquareRoot:    m_t << "<radic>"; break;
-    case DocSymbol::Perpendicular: m_t << "<perp>"; break;
-    case DocSymbol::Sum:           m_t << "<sum>"; break;
-    case DocSymbol::Integral:      m_t << "<int>"; break;
-    case DocSymbol::Product:       m_t << "<prod>"; break;
-    case DocSymbol::Similar:       m_t << "<sim>"; break;
-    case DocSymbol::Approx:        m_t << "<asymp>"; break;
-    case DocSymbol::NotEqual:      m_t << "<ne>"; break;
-    case DocSymbol::Equivalent:    m_t << "<equiv>"; break;
-    case DocSymbol::Proportional:  m_t << "<prop>"; break;
-    case DocSymbol::LessEqual:     m_t << "<le>"; break;
-    case DocSymbol::GreaterEqual:  m_t << "<ge>"; break;
-    case DocSymbol::LeftArrow:     m_t << "<larr>"; break;
-    case DocSymbol::RightArrow:    m_t << "<rarr>"; break;
-    case DocSymbol::SetIn:         m_t << "<isin>"; break;
-    case DocSymbol::SetNotIn:      m_t << "<notin>"; break;
-    case DocSymbol::LeftCeil:      m_t << "<lceil>"; break;
-    case DocSymbol::RightCeil:     m_t << "<rceil>"; break;
-    case DocSymbol::LeftFloor:     m_t << "<lfloor>"; break;
-    case DocSymbol::RightFloor:    m_t << "<rfloor>"; break;
-    default:
-                             err("unknown symbol found\n");
+    m_t << res;
+  }
+  else
+  {
+    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 
@@ -246,12 +151,18 @@ void XmlDocVisitor::visit(DocStyleChange *s)
 void XmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
-      Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,s->context(),s->text(),
+      Doxygen::parserManager->getParser(lang)
+                            ->parseCode(m_ci,s->context(),s->text(),langExt,
                                         s->isExample(),s->exampleFile());
       m_t << "</programlisting>"; 
       break;
@@ -310,6 +221,7 @@ void XmlDocVisitor::visit(DocAnchor *anc)
 void XmlDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -320,6 +232,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "</programlisting>"; 
@@ -330,6 +243,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text(),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile());
       m_t << "</programlisting>"; 
@@ -340,6 +254,11 @@ void XmlDocVisitor::visit(DocInclude *inc)
       m_t << "<htmlonly>";
       filter(inc->text());
       m_t << "</htmlonly>";
+      break;
+    case DocInclude::LatexInclude:
+      m_t << "<latexonly>";
+      filter(inc->text());
+      m_t << "</latexonly>";
       break;
     case DocInclude::VerbInclude: 
       m_t << "<verbatim>";
@@ -352,6 +271,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
@@ -373,6 +293,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide = TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
@@ -380,7 +301,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
     {
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,op->context(),
-                                        op->text(),op->isExample(),
+                                        op->text(),langExt,op->isExample(),
                                         op->exampleFile());
     }
     pushEnabled();
@@ -416,9 +337,13 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
          "</indexentry>";
 }
 
-void XmlDocVisitor::visit(DocSimpleSectSep *)
+void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
-  m_t << "<simplesectsep/>";
+  if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
+  {
+    visitPost((DocSimpleSect*)sep->parent()); // end current section
+    visitPre((DocSimpleSect*)sep->parent());  // start new section
+  }
 }
 
 void XmlDocVisitor::visit(DocCite *cite)
@@ -587,7 +512,7 @@ void XmlDocVisitor::visitPre(DocSection *s)
   if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
   m_t << "\">" << endl;
   m_t << "<title>";
-  filter(s->title());
+  filter(convertCharEntitiesToUTF8(s->title()));
   m_t << "</title>" << endl;
 }
 
@@ -825,6 +750,19 @@ void XmlDocVisitor::visitPost(DocMscFile *)
   if (m_hide) return;
   m_t << "</mscfile>" << endl;
 }
+
+void XmlDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  m_t << "<diafile name=\"" << df->file() << "\">";
+}
+
+void XmlDocVisitor::visitPost(DocDiaFile *)
+{
+  if (m_hide) return;
+  m_t << "</diafile>" << endl;
+}
+
 void XmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -988,6 +926,7 @@ void XmlDocVisitor::visitPost(DocParamList *)
 void XmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   m_t << "<xrefsect id=\"";
   m_t << x->file() << "_1" << x->anchor();
   m_t << "\">";
@@ -997,9 +936,10 @@ void XmlDocVisitor::visitPre(DocXRefItem *x)
   m_t << "<xrefdescription>";
 }
 
-void XmlDocVisitor::visitPost(DocXRefItem *)
+void XmlDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   m_t << "</xrefdescription>";
   m_t << "</xrefsect>";
 }
@@ -1056,6 +996,19 @@ void XmlDocVisitor::visitPre(DocVhdlFlow *)
 void XmlDocVisitor::visitPost(DocVhdlFlow *)
 {
 }
+
+void XmlDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+  m_t << "<parblock>";
+}
+
+void XmlDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+  m_t << "</parblock>";
+}
+
 
 void XmlDocVisitor::filter(const char *str)
 { 

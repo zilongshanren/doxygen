@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,7 +13,6 @@
  *
  */
 
-#include <stdarg.h>
 #include <stdio.h>
 #include <qdatetime.h>
 #include "config.h"
@@ -24,10 +21,11 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "filedef.h"
+#include "message.h"
 
 static QCString outputFormat;
-static const char *warning_str = "Warning: ";
-static const char *error_str = "Error: ";
+static const char *warning_str = "warning: ";
+static const char *error_str = "error: ";
 //static int warnFormatOrder; // 1 = $file,$line,$text
 //                            // 2 = $text,$line,$file
 //                            // 3 = $line,$text,$file
@@ -112,7 +110,7 @@ void msg(const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
     vfprintf(stdout, fmt, args);
-    va_end(args); 
+    va_end(args);
   }
 }
 
@@ -174,6 +172,11 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_end(args); 
 }
 
+void va_warn(const char *file,int line,const char *fmt,va_list args)
+{
+  do_warn("WARNINGS", file, line, warning_str, fmt, args);
+}
+
 void warn_simple(const char *file,int line,const char *text)
 {
   if (!Config_getBool("WARNINGS")) return; // warning type disabled
@@ -210,4 +213,31 @@ void err(const char *fmt, ...)
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
   va_end(args); 
+}
+
+void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
+{
+  const char *enter_txt = "entering";
+  const char *enter_txt_uc = "Entering";
+
+  if (!enter)
+  {
+    enter_txt = "finished";
+    enter_txt_uc = "Finished";
+  }
+
+  if (dbg)
+  {
+    if (fileName)
+      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, lexName, fileName);
+    else
+      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, lexName);
+  }
+  else
+  {
+    if (fileName)
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, lexName, fileName);
+    else
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, lexName);
+  }
 }

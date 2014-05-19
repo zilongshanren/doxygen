@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -29,6 +29,7 @@
 #include "message.h"
 #include "parserintf.h"
 #include "filedef.h"
+#include "htmlentity.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -75,42 +76,15 @@ void ManDocVisitor::visit(DocWhiteSpace *w)
 void ManDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  switch(s->symbol())
+  const char *res = HtmlEntityMapper::instance()->man(s->symbol());
+  if (res)
   {
-    case DocSymbol::BSlash:  m_t << "\\\\"; break;
-    case DocSymbol::At:      m_t << "@"; break;
-    case DocSymbol::Less:    m_t << "<"; break;
-    case DocSymbol::Greater: m_t << ">"; break;
-    case DocSymbol::Amp:     m_t << "&"; break;
-    case DocSymbol::Dollar:  m_t << "$"; break;
-    case DocSymbol::Hash:    m_t << "#"; break;
-    case DocSymbol::DoubleColon: m_t << "::"; break;
-    case DocSymbol::Percent: m_t << "%"; break;
-    case DocSymbol::Pipe:    m_t << "|"; break;
-    case DocSymbol::Copy:    m_t << "(C)"; break;
-    case DocSymbol::Tm:      m_t << "(TM)"; break;
-    case DocSymbol::Reg:     m_t << "(R)"; break;
-    case DocSymbol::Apos:    m_t << "'"; break;
-    case DocSymbol::Quot:    m_t << "\""; break;
-    case DocSymbol::Lsquo:   m_t << "`"; break;
-    case DocSymbol::Rsquo:   m_t << "'"; break;
-    case DocSymbol::Ldquo:   m_t << "``"; break;
-    case DocSymbol::Rdquo:   m_t << "''"; break;
-    case DocSymbol::Ndash:   m_t << "--"; break;
-    case DocSymbol::Mdash:   m_t << "---"; break;
-    case DocSymbol::Uml:     m_t << s->letter() << "\\*(4"; break;
-    case DocSymbol::Acute:   m_t << s->letter() << "\\*(`"; break;
-    case DocSymbol::Grave:   m_t << s->letter() << "\\*:"; break;
-    case DocSymbol::Circ:    m_t << s->letter() << "\\*^"; break;
-    case DocSymbol::Slash:   m_t << s->letter(); break; /* todo: implement this */
-    case DocSymbol::Tilde:   m_t << s->letter() << "\\*~"; break;
-    case DocSymbol::Szlig:   m_t << "s\\*:"; break;
-    case DocSymbol::Cedil:   m_t << s->letter() << "\\*,"; break;
-    case DocSymbol::Ring:    m_t << s->letter() << "\\*o"; break;
-    case DocSymbol::Nbsp:    m_t << " "; break;
-    default:
-         // unsupport symbol for man page :-(
-         break;
+    m_t << res;
+  }
+  else
+  {
+    // no error or warning to be supplied
+    // err("man: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
   }
   m_firstCol=FALSE;
 }
@@ -193,14 +167,21 @@ void ManDocVisitor::visit(DocStyleChange *s)
 void ManDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch (s->type())
   {
     case DocVerbatim::Code: // fall though
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(0/*TODO*/)
+      Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),
+                                        langExt,
                                         s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -240,6 +221,7 @@ void ManDocVisitor::visit(DocAnchor *)
 void ManDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -252,6 +234,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          if (!m_firstCol) m_t << endl;
@@ -266,7 +249,9 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".nf" << endl;
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text(),inc->isExample(),
+                                        inc->text(),
+                                        langExt,
+                                        inc->isExample(),
                                         inc->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -276,6 +261,8 @@ void ManDocVisitor::visit(DocInclude *inc)
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
+      break;
+    case DocInclude::LatexInclude:
       break;
     case DocInclude::VerbInclude: 
       if (!m_firstCol) m_t << endl;
@@ -295,6 +282,7 @@ void ManDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
@@ -308,6 +296,7 @@ void ManDocVisitor::visit(DocInclude *inc)
 
 void ManDocVisitor::visit(DocIncOperator *op)
 {
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
@@ -326,8 +315,8 @@ void ManDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
-      Doxygen::parserManager->getParser(0/*TODO*/)
-                            ->parseCode(m_ci,op->context(),op->text(),
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();
@@ -762,6 +751,13 @@ void ManDocVisitor::visitPost(DocMscFile *)
 {
 }
 
+void ManDocVisitor::visitPre(DocDiaFile *)
+{
+}
+
+void ManDocVisitor::visitPost(DocDiaFile *)
+{
+}
 
 void ManDocVisitor::visitPre(DocLink *)
 {
@@ -913,6 +909,7 @@ void ManDocVisitor::visitPost(DocParamList *pl)
 void ManDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   if (!m_firstCol)
   { 
     m_t << endl;
@@ -924,9 +921,10 @@ void ManDocVisitor::visitPre(DocXRefItem *x)
   m_t << ".RS 4" << endl;
 }
 
-void ManDocVisitor::visitPost(DocXRefItem *)
+void ManDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   if (!m_firstCol) m_t << endl;
   m_t << ".RE" << endl;
   m_t << ".PP" << endl;
@@ -986,6 +984,14 @@ void ManDocVisitor::visitPre(DocVhdlFlow *)
 }
 
 void ManDocVisitor::visitPost(DocVhdlFlow *)
+{
+}
+
+void ManDocVisitor::visitPre(DocParBlock *)
+{
+}
+
+void ManDocVisitor::visitPost(DocParBlock *)
 {
 }
 

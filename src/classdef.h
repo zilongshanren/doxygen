@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -31,6 +31,7 @@ class ClassList;
 class ClassSDict;
 class OutputList;
 class FileDef;
+class FileList;
 class BaseClassList;
 class NamespaceDef;
 class MemberDef;
@@ -75,7 +76,6 @@ class ClassDef : public Definition
      *  \param startColumn column number where the definition of this compound
      *                   starts.
      *  \param name      the name of this compound (including scope)
-     *  \param symId     unique Id for this symbol
      *  \param ct        the kind of Compound
      *  \param ref       the tag file from which this compound is extracted
      *                   or 0 if the compound doesn't come from a tag file
@@ -125,6 +125,9 @@ class ClassDef : public Definition
     /** returns TRUE if this class has documentation */
     bool hasDocumentation() const;
 
+    /** returns TRUE if this class has a non-empty detailed description */
+    bool hasDetailedDescription() const;
+
     /** Returns the name as it is appears in the documentation */
     QCString displayName(bool includeScope=TRUE) const;
 
@@ -165,6 +168,9 @@ class ClassDef : public Definition
     /** the class is visible in a class diagram, or class hierarchy */
     bool isVisibleInHierarchy();
     
+    /** show this class in the declaration section of its parent? */
+    bool visibleInParentsDeclList() const;
+
     /** Returns the template arguments of this class 
      *  Will return 0 if not applicable.
      */
@@ -240,7 +246,7 @@ class ClassDef : public Definition
     void getTemplateParameterLists(QList<ArgumentList> &lists) const;
 
     QCString qualifiedNameWithTemplateParameters(
-        QList<ArgumentList> *actualParams=0) const;
+        QList<ArgumentList> *actualParams=0,int *actualParamIndex=0) const;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -301,6 +307,18 @@ class ClassDef : public Definition
     bool isJavaEnum() const;
 
     bool isGeneric() const;
+    const ClassSDict *innerClasses() const;
+    QCString title() const;
+
+    QCString generatedFromFiles() const;
+    const FileList &usedFiles() const;
+
+    const ArgumentList *typeConstraints() const;
+    const ExampleSDict *exampleList() const;
+    bool hasExamples() const;
+    QCString getMemberListFileName() const;
+    bool subGrouping() const;
+
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
@@ -310,7 +328,7 @@ class ClassDef : public Definition
     void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
     void insertMember(MemberDef *);
-    void insertUsedFile(const char *);
+    void insertUsedFile(FileDef *);
     bool addExample(const char *anchor,const char *name, const char *file);
     void mergeCategory(ClassDef *category);
     void setNamespace(NamespaceDef *nd);
@@ -367,6 +385,7 @@ class ClassDef : public Definition
     void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               ClassDef *inheritedFrom,const QCString &inheritId);
     int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
+    int countInheritanceNodes();
     
     bool visited;
     //added by guanghui
@@ -377,7 +396,6 @@ class ClassDef : public Definition
 
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    bool hasExamples();
     bool hasNonReferenceSuperClass();
     void showUsedFiles(OutputList &ol);
 
@@ -385,12 +403,11 @@ class ClassDef : public Definition
     void writeTagFileMarker();
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
-    QCString getMemberListFileName() const;
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberListType lt);
-    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,ClassDef *inheritedFrom,bool invert,QPtrDict<void> *visitedClasses);
+    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,ClassDef *inheritedFrom,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,QPtrDict<void> *visitedClasses=0);
+                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,QPtrDict<void> *visitedClasses=0);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE);
     void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt);
     void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
@@ -412,11 +429,18 @@ class ClassDef : public Definition
     void writeMoreLink(OutputList &ol,const QCString &anchor);
     void writeDetailedDocumentationBody(OutputList &ol);
     
-    int countInheritedDecMembersRec(MemberListType lt,ClassDef *inheritedFrom);
-    int countInheritedDecMembers(MemberListType lt);
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
     void addClassAttributes(OutputList &ol);
+
+    int countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
+                                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
+    int countInheritedDecMembers(MemberListType lt,
+                                 ClassDef *inheritedFrom,bool invert,bool showAlways,
+                                 QPtrDict<void> *visitedClasses);
+    void getTitleForMemberListType(MemberListType type,
+               QCString &title,QCString &subtitle);
+    QCString includeStatement() const;
 
     
     ClassDefImpl *m_impl;
@@ -514,11 +538,11 @@ class BaseClassList : public QList<BaseClassDef>
 {
   public:
    ~BaseClassList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const BaseClassDef *item1,const BaseClassDef *item2) const
     {
-      ClassDef *c1=((BaseClassDef *)item1)->classDef;
-      ClassDef *c2=((BaseClassDef *)item2)->classDef;
-      if (c1==0 || c2==0) 
+      const ClassDef *c1=item1->classDef;
+      const ClassDef *c2=item2->classDef;
+      if (c1==0 || c2==0)
         return FALSE;
       else
         return qstricmp(c1->name(),c2->name());

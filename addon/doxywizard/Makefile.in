@@ -1,7 +1,7 @@
 #
 # 
 #
-# Copyright (C) 1997-2013 by Dimitri van Heesch.
+# Copyright (C) 1997-2014 by Dimitri van Heesch.
 # 
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -10,10 +10,11 @@
 # See the GNU General Public License for more details.
 # 
 
-QMAKE=qmake $(MKSPECS)
+QMAKE=$(QTDIR)/bin/qmake $(MKSPECS)
+INCBUFSIZE=$(PYTHON) ../../src/increasebuffer.py
 
 all: Makefile.doxywizard  
-	$(MAKE) -f Makefile.doxywizard 
+	$(MAKE) -f Makefile.doxywizard LEX=$(LEX) PYTHON=$(PYTHON) INCBUFSIZE="$(INCBUFSIZE)"
 
 Makefile.doxywizard: doxywizard.pro
 	$(QMAKE) doxywizard.pro -o Makefile.doxywizard

@@ -44,7 +44,6 @@ SUBGROUPING            = YES
 INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
-SYMBOL_CACHE_SIZE      = 0
 LOOKUP_CACHE_SIZE      = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
@@ -103,56 +102,8 @@ FILE_PATTERNS          = *.h \
                          *.cpp \
                          *.md
 RECURSIVE              = NO
-EXCLUDE                = src/code.cpp \
-                         src/ce_lex.cpp \
-                         src/ce_parse.cpp \
-                         src/declinfo.cpp \
-                         src/defargs.cpp \
-                         src/doxytag.cpp \
-                         src/pre.cpp \
-                         src/scanner.cpp \
-                         src/tag.cpp \
-                         src/doctokenizer.cpp \
-                         src/logos.cpp \
-                         src/suffixtree.cpp \
-                         src/suffixtree.h \
-                         src/commentcnv.cpp \
-                         src/commentscan.cpp \
-                         src/pycode.cpp \
-                         src/config.cpp \
-                         src/pyscanner.cpp \
-                         src/fortranscanner.cpp \
-                         src/fortrancode.cpp \
-                         src/vhdlscanner.cpp \
-                         src/vhdlparser.cpp \
-                         src/vhdlcode.cpp \
-                         src/tclscanner.cpp \
-                         src/lodepng.cpp \
-                         src/doxygen_css.h \
-                         src/doxygen_js.h \
-                         src/doxygen_php.h \
-                         src/compound_xsd.h \
-                         src/layout_default.h \
-                         src/bib2xhtml.h \
-                         src/doxygen_bst.h \
-                         src/header_html.h \
-                         src/index_xsd.h \
-                         src/jquery_js.h \
-                         src/jquery_fx_js.h \
-                         src/jquery_ui_js.h \
-                         src/navtree_css.h \
-                         src/navtree_hs.h \
-                         src/search_css.h \
-                         src/search_functions_php.h \
-                         src/search_opensearch_php.h \
-                         src/search_js.h \
-                         src/sizzle_js.h \
-			 src/navtree_js.h \
-			 src/resize_js.h \
-		         src/svgpan_js.h \
-		         src/dynsections_js.h \
-			 src/extsearch_js.h \
-			 src/footer_html.h \
+EXCLUDE                = src/logos.cpp \
+                         src/lodepng.cpp
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =

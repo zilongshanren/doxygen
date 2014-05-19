@@ -164,7 +164,7 @@ static QList<Entry>     moduleProcedures; // list of all interfaces which contai
                                           // module procedures
 static QCString         docBlock;
 static QCString         docBlockName;
-static bool             docBlockInBody;
+static bool             docBlockInBody = FALSE;
 static bool             docBlockJavaStyle;
 
 static MethodTypes 	mtype;
@@ -187,6 +187,7 @@ static InterfaceType     ifType = IF_NONE;
 static bool              functionLine = FALSE;
 
 static char              stringStartSymbol; // single or double quote
+static bool              parsingPrototype = FALSE; // see parsePrototype()
 
 //! Accumulated modifiers of current statement, eg variable declaration.
 static SymbolModifiers currentModifiers;
@@ -254,7 +255,7 @@ NUM_TYPE  (complex|integer|logical|real)
 LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
@@ -264,7 +265,8 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
 CONTAINS  CONTAINS
-PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTAL)?
+PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
+SCOPENAME ({ID}{BS}"::"{BS})*
 
 %option noyywrap
 %option stack
@@ -307,6 +309,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 %x	EndDoc
 
 %x      BlockData
+
+/** prototype parsing */
+%x  	Prototype
+%x  	PrototypeSubprog
+%x	PrototypeArgs
+
 %%
 
  /*-----------------------------------------------------------------------------------*/
@@ -559,7 +567,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
-<Start,ModuleBody>^{BS}type             {
+<Start,ModuleBody>^{BS}type/[^a-z0-9_]   {
                                           if(YY_START == Start)
                                           {
                                             addModule(NULL); 
@@ -730,7 +738,7 @@ private                                 {
   				       }
 {ID}	                               {
                                        }  
-^{BS}"type"{BS_}"is"                    { }
+^{BS}"type"{BS_}"is"/{BS_}             { }
 }
 <AttributeList>{
 {COMMA}					{}
@@ -936,7 +944,7 @@ private                                 {
                                          }
 
                                          // TYPE_SPEC is for old function style function result
-                                         result = QCString(yytext).stripWhiteSpace();
+                                         result = QCString(yytext).stripWhiteSpace().lower();
                                          current->type = result;
                                          yy_push_state(SubprogPrefix);
                                        }
@@ -1023,7 +1031,7 @@ private                                 {
 
  /*---- documentation comments --------------------------------------------------------------------*/
 
-<Variable,SubprogBody,ModuleBody,TypedefBody>"!<"  { /* backward docu comment */
+<Variable,SubprogBody,ModuleBody,TypedefBody,TypedefBodyContains>"!<"  { /* backward docu comment */
                                           if (v_type != V_IGNORE) {
 					   current->docLine  = yyLineNr;
  					   docBlockJavaStyle = FALSE;
@@ -1077,6 +1085,7 @@ private                                 {
                                           yy_push_state(YY_START);
 					  current->docLine  = yyLineNr;
  					  docBlockJavaStyle = FALSE;
+					  if (YY_START==SubprogBody) docBlockInBody = TRUE;
 					  docBlock.resize(0);
 					  docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
 					  startCommentBlock(TRUE);
@@ -1099,6 +1108,24 @@ private                                 {
                                           yy_pop_state();                                          
   					}
 
+ /*-----Prototype parsing -------------------------------------------------------------------------*/
+<Prototype>{BS}{SUBPROG}{BS_}		{
+					  BEGIN(PrototypeSubprog);
+					}
+<Prototype,PrototypeSubprog>{BS}{SCOPENAME}?{BS}{ID} { 
+					  current->name = QCString(yytext).lower();
+					  current->name.stripWhiteSpace();
+					  BEGIN(PrototypeArgs);
+					}
+<PrototypeArgs>{
+"("|")"|","|{BS_}			{ current->args += yytext; }
+{ID}					{ current->args += yytext; 
+					  Argument *a = new Argument;
+					  a->name = QCString(yytext).lower();
+					  current->argList->append(a);
+					}
+}
+
  /*------------------------------------------------------------------------------------------------*/
 
 <*>"\n"                                 {
@@ -1111,7 +1138,10 @@ private                                 {
  /*---- error: EOF in wrong state --------------------------------------------------------------------*/
 
 <*><<EOF>>                              {
-                                          if ( include_stack_ptr <= 0 ) {
+					  if (parsingPrototype) {
+					    yyterminate();
+
+					  } else if ( include_stack_ptr <= 0 ) {
                                             if (YY_START!=INITIAL && YY_START!=Start) {
                                               DBG_CTX((stderr,"==== Error: EOF reached in wrong state (end missing)"));
                                               scanner_abort();
@@ -1140,11 +1170,11 @@ static void extractPrefix(QCString &text)
   int prefixIndex = 0;
   int curIndex = 0;
   bool cont = TRUE;
-  const char* pre[] = {"RECURSIVE","PURE","ELEMENTAL"};
+  const char* pre[] = {"RECURSIVE","IMPURE","PURE","ELEMENTAL"};
   while(cont)
   {
     cont = FALSE;
-    for(unsigned int i=0; i<3; i++)
+    for(unsigned int i=0; i<4; i++)
     {
       if((prefixIndex=text.find(pre[i], curIndex, FALSE))==0)
       {
@@ -1283,10 +1313,13 @@ void truncatePrepass(int index)
 
 // simplified way to know if this is fixed form
 // duplicate in fortrancode.l
-static bool recognizeFixedForm(const char* contents)
+static bool recognizeFixedForm(const char* contents, FortranFormat format)
 {
   int column=0;
   bool skipLine=FALSE;
+
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
 
   for(int i=0;;i++) {
     column++;
@@ -1300,6 +1333,9 @@ static bool recognizeFixedForm(const char* contents)
         break;
       case '\000':
         return FALSE;
+      case '#':
+        skipLine=TRUE;
+        break;
       case 'C':
       case 'c':
       case '*':
@@ -1336,7 +1372,7 @@ static const char* prepassFixedForm(const char* contents)
   int prevLineLength=0;
   int prevLineAmpOrExclIndex=-1;
   bool emptyLabel=TRUE;
-  int newContentsSize = strlen(contents)+2; // \000 and one spare character (to avoid reallocation)
+  int newContentsSize = strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
 
   for(int i=0, j=0;;i++,j++) {
@@ -1360,6 +1396,14 @@ static const char* prepassFixedForm(const char* contents)
         break;
       case '\000':
         newContents[j]='\000';
+        newContentsSize = strlen(newContents);
+        if (newContents[newContentsSize - 1] != '\n')
+        {
+          // to be on the safe side
+          newContents = (char*)realloc(newContents, newContentsSize+2);
+          newContents[newContentsSize] = '\n';
+          newContents[newContentsSize + 1] = '\000';
+        }
         return newContents;
       case 'C':
       case 'c':
@@ -1394,6 +1438,15 @@ static const char* prepassFixedForm(const char* contents)
 	}
         break;
     }
+  }
+
+  newContentsSize = strlen(newContents);
+  if (newContents[newContentsSize - 1] != '\n')
+  {
+    // to be on the safe side
+    newContents = (char*)realloc(newContents, newContentsSize+2);
+    newContents[newContentsSize] = '\n';
+    newContents[newContentsSize + 1] = '\000';
   }
   return newContents;
 }
@@ -1968,7 +2021,7 @@ static void addSubprogram(const char *text)
   subrCurrent.prepend(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
-  functionLine = subtype=="function";
+  functionLine = (subtype.find("function") != -1);
   current->type += " " + subtype;
   current->type = current->type.stripWhiteSpace();
   current->fileName  = yyFileName;
@@ -2067,16 +2120,19 @@ static void startCommentBlock(bool brief)
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
-  docBlockInBody = FALSE;
   bool needsEntry = FALSE;
   static bool hideInBodyDocs = Config_getBool("HIDE_IN_BODY_DOCS");
   int position=0;
-  if (docBlockInBody && hideInBodyDocs) return;
+  if (docBlockInBody && hideInBodyDocs)
+  {
+    docBlockInBody = FALSE;
+    return;
+  }
   DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
   int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? last_entry : current,
+	docBlockInBody ? subrCurrent.getFirst() : current,
 	doc,        // text
 	yyFileName, // file
 	lineNr,
@@ -2094,6 +2150,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
 
   if (needsEntry) addCurrentEntry(0);
+  docBlockInBody = FALSE;
 }
 
 //----------------------------------------------------------------------------
@@ -2102,7 +2159,11 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
 {
   QCString loc_doc;
   Entry *tmp_entry = current; 
-  current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
+  current = subrCurrent.getFirst(); // temporarily switch to the entry of the subroutine / function
+
+  // Still in the specification section so no inbodyDocs yet, but parameter documentation
+  current->inbodyDocs = "";
+
   if (docBlock.stripWhiteSpace().find("\\param") == 0)
   {
     handleCommentBlock("\n\n"+doc,brief);
@@ -2188,8 +2249,9 @@ level--;
 #endif
 
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
+static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, FortranFormat format)
 {
+  char *tmpBuf = NULL;
   initParser();
 
   defaultProtection = Public;
@@ -2207,7 +2269,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
-    isFixedForm = recognizeFixedForm(fileBuf);
+    isFixedForm = recognizeFixedForm(fileBuf,format);
 
     if (isFixedForm) 
     {
@@ -2219,6 +2281,14 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
       //clock_t end=clock();
       //printf("CPU time used=%f\n", ((double) (end-start))/CLOCKS_PER_SEC);
+    }
+    else if (inputString[strlen(fileBuf)-1] != '\n')
+    {
+      tmpBuf = (char *)malloc(strlen(fileBuf)+2);
+      strcpy(tmpBuf,fileBuf);
+      tmpBuf[strlen(fileBuf)]= '\n';
+      tmpBuf[strlen(fileBuf)+1]= '\000';
+      inputString = tmpBuf;
     }
 
     yyLineNr= 1 ; 
@@ -2238,12 +2308,12 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     current          = new Entry;
     current->lang    = SrcLangExt_Fortran; 
 
-    fscanYYrestart( fscanYYin );
+    fortranscannerYYrestart( fortranscannerYYin );
     {
       BEGIN( Start );
     }
 
-    fscanYYlex();
+    fortranscannerYYlex();
     groupLeaveFile(yyFileName,yyLineNr);
 
     endScope(current_root, TRUE); // TRUE - global root
@@ -2253,6 +2323,10 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     rt->program.resize(0);
     delete current; current=0;
     moduleProcedures.clear();
+    if (tmpBuf) {
+      free((char*)tmpBuf);
+      inputString=NULL;
+    }
     if (isFixedForm) {
       free((char*)inputString);
       inputString=NULL;
@@ -2271,12 +2345,18 @@ void FortranLanguageScanner::parseInput(const char *fileName,
                                         QStrList & /*filesInSameTranslationUnit*/)
 {
   g_thisParser = this;
-  ::parseMain(fileName,fileBuf,root);
+
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+
+  ::parseMain(fileName,fileBuf,root,m_format);
+
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
+                   SrcLangExt /*lang*/,
                    bool isExampleBlock,
                    const char * exampleName,
                    FileDef * fileDef,
@@ -2285,12 +2365,13 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool inlineFragment,
 		   MemberDef *memberDef,
                    bool showLineNumbers,
-                   Definition *searchCtx
+                   Definition *searchCtx,
+                   bool collectXRefs
                   )
 {
   ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                      fileDef,startLine,endLine,inlineFragment,memberDef,
-                     showLineNumbers,searchCtx);
+                     showLineNumbers,searchCtx,collectXRefs,m_format);
 }
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)
@@ -2304,7 +2385,13 @@ void FortranLanguageScanner::resetCodeParserState()
 
 void FortranLanguageScanner::parsePrototype(const char *text)
 {
-  current->name = QCString(text).lower();
+  QCString buffer = QCString(text);
+  pushBuffer(buffer);
+  parsingPrototype = TRUE;
+  BEGIN(Prototype);
+  fortranscannerYYlex();
+  parsingPrototype = FALSE;
+  popBuffer();
 }
 
 static void scanner_abort() 
@@ -2335,7 +2422,7 @@ static void scanner_abort()
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void fscannerYYdummy() { yy_flex_realloc(0,0); } 
+  void fortranscannernerYYdummy() { yy_flex_realloc(0,0); } 
 }
 #endif
 

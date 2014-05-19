@@ -97,15 +97,15 @@ MainWindow::MainWindow()
   grid->addLayout(launchLayout,1,0);
   runTabLayout->addLayout(grid);
 
-  QTabWidget *tabs = new QTabWidget;
-  tabs->addTab(m_wizard,tr("Wizard"));
-  tabs->addTab(m_expert,tr("Expert"));
-  tabs->addTab(runTab,tr("Run"));
+  m_tabs = new QTabWidget;
+  m_tabs->addTab(m_wizard,tr("Wizard"));
+  m_tabs->addTab(m_expert,tr("Expert"));
+  m_tabs->addTab(runTab,tr("Run"));
 
   rowLayout->addWidget(new QLabel(tr("Step 1: Specify the working directory from which doxygen will run")));
   rowLayout->addLayout(dirLayout);
   rowLayout->addWidget(new QLabel(tr("Step 2: Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
-  rowLayout->addWidget(tabs);
+  rowLayout->addWidget(m_tabs);
 
   setCentralWidget(topPart);
   statusBar()->showMessage(tr("Welcome to Doxygen"),messageTimeout);
@@ -115,7 +115,7 @@ MainWindow::MainWindow()
   m_timer = new QTimer;
 
   // connect signals and slots
-  connect(tabs,SIGNAL(currentChanged(int)),SLOT(selectTab(int)));
+  connect(m_tabs,SIGNAL(currentChanged(int)),SLOT(selectTab(int)));
   connect(m_selWorkingDir,SIGNAL(clicked()),SLOT(selectWorkingDir()));
   connect(m_recentMenu,SIGNAL(triggered(QAction*)),SLOT(openRecent(QAction*)));
   connect(m_workingDir,SIGNAL(returnPressed()),SLOT(updateWorkingDir()));
@@ -127,6 +127,8 @@ MainWindow::MainWindow()
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
+  connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
+  connect(m_expert,SIGNAL(done()),SLOT(selectRunTab()));
 
   loadSettings();
   updateLaunchButtonState();
@@ -191,7 +193,7 @@ void MainWindow::about()
   t << QString::fromAscii("<qt><center>A tool to configure and run doxygen version ")+
        QString::fromAscii(versionString)+
        QString::fromAscii(" on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2013</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2014</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
@@ -224,9 +226,13 @@ void MainWindow::updateConfigFileName(const QString &fileName)
 
 void MainWindow::loadConfigFromFile(const QString & fileName)
 {
-  m_expert->loadConfig(fileName);
-  m_wizard->refresh();
+  // save full path info of original file
+  QString absFileName = QFileInfo(fileName).absoluteFilePath();
+  // updates the current directory
   updateConfigFileName(fileName);
+  // open the specified configuration file
+  m_expert->loadConfig(absFileName);
+  m_wizard->refresh();
   updateLaunchButtonState();
   m_modified = false;
   updateTitle();
@@ -367,6 +373,12 @@ void MainWindow::saveSettings()
 void MainWindow::selectTab(int id)
 {
   if (id==0) m_wizard->refresh();
+  else if (id==1) m_expert->refresh();
+}
+
+void MainWindow::selectRunTab()
+{
+  m_tabs->setCurrentIndex(2);
 }
 
 void MainWindow::addRecentFile(const QString &fileName)
@@ -483,7 +495,7 @@ void MainWindow::readStdout()
   if (m_running)
   {
     QByteArray data = m_runProcess->readAllStandardOutput();
-    QString text = QString::fromLocal8Bit(data);
+    QString text = QString::fromUtf8(data);
     if (!text.isEmpty())
     {
       m_outputLog->append(text.trimmed());
@@ -525,7 +537,7 @@ void MainWindow::showHtmlOutput()
   // TODO: the following doesn't seem to work with IE
 #ifdef WIN32
   //QString indexUrl(QString::fromAscii("file:///"));
-  ShellExecute(NULL, L"open", fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromAscii("file://"));
   indexUrl+=fi.absoluteFilePath();
@@ -620,20 +632,34 @@ bool MainWindow::discardUnsavedChanges(bool saveOption)
 }
 
 //-----------------------------------------------------------------------
-
 int main(int argc,char **argv)
 {
   QApplication a(argc,argv);
-  MainWindow &main = MainWindow::instance();
-  if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+  if (argc == 2)
   {
-    main.loadConfigFromFile(QString::fromLocal8Bit(argv[1]));
+    if (!qstrcmp(argv[1],"--help"))
+    {
+      QMessageBox msgBox;
+      msgBox.setText(QString().sprintf("Usage: %s [config file]",argv[0]));
+      msgBox.exec();
+      exit(0);
+    }
   }
-  else if (argc>1)
+  if (argc > 2)
   {
-    printf("Usage: %s [config file]\n",argv[0]);
+    QMessageBox msgBox;
+    msgBox.setText(QString().sprintf("Too many arguments specified\n\nUsage: %s [config file]",argv[0]));
+    msgBox.exec();
     exit(1);
   }
-  main.show();
-  return a.exec();
+  else
+  {
+    MainWindow &main = MainWindow::instance();
+    if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+    {
+      main.loadConfigFromFile(QString::fromLocal8Bit(argv[1]));
+    }
+    main.show();
+    return a.exec();
+  }
 }

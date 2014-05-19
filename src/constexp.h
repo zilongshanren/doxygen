@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -22,9 +22,9 @@
 #include "cppvalue.h"
 #include <qcstring.h>
 
-extern bool parseCppExpression(const char *fileName,int line,const QCString &s);
-extern int cppExpYYparse();
-extern int cppExpYYdebug;
+extern bool parseconstexp(const char *fileName,int line,const QCString &s);
+extern int constexpYYparse();
+extern int constexpYYdebug;
 extern QCString g_strToken;
 extern CPPValue g_resultValue;
 extern QCString g_constExpFileName;

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -60,6 +60,20 @@ QCString PageDef::getOutputFileBase() const
   else 
     return m_fileName; 
 }
+
+void PageDef::setFileName(const char *name,bool dontEscape) 
+{ 
+  static bool shortNames = Config_getBool("SHORT_NAMES");
+  if (shortNames && !dontEscape)
+  {
+    m_fileName = convertNameToFile(name);
+  }
+  else
+  {
+    m_fileName = name; 
+  }
+}
+
 
 void PageDef::addInnerCompound(Definition *def)
 {

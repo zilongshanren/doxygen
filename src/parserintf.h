@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,8 @@
 
 #include <qdict.h>
 #include <qstrlist.h>
+
+#include "types.h"
 
 class Entry;
 class FileDef;
@@ -79,6 +81,7 @@ class ParserInterface
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
      *  @param[in] codeOutIntf Abstract interface for writing the result.
+     *  @param[in] lang The programming language of the code fragment.
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
      *  @param[in] isExampleBlock TRUE iff the code is part of an example.
@@ -95,10 +98,12 @@ class ParserInterface
      *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
      *             line numbers will be added to the source fragement
      *  @param[in] searchCtx context under which search data has to be stored.
+     *  @param[in] collectXRefs collect cross-reference relations.
      */
     virtual void parseCode(CodeOutputInterface &codeOutIntf,
                            const char *scopeName,
                            const QCString &input,
+                           SrcLangExt lang,
                            bool isExampleBlock,
                            const char *exampleName=0,
                            FileDef *fileDef=0,
@@ -107,7 +112,8 @@ class ParserInterface
                            bool inlineFragment=FALSE,
                            MemberDef *memberDef=0,
                            bool showLineNumbers=TRUE,
-                           Definition *searchCtx=0
+                           Definition *searchCtx=0,
+                           bool collectXRefs=TRUE
                           ) = 0;
 
     /** Resets the state of the code parser.
@@ -178,8 +184,8 @@ class ParserManager
      */
     ParserInterface *getParser(const char *extension)
     {
-      if (extension==0) return m_defaultParser;
       QCString ext = QCString(extension).lower();
+      if (ext.isEmpty()) ext=".no_extension";
       ParserInterface *intf = m_extensions.find(ext);
       if (intf==0 && ext.length()>4)
       {

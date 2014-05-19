@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -44,10 +44,6 @@
 #include "arguments.h"
 
 #include "clangparser.h"
-
-// Toggle for some debugging info
-#define DBG_CTX(x) fprintf x
-//#define DBG_CTX(x) do { } while(0)
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -195,6 +191,7 @@ static QCString         g_delimiter;
 static int              g_column;
 
 static int              g_fencedSize=0;
+static bool             g_nestedComment=0;
 
 //added by guanghui
 static bool                               g_bHasJsDoc = false;
@@ -559,7 +556,6 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       oldStyleArgName=current->args.copy().stripWhiteSpace();
     }
   }
-  DBG_CTX((stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data()));
 }
 
 //-----------------------------------------------------------------------------
@@ -659,8 +655,11 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 JSCMD       {CMD}("js")
 LUACMD      {CMD}("lua")
-
-
+ARITHOP   "+"|"-"|"/"|"*"|"%"|"--"|"++"
+ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
+LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
+BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
+OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
 %option noyywrap
 
@@ -704,6 +703,7 @@ LUACMD      {CMD}("lua")
 %x	ReadBodyIntf
 %x	Using
 %x	UsingAlias
+%x	UsingAliasEnd
 %x	UsingDirective
 %x	SkipCurly
 %x	SkipCurlyCpp
@@ -718,7 +718,6 @@ LUACMD      {CMD}("lua")
 %x      SkipCurlyBlock
 %x      SkipRoundBlock
 %x	Sharp
-%x      SkipSharp
 %x	SkipRound
 %x	SkipSquare
 %x	SkipRemainder
@@ -1212,13 +1211,27 @@ LUACMD      {CMD}("lua")
 					}
    */
 <ObjCParams>"("				{
-  					  BEGIN( ObjCParamType );
-  					}
-<ObjCParamType>[^)]*			{
-  					  current->argList->getLast()->type=QCString(yytext).stripWhiteSpace();
-  					}
+				 	  roundCount=0;
+					  current->argList->getLast()->type.resize(0);
+					  BEGIN( ObjCParamType );
+					}
+<ObjCParamType>"("                      {
+                                          roundCount++;
+  					  current->argList->getLast()->type+=yytext;
+                                        }
 <ObjCParamType>")"/{B}*			{
-  					  BEGIN( ObjCParams );
+                                          if (roundCount<=0)
+                                          {
+                                            BEGIN( ObjCParams );
+                                          }
+                                          else
+                                          {
+                                            current->argList->getLast()->type+=yytext;
+                                            roundCount--;
+                                          }
+					}
+<ObjCParamType>[^()]*			{
+        				  current->argList->getLast()->type+=QCString(yytext).stripWhiteSpace();
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
 					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
@@ -1229,7 +1242,7 @@ LUACMD      {CMD}("lua")
 					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
   					  BEGIN( Function );
-  					}
+                                        }
 <ObjCMethod,ObjCParams>(";"{BN}+)?"{"	{ // start of a method body
   					  lineCount();
                                           //printf("Type=%s Name=%s args=%s\n",
@@ -1391,7 +1404,14 @@ LUACMD      {CMD}("lua")
                                           if (!insidePHP) 
 					  {
 					    current->type += " abstract ";
-					    current->virt = Pure;
+					    if (!insideJava)
+					    {
+                                              current->virt = Pure;
+					    }
+					    else
+					    {
+                                              current->spec|=Entry::Abstract;
+					    }
 					  }
 					  else
 					  {
@@ -1634,9 +1654,20 @@ LUACMD      {CMD}("lua")
 <FindMembers>"@class" | // for Objective C class declarations
 <FindMembers>{B}*{TYPEDEFPREFIX}"class{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"class"{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl = yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1746,13 +1777,24 @@ LUACMD      {CMD}("lua")
   					}
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct{" | 
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl = yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC ;
 					  current->spec    = Entry::Struct |
 					    (current->spec & Entry::Published); // preserve UNO IDL
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1809,12 +1851,23 @@ LUACMD      {CMD}("lua")
   					}
 <FindMembers>{B}*{TYPEDEFPREFIX}"union{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl=yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Union;
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1997,7 +2050,7 @@ LUACMD      {CMD}("lua")
                                           BEGIN(Using); 
                                         }
 <Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
-<Using>{ID}{BN}*({BN}*("::"|"."){BN}*{ID})*	{
+<Using>({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}) {
                                           lineCount();
   					  current->name=yytext;
                                           current->fileName = yyFileName; 
@@ -2035,12 +2088,42 @@ LUACMD      {CMD}("lua")
                                           previous->spec |= Entry::Alias;
                                           BEGIN(FindMembers); 
                                         }
+<UsingAlias>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+					  docBlockContext   = UsingAliasEnd;
+					  docBlockInBody    = FALSE;
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
+  					  lineCount();
+
+					  docBlockTerm = ';';
+					  if (yytext[yyleng-3]=='/')
+					  {
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
+					  }
+					  else
+					  {
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
+					  }
+  					}
 <UsingAlias>.                           {
                                           previous->args+=yytext;
                                         }
 <UsingAlias>\n                          {
                                           previous->args+=yytext;
                                           lineCount();
+                                        }
+<UsingAliasEnd>";"                      {
+                                          previous->doc   = current->doc;
+                                          previous->brief = current->brief;
+                                          current->doc.resize(0);
+                                          current->brief.resize(0);
+                                          unput(';');
+                                          BEGIN(UsingAlias);
                                         }
 <UsingDirective>{SCOPENAME}		{ current->name=removeRedundantWhiteSpace(yytext);
                                           current->fileName = yyFileName; 
@@ -2230,7 +2313,7 @@ LUACMD      {CMD}("lua")
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
-<QtPropType>"const"|"volatile"		{
+<QtPropType>"const"|"volatile"|"unsigned"|"signed"|"long"|"short" {
   				          current->type+=yytext;
   					}
 <QtPropType>{B}+			{
@@ -2909,7 +2992,7 @@ LUACMD      {CMD}("lua")
                                             BEGIN(lastRawStringContext);
                                           }
                                         }
-<RawGString>[^)]+                       {
+<RawGString>[^)\n]+                     {
                                           *pCopyRawGString+=yytext;
                                         }
 <RawGString>.                           {
@@ -3280,7 +3363,10 @@ LUACMD      {CMD}("lua")
 					    *pCopyCurlyGString+=yytext; 
 					  }
                                         }
-<GCopyCurly>[^"'{}\/\n]+		{
+<GCopyCurly>[^"'{}\/\n,]+		{
+  					  *pCopyCurlyGString+=yytext;
+  					}
+<GCopyCurly>[,]+		        {
   					  *pCopyCurlyGString+=yytext;
   					}
 <GCopyCurly>"/"				{ *pCopyCurlyGString+=yytext; }
@@ -4468,6 +4554,13 @@ LUACMD      {CMD}("lua")
 					  else 
 					    BEGIN( lastCopyArgContext );
   					}
+<CopyArgSharp>"("                       {
+  					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
+  					  argRoundCount=0; 
+					  lastCopyArgContext = YY_START;
+					  BEGIN( CopyArgRound ); 
+                                        }
 <CopyArgSharp>"<"			{
   					  argSharpCount++;
 					  //printf("argSharpCount++=%d  copy\n",argSharpCount);
@@ -4747,7 +4840,6 @@ LUACMD      {CMD}("lua")
 					  }
 					  else if (checkForKnRstyleC())
 					  {
-					    DBG_CTX((stderr,"===> got a K&R style function\n"));
                                             current->args = yytext; 
 					    oldStyleArgType.resize(0);
 					    BEGIN(OldStyleArgs);
@@ -4989,6 +5081,7 @@ LUACMD      {CMD}("lua")
   				          //addToBody(yytext);
   					  ++curlyCount ; 
 					}
+<SkipCurly>"}"/{BN}*("/*!"|"/**"|"//!"|"///")"<!--" | /* see bug710917 */
 <SkipCurly>"}"				{ 
   				          //addToBody(yytext);
   					  if( curlyCount )
@@ -4997,22 +5090,6 @@ LUACMD      {CMD}("lua")
 					  }
 					  else
 					  {
-#if 0
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
-						!current->doc.isEmpty())
-					    {
-					      // copy documentation found inside the body
-					      // to the previous item
-					      if (previous->inbodyLine==-1)
-					      {
-					        previous->inbodyLine = current->docLine;
-					        previous->inbodyFile = current->docFile;
-					      }
-					      //printf("*** inbodyDocs+=%s\n",current->doc.data());
-					      previous->inbodyDocs += current->doc;
-					      current->doc.resize(0);
-					    }
-#endif
 					    if (current->sli && previous) // copy special list items
 					    {
 					      QListIterator<ListItemInfo> li(*current->sli);
@@ -5041,6 +5118,7 @@ LUACMD      {CMD}("lua")
 
 					    tempEntry = current; // temporarily switch to the previous entry
 					    current = previous;
+					    previous = 0;
 
 					    docBlockContext   = SkipCurlyEndDoc;
 					    docBlockInBody    = FALSE;
@@ -5080,7 +5158,11 @@ LUACMD      {CMD}("lua")
   					}
 <SkipCurlyEndDoc>"}"			{
   				          //addToBody("}");
-					  current = tempEntry;
+                                          if (tempEntry) // we can only switch back to current if no new item was created
+					  {
+					    current = tempEntry;
+					    tempEntry = 0;
+					  }
   					  BEGIN( lastCurlyContext );
   					}
 <SkipCurly>\"			        { 
@@ -5133,6 +5215,11 @@ LUACMD      {CMD}("lua")
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
+<SkipInits>"("                          {
+                                          roundCount=0;
+                                          lastSkipRoundContext=YY_START;
+                                          BEGIN(SkipRound);
+                                        }
 <SkipInits>\"				{
   					  lastStringContext=YY_START;
   				          BEGIN( SkipString ); 
@@ -5361,13 +5448,13 @@ LUACMD      {CMD}("lua")
                                             BEGIN( ClassVar );
                                           }
 					}
-<AlignAs>"("                            { roundCount=1; 
+<AlignAs>"("                            { roundCount=0; 
                                           BEGIN( AlignAsEnd ); 
                                         }
 <AlignAs>\n                             { lineCount(); }
 <AlignAs>.
 <AlignAsEnd>"("                         { roundCount++; }
-<AlignAsEnd>")"                         { if (--roundCount<=0) 
+<AlignAsEnd>")"                         { if (--roundCount<0) 
                                           {
                                             BEGIN( lastAlignAsContext ); 
                                           }
@@ -5528,7 +5615,7 @@ LUACMD      {CMD}("lua")
 					    BEGIN( CopyArgComment );
 					}
 <CSConstraintType,CSConstraintName>"#"	{ // artificially inserted token to signal end of comment block
-                                          current->typeConstr->last()->docs = fullArgString;
+                                          current->typeConstr->getLast()->docs = fullArgString;
   					}
 <CSConstraintType>"{"			{ // end of type constraint reached
                                           // parse documentation of the constraints
@@ -5546,24 +5633,24 @@ LUACMD      {CMD}("lua")
                                         }
 <CSConstraintName>{ID}                  {
                                           // parameter name
-                                          current->typeConstr->last()->name=yytext;
+                                          current->typeConstr->getLast()->name=yytext;
                                         }
 <CSConstraintType>"where"		{ // another constraint for a different param
 					  current->typeConstr->append(new Argument);
                                           BEGIN( CSConstraintName );
   					}
 <CSConstraintType>({ID}".")*{ID}("<"{ID}">")?("()")?  {
-                                          if (current->typeConstr->last()->type.isEmpty())
+                                          if (current->typeConstr->getLast()->type.isEmpty())
                                               // first type constraint for this parameter
                                           {
-                                            current->typeConstr->last()->type=yytext;
+                                            current->typeConstr->getLast()->type=yytext;
                                           }
                                           else // new type constraint for same parameter
                                           {
-                                            QCString name = current->typeConstr->last()->name;
+                                            QCString name = current->typeConstr->getLast()->name;
                                             current->typeConstr->append(new Argument);
-                                            current->typeConstr->last()->name=name;
-                                            current->typeConstr->last()->type=yytext;
+                                            current->typeConstr->getLast()->name=name;
+                                            current->typeConstr->getLast()->type=yytext;
                                           }
                                         }
 <CSConstraintName,CSConstraintType>\n	{
@@ -5784,7 +5871,8 @@ LUACMD      {CMD}("lua")
 					  specName = &current->name;
 					  BEGIN ( Specialization );
 					}
-<Bases>"<"   	       	                { 
+<Bases>{BN}*"<"                         {
+                                          lineCount();
   					  sharpCount=1; 
 					  roundCount=0;
 					  lastSkipSharpContext = YY_START;
@@ -5810,21 +5898,7 @@ LUACMD      {CMD}("lua")
   					  *specName += *yytext;
   					  if (roundCount==0 && --sharpCount<=0)
 					  {
-					    if (1 /*!insideCS*/) 
-					    {
-					      baseName+=*specName;
-					    }
-					    else
-					    {
-					      if (current->tArgLists==0)
-					      {
-						current->tArgLists = new QList<ArgumentList>;
-						current->tArgLists->setAutoDelete(TRUE);
-					      }
-					      ArgumentList *al = new ArgumentList;
-					      current->tArgLists->append(al);
-					      stringToArgumentList(*specName,al);
-					    }
+					    baseName+=removeRedundantWhiteSpace(*specName);
 					    BEGIN(lastSkipSharpContext);
 					  }
   					}
@@ -5864,12 +5938,8 @@ LUACMD      {CMD}("lua")
 <Specialization>.			{
   					  *specName += *yytext;
   					}
-<SkipSharp>"<"				{ ++sharpCount; }
-<SkipSharp>">"				{ if (--sharpCount<=0)
-					    BEGIN ( lastSkipSharpContext );
-					}
 <SkipRound>"("				{ ++roundCount; }
-<SkipRound>")"				{ if (--roundCount<=0)
+<SkipRound>")"				{ if (--roundCount<0)
 					    BEGIN ( lastSkipRoundContext );
 					}
 <SkipRound>\"				{
@@ -6241,23 +6311,28 @@ LUACMD      {CMD}("lua")
 				            docBlockName.at(1)='}';
 					  }
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
                                         }
-<DocBlock>"<"{PRE}">"			{
+<DocBlock>{B}*"<"{PRE}">"		{
                                           docBlock+=yytext;
 				          docBlockName="<pre>";
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
                                           docBlock+=yytext;
 				          docBlockName=&yytext[1];
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>"~~~"[~]*                     {
                                           docBlock+=yytext;
+                                          docBlockName="~~~";
                                           g_fencedSize=yyleng;
+                                          g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<code>"                  {
@@ -6265,6 +6340,7 @@ LUACMD      {CMD}("lua")
 					  {
 					    docBlock+=yytext;
 					    docBlockName="<code>";
+                                            g_nestedComment=FALSE;
 					    BEGIN(DocCopyBlock);
 					  }
 					  else
@@ -6353,12 +6429,44 @@ LUACMD      {CMD}("lua")
                                             docBlock+=indent;
                                           }
   					}
-<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line
+<DocCopyBlock>^{B}*"*"+/{BN}+"*"{BN}*	{ // start of a comment line with two *'s
   					  if (docBlockName=="code")
                                           {
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,0));
                                             docBlock+=indent;
+                                          }
+                                          else
+					  {
+					    REJECT;
+					  }
+  					}
+<DocCopyBlock>^{B}*"*"+/({ID}|"(")	{ // Assume *var or *(... is part of source code (see bug723516)
+					  if (docBlockName=="code")
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,-1));
+                                            docBlock+=indent+"*";
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line with one *
+  					  if (docBlockName=="code")
+                                          {
+                                            QCString indent;
+                                            if (g_nestedComment) // keep * it is part of the code
+                                            {
+                                              indent.fill(' ',computeIndent(yytext,-1));
+                                              docBlock+=indent+"*";
+                                            }
+                                            else // remove * it is part of the comment block
+                                            {
+                                              indent.fill(' ',computeIndent(yytext,0));
+                                              docBlock+=indent;
+                                            }
                                           }
                                           else
 					  {
@@ -6376,6 +6484,14 @@ LUACMD      {CMD}("lua")
   					  docBlock+=yytext;
   					}
 <DocCopyBlock>"/*"|"*/"|"//"		{
+                                          if (yytext[1]=='*')
+                                          {
+                                            g_nestedComment=TRUE;
+                                          }
+                                          else if (yytext[0]=='*')
+                                          {
+                                            g_nestedComment=FALSE;
+                                          }
   					  docBlock+=yytext;
 					}
 <DocCopyBlock>\n			{ // newline
@@ -6541,7 +6657,14 @@ static void startCommentBlock(bool brief)
 
 static void newEntry()
 {
-  current_root->addSubEntry(current);
+  if (tempEntry==0) // if temp entry is not 0, it holds current, 
+                    // and current is actually replaced by previous which was 
+                    // already added to current_root, so we should not add it again 
+                    // (see bug723314)
+  {
+    current_root->addSubEntry(current);
+  }
+  tempEntry = 0;
   previous = current;
   current = new Entry ;
   initEntry();
@@ -6676,7 +6799,7 @@ static void parseCompounds(Entry *rt)
       g_column=0;
       inputString = ce->program;
       inputPosition = 0;
-      scanYYrestart( scanYYin ) ;
+      scannerYYrestart( scannerYYin ) ;
       if (ce->section==Entry::ENUM_SEC || (ce->spec&Entry::Enum))
 	BEGIN( FindFields ) ;
       else
@@ -6746,7 +6869,7 @@ static void parseCompounds(Entry *rt)
       //memberGroupInside.resize(0);
       groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
-      scanYYlex() ;
+      scannerYYlex() ;
       g_lexInit=TRUE;
       //forceEndGroup();
 
@@ -6823,7 +6946,7 @@ static void parseMain(const char *fileName,
     }
     current->reset();
     initEntry();
-    scanYYrestart( scanYYin );
+    scannerYYrestart( scannerYYin );
     if ( insidePHP )
     {
       BEGIN( FindMembersPHP );
@@ -6833,7 +6956,7 @@ static void parseMain(const char *fileName,
       BEGIN( FindMembers );
     }
 
-    scanYYlex();
+    scannerYYlex();
     g_lexInit=TRUE;
 
     if (YY_START==Comment)
@@ -6887,7 +7010,7 @@ static void parsePrototype(const QCString &text)
   
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));
+  yy_switch_to_buffer(yy_create_buffer(scannerYYin, YY_BUF_SIZE));
   orgInputString = inputString; 
   orgInputPosition = inputPosition;
 
@@ -6895,9 +7018,9 @@ static void parsePrototype(const QCString &text)
   inputString = text;
   inputPosition = 0;
   g_column = 0;
-  scanYYrestart( scanYYin );
+  scannerYYrestart( scannerYYin );
   BEGIN(Prototype);
-  scanYYlex();
+  scannerYYlex();
   g_lexInit=TRUE;
 
   current->name = current->name.stripWhiteSpace();
@@ -6919,7 +7042,7 @@ void scanFreeScanner()
 #if defined(YY_FLEX_SUBMINOR_VERSION)
   if (g_lexInit)
   {
-    scanYYlex_destroy();
+    scannerYYlex_destroy();
   }
 #endif
 }
@@ -6958,13 +7081,19 @@ void CLanguageScanner::parseInput(const char *fileName,
                                   QStrList & filesInSameTranslationUnit)
 {
   g_thisParser = this;
+
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+
   ::parseMain(fileName,fileBuf,root,
               sameTranslationUnit,filesInSameTranslationUnit);
+
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char * exampleName,
                    FileDef * fileDef,
@@ -6973,12 +7102,13 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool inlineFragment,
 		   MemberDef *memberDef,
 		   bool showLineNumbers,
-                   Definition *searchCtx
+                   Definition *searchCtx,
+                   bool collectXRefs
                   )
 {
-  ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+  ::parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
-	       showLineNumbers,searchCtx);
+	       showLineNumbers,searchCtx,collectXRefs);
 }
 
 bool CLanguageScanner::needsPreprocessing(const QCString &extension)

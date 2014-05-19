@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,10 +28,12 @@
 #include "htmlgen.h"
 #include "parserintf.h"
 #include "msc.h"
+#include "dia.h"
 #include "util.h"
 #include "vhdldocgen.h"
 #include "filedef.h"
 #include "memberdef.h"
+#include "htmlentity.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -42,27 +44,30 @@ static QCString convertIndexWordToAnchor(const QString &word)
   QCString result;
   const char *str = word.data();
   unsigned char c;
-  while ((c = *str++)) 
+  if (str)
   {
-    if ((c >= 'a' && c <= 'z') || // ALPHA
-        (c >= 'A' && c <= 'A') || // ALPHA
-        (c >= '0' && c <= '9') || // DIGIT
-        c == '-' || 
-        c == '.' || 
-        c == '_' || 
-        c == '~'
-       )
+    while ((c = *str++))
     {
-      result += c;
-    }
-    else 
-    {
-      char enc[4];
-      enc[0] = '%';
-      enc[1] = hex[(c & 0xf0) >> 4];
-      enc[2] = hex[c & 0xf];
-      enc[3] = 0;
-      result += enc;
+      if ((c >= 'a' && c <= 'z') || // ALPHA
+          (c >= 'A' && c <= 'A') || // ALPHA
+          (c >= '0' && c <= '9') || // DIGIT
+          c == '-' ||
+          c == '.' ||
+          c == '_' ||
+          c == '~'
+         )
+      {
+        result += c;
+      }
+      else
+      {
+        char enc[4];
+        enc[0] = '%';
+        enc[1] = hex[(c & 0xf0) >> 4];
+        enc[2] = hex[c & 0xf];
+        enc[3] = 0;
+        result += enc;
+      }
     }
   }
   return result;
@@ -90,7 +95,6 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_Internal:
           /* <div> */
         case DocNode::Kind_Include:
-        case DocNode::Kind_Verbatim:
         case DocNode::Kind_Image:
         case DocNode::Kind_SecRefList:
           /* <hr> */
@@ -102,7 +106,14 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_Copy:
           /* <blockquote> */
         case DocNode::Kind_HtmlBlockQuote:
+          /* \parblock */
+        case DocNode::Kind_ParBlock:
           return TRUE;
+        case DocNode::Kind_Verbatim:
+          {
+            DocVerbatim *dv = (DocVerbatim*)n;
+            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+          }
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
                  ((DocStyleChange*)n)->style()==DocStyleChange::Div ||
@@ -136,9 +147,9 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                               Definition *ctx,MemberDef *md) 
+                               Definition *ctx) 
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-                                 m_hide(FALSE), m_ctx(ctx), m_md(md)
+                                 m_hide(FALSE), m_ctx(ctx)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
 }
@@ -179,110 +190,14 @@ void HtmlDocVisitor::visit(DocWhiteSpace *w)
 void HtmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  switch(s->symbol())
+  const char *res = HtmlEntityMapper::instance()->html(s->symbol());
+  if (res)
   {
-    case DocSymbol::BSlash:        m_t << "\\"; break;
-    case DocSymbol::At:            m_t << "@"; break;
-    case DocSymbol::Less:          m_t << "&lt;"; break;
-    case DocSymbol::Greater:       m_t << "&gt;"; break;
-    case DocSymbol::Amp:           m_t << "&amp;"; break;
-    case DocSymbol::Dollar:        m_t << "$"; break;
-    case DocSymbol::Hash:          m_t << "#"; break;
-    case DocSymbol::DoubleColon:   m_t << "::"; break;
-    case DocSymbol::Percent:       m_t << "%"; break;
-    case DocSymbol::Pipe:          m_t << "|"; break;
-    case DocSymbol::Copy:          m_t << "&copy;"; break;
-    case DocSymbol::Tm:            m_t << "&trade;"; break;
-    case DocSymbol::Reg:           m_t << "&reg;"; break;
-    case DocSymbol::Apos:          m_t << "'"; break;
-    case DocSymbol::Quot:          m_t << "\""; break;
-    case DocSymbol::Lsquo:         m_t << "&lsquo;"; break;
-    case DocSymbol::Rsquo:         m_t << "&rsquo;"; break;
-    case DocSymbol::Ldquo:         m_t << "&ldquo;"; break;
-    case DocSymbol::Rdquo:         m_t << "&rdquo;"; break;
-    case DocSymbol::Ndash:         m_t << "&ndash;"; break;
-    case DocSymbol::Mdash:         m_t << "&mdash;"; break;
-    case DocSymbol::Uml:           m_t << "&" << s->letter() << "uml;"; break;
-    case DocSymbol::Acute:         m_t << "&" << s->letter() << "acute;"; break;
-    case DocSymbol::Grave:         m_t << "&" << s->letter() << "grave;"; break;
-    case DocSymbol::Circ:          m_t << "&" << s->letter() << "circ;"; break;
-    case DocSymbol::Slash:         m_t << "&" << s->letter() << "slash;"; break;
-    case DocSymbol::Tilde:         m_t << "&" << s->letter() << "tilde;"; break;
-    case DocSymbol::Szlig:         m_t << "&szlig;"; break;
-    case DocSymbol::Cedil:         m_t << "&" << s->letter() << "cedil;"; break;
-    case DocSymbol::Ring:          m_t << "&" << s->letter() << "ring;"; break;
-    case DocSymbol::Nbsp:          m_t << "&#160;"; break;
-    case DocSymbol::AElig:         m_t << "&AElig;"; break;
-    case DocSymbol::Aelig:         m_t << "&aelig;"; break;
-    case DocSymbol::GrkGamma:      m_t << "&Gamma;"; break;
-    case DocSymbol::GrkDelta:      m_t << "&Delta;"; break;
-    case DocSymbol::GrkTheta:      m_t << "&Theta;"; break;
-    case DocSymbol::GrkLambda:     m_t << "&Lambda;"; break;
-    case DocSymbol::GrkXi:         m_t << "&Xi;"; break;
-    case DocSymbol::GrkPi:         m_t << "&Pi;"; break;
-    case DocSymbol::GrkSigma:      m_t << "&Sigma;"; break;
-    case DocSymbol::GrkUpsilon:    m_t << "&Upsilon;"; break;
-    case DocSymbol::GrkPhi:        m_t << "&Phi;"; break;
-    case DocSymbol::GrkPsi:        m_t << "&Psi;"; break;
-    case DocSymbol::GrkOmega:      m_t << "&Omega;"; break;
-    case DocSymbol::Grkalpha:      m_t << "&alpha;"; break;
-    case DocSymbol::Grkbeta:       m_t << "&beta;"; break;
-    case DocSymbol::Grkgamma:      m_t << "&gamma;"; break;
-    case DocSymbol::Grkdelta:      m_t << "&delta;"; break;
-    case DocSymbol::Grkepsilon:    m_t << "&epsilon;"; break;
-    case DocSymbol::Grkzeta:       m_t << "&zeta;"; break;
-    case DocSymbol::Grketa:        m_t << "&eta;"; break;
-    case DocSymbol::Grktheta:      m_t << "&theta;"; break;
-    case DocSymbol::Grkiota:       m_t << "&iota;"; break;
-    case DocSymbol::Grkkappa:      m_t << "&kappa;"; break;
-    case DocSymbol::Grklambda:     m_t << "&lambda;"; break;
-    case DocSymbol::Grkmu:         m_t << "&mu;"; break;
-    case DocSymbol::Grknu:         m_t << "&nu;"; break;
-    case DocSymbol::Grkxi:         m_t << "&xi;"; break;
-    case DocSymbol::Grkpi:         m_t << "&pi;"; break;
-    case DocSymbol::Grkrho:        m_t << "&rho;"; break;
-    case DocSymbol::Grksigma:      m_t << "&sigma;"; break;
-    case DocSymbol::Grktau:        m_t << "&tau;"; break;
-    case DocSymbol::Grkupsilon:    m_t << "&upsilon;"; break;
-    case DocSymbol::Grkphi:        m_t << "&phi;"; break;
-    case DocSymbol::Grkchi:        m_t << "&chi;"; break;
-    case DocSymbol::Grkpsi:        m_t << "&psi;"; break;
-    case DocSymbol::Grkomega:      m_t << "&omega;"; break;
-    case DocSymbol::Grkvarsigma:   m_t << "&sigmaf;"; break;
-    case DocSymbol::Section:       m_t << "&sect;"; break;
-    case DocSymbol::Degree:        m_t << "&deg;"; break;
-    case DocSymbol::Prime:         m_t << "&prime;"; break;
-    case DocSymbol::DoublePrime:   m_t << "&Prime;"; break;
-    case DocSymbol::Infinity:      m_t << "&infin;"; break;
-    case DocSymbol::EmptySet:      m_t << "&empty;"; break;
-    case DocSymbol::PlusMinus:     m_t << "&plusmn;"; break;
-    case DocSymbol::Times:         m_t << "&times;"; break;
-    case DocSymbol::Minus:         m_t << "&minus;"; break;
-    case DocSymbol::CenterDot:     m_t << "&sdot;"; break;
-    case DocSymbol::Partial:       m_t << "&part;"; break;
-    case DocSymbol::Nabla:         m_t << "&nabla;"; break;
-    case DocSymbol::SquareRoot:    m_t << "&radic;"; break;
-    case DocSymbol::Perpendicular: m_t << "&perp;"; break;
-    case DocSymbol::Sum:           m_t << "&sum;"; break;
-    case DocSymbol::Integral:      m_t << "&int;"; break;
-    case DocSymbol::Product:       m_t << "&prod;"; break;
-    case DocSymbol::Similar:       m_t << "&sim;"; break;
-    case DocSymbol::Approx:        m_t << "&asymp;"; break;
-    case DocSymbol::NotEqual:      m_t << "&ne;"; break;
-    case DocSymbol::Equivalent:    m_t << "&equiv;"; break;
-    case DocSymbol::Proportional:  m_t << "&prop;"; break;
-    case DocSymbol::LessEqual:     m_t << "&le;"; break;
-    case DocSymbol::GreaterEqual:  m_t << "&ge;"; break;
-    case DocSymbol::LeftArrow:     m_t << "&larr;"; break;
-    case DocSymbol::RightArrow:    m_t << "&rarr;"; break;
-    case DocSymbol::SetIn:         m_t << "&isin;"; break;
-    case DocSymbol::SetNotIn:      m_t << "&notin;"; break;
-    case DocSymbol::LeftCeil:      m_t << "&lceil;"; break;
-    case DocSymbol::RightCeil:     m_t << "&rceil;"; break;
-    case DocSymbol::LeftFloor:     m_t << "&lfloor;"; break;
-    case DocSymbol::RightFloor:    m_t << "&rfloor;"; break;
-    default:
-       err("unknown symbol found\n");
+    m_t << res;
+  }
+  else
+  {
+    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 
@@ -329,7 +244,7 @@ void HtmlDocVisitor::visit(DocURL *u)
 void HtmlDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  m_t << "<br/>\n";
+  m_t << "<br />\n";
 }
 
 void HtmlDocVisitor::visit(DocHorRuler *hr)
@@ -417,6 +332,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: 
@@ -426,6 +342,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
                             ->parseCode(m_ci,
                                         s->context(),
                                         s->text(),
+                                        langExt,
                                         s->isExample(),
                                         s->exampleFile(),
                                         0,     // fileDef
@@ -447,7 +364,9 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       forceStartParagraph(s);
       break;
     case DocVerbatim::HtmlOnly: 
+      if (s->isBlock()) forceEndParagraph(s);
       m_t << s->text(); 
+      if (s->isBlock()) forceStartParagraph(s);
       break;
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
@@ -526,6 +445,7 @@ void HtmlDocVisitor::visit(DocAnchor *anc)
 void HtmlDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::Include: 
@@ -535,6 +455,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,                 
                                         inc->context(),
                                         inc->text(),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile(),
                                         0,     // fileDef
@@ -558,6 +479,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                ->parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
                                            &fd,   // fileDef,
@@ -577,6 +499,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::HtmlInclude: 
       m_t << inc->text(); 
       break;
+    case DocInclude::LatexInclude:
+      break;
     case DocInclude::VerbInclude: 
       forceEndParagraph(inc);
       m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";
@@ -592,6 +516,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                ->parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
                                            0,
@@ -619,6 +544,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide=TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
@@ -629,6 +555,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
                                 m_ci,
                                 op->context(),
                                 op->text(),
+                                langExt,
                                 op->isExample(),
                                 op->exampleFile(),
                                 0,     // fileDef
@@ -821,21 +748,21 @@ bool isSeparatedParagraph(DocSimpleSect *parent,DocPara *par)
   int i = nodes.findRef(par);
   if (i==-1) return FALSE;
   int count = parent->children().count();
-  if (count>1 && i==0)
+  if (count>1 && i==0) // first node
   {
     if (nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
     {
       return TRUE;
     }
   }
-  else if (count>1 && i==count-1)
+  else if (count>1 && i==count-1) // last node
   {
     if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep)
     {
       return TRUE;
     }
   }
-  else if (count>2 && i>0 && i<count-1)
+  else if (count>2 && i>0 && i<count-1) // intermediate node
   {
     if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep &&
         nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
@@ -855,9 +782,58 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
   {
     switch (p->parent()->kind()) 
     {
+      case DocNode::Kind_ParBlock:
+        { // hierarchy: node N -> para -> parblock -> para
+          // adapt return value to kind of N
+          DocNode::Kind kind = DocNode::Kind_Para;
+          if ( p->parent()->parent() && p->parent()->parent()->parent() )
+          {
+            kind = p->parent()->parent()->parent()->kind();
+          }
+          isFirst=isFirstChildNode((DocParBlock*)p->parent(),p);
+          isLast =isLastChildNode ((DocParBlock*)p->parent(),p);
+          t=0;
+          if (isFirst)
+          {
+            if (kind==DocNode::Kind_HtmlListItem ||
+                kind==DocNode::Kind_SecRefItem)
+            {
+              t=1;
+            }
+            else if (kind==DocNode::Kind_HtmlDescData ||
+                     kind==DocNode::Kind_XRefItem ||
+                     kind==DocNode::Kind_SimpleSect)
+            {
+              t=2;
+            }
+            else if (kind==DocNode::Kind_HtmlCell ||
+                     kind==DocNode::Kind_ParamList)
+            {
+              t=5;
+            }
+          }
+          if (isLast)
+          {
+            if (kind==DocNode::Kind_HtmlListItem ||
+                kind==DocNode::Kind_SecRefItem)
+            {
+              t=3;
+            }
+            else if (kind==DocNode::Kind_HtmlDescData ||
+                     kind==DocNode::Kind_XRefItem ||
+                     kind==DocNode::Kind_SimpleSect)
+            {
+              t=4;
+            }
+            else if (kind==DocNode::Kind_HtmlCell ||
+                     kind==DocNode::Kind_ParamList)
+            {
+              t=6;
+            }
+          }
+          break;
+        }
       case DocNode::Kind_AutoListItem:
-        //isFirst=TRUE;
-        //isLast =TRUE;
         isFirst=isFirstChildNode((DocAutoListItem*)p->parent(),p);
         isLast =isLastChildNode ((DocAutoListItem*)p->parent(),p);
         t=1; // not used
@@ -896,12 +872,6 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         if (isFirst) t=2;
         if (isLast)  t=4;
         break;
-      case DocNode::Kind_HtmlCell:
-        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
-        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
-        if (isFirst) t=5;
-        if (isLast)  t=6;
-        break;
       case DocNode::Kind_SimpleSect:
         isFirst=isFirstChildNode((DocSimpleSect*)p->parent(),p);
         isLast =isLastChildNode ((DocSimpleSect*)p->parent(),p);
@@ -914,6 +884,12 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         {
           isFirst=isLast=TRUE;
         }
+        break;
+      case DocNode::Kind_HtmlCell:
+        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
+        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
+        if (isFirst) t=5;
+        if (isLast)  t=6;
         break;
       default:
         break;
@@ -947,6 +923,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
       case DocNode::Kind_HtmlBlockQuote:
+      case DocNode::Kind_ParBlock:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1020,6 +997,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
       case DocNode::Kind_HtmlBlockQuote:
+      case DocNode::Kind_ParBlock:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1485,6 +1463,26 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
   m_t << "</div>" << endl;
 }
 
+void HtmlDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  m_t << "<div class=\"diagraph\">" << endl;
+  writeDiaFile(df->file(),df->relPath(),df->context());
+  if (df->hasCaption())
+  {
+    m_t << "<div class=\"caption\">" << endl;
+  }
+}
+void HtmlDocVisitor::visitPost(DocDiaFile *df)
+{
+  if (m_hide) return;
+  if (df->hasCaption())
+  {
+    m_t << "</div>" << endl;
+  }
+  m_t << "</div>" << endl;
+}
+
 void HtmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1695,6 +1693,8 @@ void HtmlDocVisitor::visitPost(DocParamList *)
 void HtmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
+
   forceEndParagraph(x);
   bool anonymousEnum = x->file()=="@";
   if (!anonymousEnum)
@@ -1716,6 +1716,7 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
 void HtmlDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (x->title().isEmpty()) return;
   m_t << "</dd></dl>" << endl;
   forceStartParagraph(x);
 }
@@ -1772,36 +1773,27 @@ void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
   forceStartParagraph(b);
 }
 
-void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
+void HtmlDocVisitor::visitPre(DocVhdlFlow *)
 {
   if (m_hide) return;
-  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
-  {
-    forceEndParagraph(vf);
-    QCString fname=FlowChart::convertNameToFileName(); 
-    m_t << "<p>";
-    m_t << "flowchart: " ; // TODO: translate me
-    m_t << "<a href=\"";
-    m_t << fname.data(); 
-    m_t << ".svg\">";
-    m_t << VhdlDocGen::getFlowMember()->name().data(); 
-    m_t << "</a>";
-    if (vf->hasCaption())
-    {
-      m_t << "<br/>";
-    }
-  }
 }
 
-void HtmlDocVisitor::visitPost(DocVhdlFlow *vf)
+void HtmlDocVisitor::visitPost(DocVhdlFlow *)
 {
   if (m_hide) return;
-  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
-  {
-    m_t << "</p>";
-    forceStartParagraph(vf);
-  }
 }
+
+void HtmlDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+void HtmlDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+
 
 void HtmlDocVisitor::filter(const char *str)
 { 
@@ -1934,8 +1926,33 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   }
   baseName.prepend("msc_");
   QCString outDir = Config_getString("HTML_OUTPUT");
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
-  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context);
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  MscOutputFormat mscFormat = MSC_BITMAP;
+  if ("svg" == imgExt)
+    mscFormat = MSC_SVG;
+  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat);
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat);
+}
+
+void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
+                                  const QCString &relPath,
+                                  const QCString &)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1) // strip path
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.find('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("dia_");
+  QCString outDir = Config_getString("HTML_OUTPUT");
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+
+  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
@@ -1970,7 +1987,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     //printf("forceEnd first=%d last=%d\n",isFirst,isLast);
     if (isFirst && isLast) return;
 
-    m_t << "</p>" << endl;
+    m_t << "</p>";
   }
 }
 

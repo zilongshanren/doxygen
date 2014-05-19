@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -110,6 +110,8 @@ class LatexDocVisitor : public DocVisitor
     void visitPost(DocDotFile *);
     void visitPre(DocMscFile *);
     void visitPost(DocMscFile *);
+    void visitPre(DocDiaFile *);
+    void visitPost(DocDiaFile *);
     void visitPre(DocLink *lnk);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);
@@ -134,6 +136,8 @@ class LatexDocVisitor : public DocVisitor
     void visitPost(DocHtmlBlockQuote *);
     void visitPre(DocVhdlFlow *);
     void visitPost(DocVhdlFlow *);
+    void visitPre(DocParBlock *);
+    void visitPost(DocParBlock *);
 
   private:
 
@@ -167,6 +171,11 @@ class LatexDocVisitor : public DocVisitor
                       const QCString &height, bool hasCaption);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName);
+
+    void startDiaFile(const QCString &fileName,const QCString &width,
+                      const QCString &height, bool hasCaption);
+    void endDiaFile(bool hasCaption);
+    void writeDiaFile(const QCString &fileName);
 
     void pushEnabled();
     void popEnabled();

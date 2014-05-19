@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -35,7 +35,8 @@ class InputString : public QObject, public Input
     enum StringMode { StringFree=0, 
                       StringFile=1, 
                       StringDir=2, 
-                      StringFixed=3
+                      StringFixed=3,
+                      StringImage=4
                     };
 
     InputString( QGridLayout *layout,int &row,
@@ -53,10 +54,12 @@ class InputString : public QObject, public Input
     Kind kind() const { return String; }
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
+    QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
     void writeValue(QTextStream &t,QTextCodec *codec);
+    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
   public slots:
     void reset();
@@ -75,6 +78,7 @@ class InputString : public QObject, public Input
     void updateDefault();
     QLabel       *m_lab;
     QLineEdit    *m_le;
+    QLabel       *m_im;
     QToolBar     *m_br;
     QComboBox    *m_com;
     QString       m_str;
@@ -86,6 +90,7 @@ class InputString : public QObject, public Input
     QString       m_docs;
     QString       m_id;
     bool          m_absPath;
+    QString       m_tdocs;
 };
 
 #endif

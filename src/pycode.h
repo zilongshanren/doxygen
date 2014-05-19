@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -25,16 +25,19 @@
 #ifndef PYCODE_H
 #define PYCODE_H
 
+#include "types.h"
+
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;
 class Definition;
 
-extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &, 
+extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &,
              bool ,const char *,FileDef *fd,
 	     int startLine,int endLine,bool inlineFragment,
-             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx);
+             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
+             bool collectXRefs);
 extern void resetPythonCodeParserState();
 
 #endif

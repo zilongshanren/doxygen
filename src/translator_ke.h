@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -34,13 +34,8 @@ class TranslatorKoreanEn : public TranslatorEnglish
     virtual QCString idLanguage()
     { return "korean-en"; }
     virtual QCString latexLanguageSupportCommand()
-      {
-	return "\\usepackage{hfont}\n";
-      }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString idLanguageCharset()
     {
-		return "euc-kr";
+      return "\\usepackage{hfont}\n";
     }
     virtual QCString trRTFansicp()
     {

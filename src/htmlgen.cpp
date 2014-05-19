@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -47,59 +47,63 @@
 #define DBG_HTML(x) 
 
 static const char defaultHtmlHeader[] =
-#include "header_html.h"
+#include "header.html.h"
 ;
 
 static const char defaultHtmlFooter[] =
-#include "footer_html.h"
+#include "footer.html.h"
 ;
 
 static const char defaultStyleSheet[] = 
-#include "doxygen_css.h"
+#include "doxygen.css.h"
 ;
 
 static const char search_functions_script[]=
-#include "search_functions_php.h"
+#include "search_functions.php.h"
 ;
 
 static const char search_opensearch_script[]=
-#include "search_opensearch_php.h"
+#include "search_opensearch.php.h"
 ;
 
 static const char search_styleSheet[] =
-#include "search_css.h"
+#include "search.css.h"
 ;
 
 static const char search_jquery_script1[]=
-#include "jquery_p1_js.h"
+#include "jquery_p1.js.h"
 ;
 
 static const char search_jquery_script2[]=
-#include "jquery_p2_js.h"
+#include "jquery_p2.js.h"
 ;
 
 static const char search_jquery_script3[]=
-#include "jquery_p3_js.h"
+#include "jquery_p3.js.h"
 ;
 
 static const char search_jquery_script4[]=
-#include "jquery_ui_js.h"
+#include "jquery_ui.js.h"
 ;
 
 static const char search_jquery_script5[]=
-#include "jquery_fx_js.h"
+#include "jquery_fx.js.h"
+;
+
+static const char search_jquery_script6[]=
+#include "jquery_pt.js.h"
 ;
 
 static const char svgpan_script[]=
-#include "svgpan_js.h"
+#include "svgpan.js.h"
 ;
 
 static const char dynsections_script[]=
-#include "dynsections_js.h"
+#include "dynsections.js.h"
 ;
 
 static const char extsearch_script[]=
-#include "extsearch_js.h"
+#include "extsearch.js.h"
 ;
 
 static QCString g_header;
@@ -1102,10 +1106,12 @@ static QCString substituteHtmlKeywords(const QCString &s,
     extraCssText = "<link href=\"$relpath^"+stripPath(extraCssFile)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   }
 
-  if (timeStamp) {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString("PROJECT_NAME"));
+  if (timeStamp) 
+  {
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), convertToHtml(Config_getString("PROJECT_NAME")));
   }
-  else {
+  else 
+  {
     generatedBy = theTranslator->trGeneratedBy();
   }
 
@@ -1247,7 +1253,7 @@ void HtmlCodeGenerator::setRelativePath(const QCString &path)
 void HtmlCodeGenerator::codify(const char *str)
 {
   static int tabSize = Config_getInt("TAB_SIZE");
-  if (str)
+  if (str && m_streamSet)
   { 
     const char *p=str;
     char c;
@@ -1294,7 +1300,7 @@ void HtmlCodeGenerator::codify(const char *str)
 
 void HtmlCodeGenerator::docify(const char *str)
 {
-  if (str)
+  if (str && m_streamSet)
   {
     const char *p=str;
     char c;
@@ -1324,25 +1330,24 @@ void HtmlCodeGenerator::docify(const char *str)
 void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
+  if (!m_streamSet) return;
   QCString lineNumber,lineAnchor;
   lineNumber.sprintf("%5d",l);
   lineAnchor.sprintf("l%05d",l);
 
+  m_t << "<div class=\"line\">";
+  m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">"; 
   if (filename)
   {
-    startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,filename,anchor,lineNumber,0);
-    endCodeAnchor();
+    _writeCodeLink("line",ref,filename,anchor,lineNumber,0);
   }
   else
   {
-    startCodeAnchor(lineAnchor);
     codify(lineNumber);
-    endCodeAnchor();
   }
+  m_t << "</span>"; 
   m_t << "&#160;";
 }
-
 
 void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
                                       const char *anchor, const char *name,
@@ -1350,14 +1355,22 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
 {
   if (!m_streamSet) return;
   //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
+  _writeCodeLink("code",ref,f,anchor,name,tooltip);
+}
+
+void HtmlCodeGenerator::_writeCodeLink(const char *className,
+                                      const char *ref,const char *f,
+                                      const char *anchor, const char *name,
+                                      const char *tooltip)
+{
   if (ref) 
   {
-    m_t << "<a class=\"codeRef\" ";
+    m_t << "<a class=\"" << className << "Ref\" ";
     m_t << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
   }
   else
   {
-    m_t << "<a class=\"code\" ";
+    m_t << "<a class=\"" << className << "\" ";
   }
   m_t << "href=\"";
   m_t << externalRef(m_relPath,ref,TRUE);
@@ -1371,28 +1384,101 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
   m_col+=qstrlen(name);
 }
 
+void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
+                                     const char *decl, const char *desc,
+                                     const SourceLinkInfo &defInfo,
+                                     const SourceLinkInfo &declInfo)
+{
+  m_t << "<div class=\"ttc\" id=\"" << id << "\">";
+  m_t << "<div class=\"ttname\">";
+  if (!docInfo.url.isEmpty())
+  {
+    m_t << "<a href=\"";
+    m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    m_t << docInfo.url << Doxygen::htmlFileExtension;
+    if (!docInfo.anchor.isEmpty())
+    {
+      m_t << "#" << docInfo.anchor;
+    }
+    m_t << "\">";
+  }
+  docify(docInfo.name);
+  if (!docInfo.url.isEmpty())
+  {
+    m_t << "</a>";
+  }
+  m_t << "</div>";
+  if (decl)
+  {
+    m_t << "<div class=\"ttdeci\">";
+    docify(decl);
+    m_t << "</div>";
+  }
+  if (desc)
+  {
+    m_t << "<div class=\"ttdoc\">";
+    m_t << desc; // desc is already HTML escaped
+    m_t << "</div>";
+  }
+  if (!defInfo.file.isEmpty())
+  {
+    m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
+    if (!defInfo.url.isEmpty())
+    {
+      m_t << "<a href=\"";
+      m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      m_t << defInfo.url << Doxygen::htmlFileExtension;
+      if (!defInfo.anchor.isEmpty())
+      {
+        m_t << "#" << defInfo.anchor;
+      }
+      m_t << "\">";
+    }
+    m_t << defInfo.file << ":" << defInfo.line;
+    if (!defInfo.url.isEmpty())
+    {
+      m_t << "</a>";
+    }
+    m_t << "</div>";
+  }
+  if (!declInfo.file.isEmpty())
+  {
+    m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
+    if (!declInfo.url.isEmpty())
+    {
+      m_t << "<a href=\"";
+      m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      m_t << declInfo.url << Doxygen::htmlFileExtension;
+      if (!declInfo.anchor.isEmpty())
+      {
+        m_t << "#" << declInfo.anchor;
+      }
+      m_t << "\">";
+    }
+    m_t << declInfo.file << ":" << declInfo.line;
+    if (!declInfo.url.isEmpty())
+    {
+      m_t << "</a>";
+    }
+    m_t << "</div>";
+  }
+  m_t << "</div>" << endl;
+}
+
+
 void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers) 
 { 
-  if (!hasLineNumbers) m_t << "<div class=\"line\">";
-  m_col=0; 
+  if (m_streamSet)
+  {
+    if (!hasLineNumbers) m_t << "<div class=\"line\">";
+    m_col=0; 
+  }
 }
 
 void HtmlCodeGenerator::endCodeLine() 
 { 
-  m_t << "</div>\n";
+  if (m_streamSet) m_t << "</div>\n";
 }
-
-void HtmlCodeGenerator::startCodeAnchor(const char *label) 
-{ 
-  m_t << "<div class=\"line\">";
-  m_t << "<a name=\"" << label << "\"></a><span class=\"lineno\">"; 
-}
-
-void HtmlCodeGenerator::endCodeAnchor() 
-{ 
-  m_t << "</span>"; 
-}
-
 
 void HtmlCodeGenerator::startFontClass(const char *s) 
 { 
@@ -1484,6 +1570,10 @@ void HtmlGenerator::init()
       {
         t << search_jquery_script4 << search_jquery_script5;
       }
+      if (Config_getBool("SOURCE_BROWSER"))
+      {
+        t << search_jquery_script6;
+      }
     }
   }
 
@@ -1503,6 +1593,16 @@ void HtmlGenerator::init()
     {
       FTextStream t(&f);
       t << dynsections_script;
+      if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
+      {
+        t << endl << 
+          "$(document).ready(function() {\n"
+          "  $('.code,.codeRef').each(function() {\n"
+          "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
+          "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
+          "  });\n"
+          "});\n";
+      }
     }
   }
 }
@@ -1583,7 +1683,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   Doxygen::indexList->addIndexFile(fileName);
   
   lastFile = fileName;
-  t << substituteHtmlKeywords(g_header,convertToHtml(title),relPath);
+  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),relPath);
 
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
@@ -2081,25 +2181,11 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
 void HtmlGenerator::startMemberList()  
 { 
   DBG_HTML(t << "<!-- startMemberList -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-  //}
-  //else
-  //{
-  //  t << "<ul>" << endl; 
-  //}
 }
 
 void HtmlGenerator::endMemberList()    
 { 
   DBG_HTML(t << "<!-- endMemberList -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-  //}
-  //else
-  //{
-  //  t << "</ul>" << endl; 
-  //}
 }
 
 // anonymous type:
@@ -2237,18 +2323,13 @@ void HtmlGenerator::endMemberTemplateParams(const char *anchor,const char *inher
 void HtmlGenerator::insertMemberAlign(bool templ) 
 { 
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    QCString className = templ ? "memTemplItemRight" : "memItemRight";
-    t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
-  //}
+  QCString className = templ ? "memTemplItemRight" : "memItemRight";
+  t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
 }
 
 void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId) 
 { 
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
     if (m_emptySection)
     {
       t << "<table class=\"memberdecls\">" << endl;
@@ -2331,60 +2412,40 @@ void HtmlGenerator::startLuaMemberDescription(const char *anchor, const char *in
 void HtmlGenerator::endMemberDescription()   
 { 
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "<br/></td></tr>" << endl; 
-  //}
-  //else
-  //{
-  //  t << "<br/></dl>";
-  //}
+  t << "<br /></td></tr>" << endl; 
 }
 
 void HtmlGenerator::startMemberSections()
 {
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    m_emptySection=TRUE; // we postpone writing <table> until we actually
-                         // write a row to prevent empty tables, which 
-                         // are not valid XHTML!
-  //}
+  m_emptySection=TRUE; // we postpone writing <table> until we actually
+                       // write a row to prevent empty tables, which 
+                       // are not valid XHTML!
 }
 
 void HtmlGenerator::endMemberSections()
 {
   DBG_HTML(t << "<!-- endMemberSections -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    if (!m_emptySection)
-    {
-      t << "</table>" << endl;
-    }
-  //}
+  if (!m_emptySection)
+  {
+    t << "</table>" << endl;
+  }
 }
 
 void HtmlGenerator::startMemberHeader(const char *anchor)
 {
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    if (!m_emptySection)
-    {
-      t << "</table>";
-      m_emptySection=TRUE;
-    }
-    if (m_emptySection)
-    {
-      t << "<table class=\"memberdecls\">" << endl;
-      m_emptySection=FALSE;
-    }
-    t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
-  //}
-  //else
-  //{
-  //  startGroupHeader(FALSE);
-  //}
+  if (!m_emptySection)
+  {
+    t << "</table>";
+    m_emptySection=TRUE;
+  }
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
   if (anchor)
   {
     t << "<a name=\"" << anchor << "\"></a>" << endl;
@@ -2394,28 +2455,19 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
 void HtmlGenerator::endMemberHeader()
 {
   DBG_HTML(t << "<!-- endMemberHeader -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "</h2></td></tr>" << endl;
-  //}
-  //else
-  //{
-  //  endGroupHeader(FALSE);
-  //}
+  t << "</h2></td></tr>" << endl;
 }
 
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
-    t << "<tr><td class=\"ititle\" colspan=\"2\">";
+  t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
-    t << "</td></tr>" << endl;
+  t << "</td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -2564,7 +2616,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
   {
     if (emptyList)
     {
-      if (closeBracket) t << ")</td><td>";
+      if (closeBracket) t << "</td><td>)";
       t << "</td>" << endl;
       t << "          <td>";
     }
@@ -2814,9 +2866,9 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *md)
+void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx,md);
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx);
   n->accept(visitor);
   delete visitor; 
 }
@@ -3158,7 +3210,7 @@ void HtmlGenerator::writeSearchPage()
     FTextStream t(&cf);
     t << "<script language=\"php\">\n\n";
     t << "$config = array(\n";
-    t << "  'PROJECT_NAME' => \"" << projectName << "\",\n";
+    t << "  'PROJECT_NAME' => \"" << convertToHtml(projectName) << "\",\n";
     t << "  'GENERATE_TREEVIEW' => " << (generateTreeView?"true":"false") << ",\n";
     t << "  'DISABLE_INDEX' => " << (disableIndex?"true":"false") << ",\n";
     t << ");\n\n";
@@ -3351,7 +3403,7 @@ void HtmlGenerator::writeExternalSearchPage()
 void HtmlGenerator::startConstraintList(const char *header)
 {
   t << "<div class=\"typeconstraint\">" << endl;
-  t << "<dl><dt><b>" << header << "</b><dt><dd>" << endl;
+  t << "<dl><dt><b>" << header << "</b></dt><dd>" << endl;
   t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl;
 }
 
@@ -3396,11 +3448,11 @@ void HtmlGenerator::lineBreak(const char *style)
 {
   if (style)
   {
-    t << "<br class=\"" << style << "\"/>" << endl;
+    t << "<br class=\"" << style << "\" />" << endl;
   }
   else
   {
-    t << "<br/>" << endl;
+    t << "<br />" << endl;
   }
 }
 

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -32,7 +32,7 @@ class PageDef : public Definition
    ~PageDef();
 
     // setters
-    void setFileName(const char *name) { m_fileName = name; }
+    void setFileName(const char *name,bool dontEscape);
     void setShowToc(bool b);
 
     // getters
@@ -70,7 +70,6 @@ class PageDef : public Definition
     void writePageDocumentation(OutputList &ol);
     QCString m_fileName;
     QCString m_title;
-    GroupDef *m_inGroup;
     PageSDict *m_subPageDict;                 // list of pages in the group
     Definition *m_pageScope;
     int m_nestingLevel;
@@ -82,9 +81,10 @@ class PageSDict : public SDict<PageDef>
   public:
     PageSDict(int size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
-    int compareItems(QCollection::Item i1,QCollection::Item i2)
+  private:
+    int compareValues(const PageDef *i1,const PageDef *i2) const
     {
-      return qstricmp(((PageDef *)i1)->name(),((PageDef *)i2)->name());
+      return qstricmp(i1->name(),i2->name());
     }
 };
 

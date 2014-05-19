@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,6 +33,7 @@
 #include "version.h"
 #include "portable.h"
 #include "util.h"
+#include "message.h"
 
 #include "lang_cfg.h"
 #include "configoptions.h"
@@ -77,7 +78,7 @@ static QCString configStringRecode(
 
 /* -----------------------------------------------------------------
  */
-QCString ConfigOption::convertToComment(const QCString &s, const QCString &u)
+static QCString convertToComment(const QCString &s, const QCString &u)
 {
   //printf("convertToComment(%s)=%s\n",s.data(),u.data());
   QCString result;
@@ -183,7 +184,10 @@ void ConfigInt::convertStrToVal()
       config_warn("Warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
-    m_value=val;
+    else
+    {
+      m_value=val;
+    }
   }
 }
 
@@ -282,112 +286,126 @@ bool &Config::getBool(const char *fileName,int num,const char *name) const
   }
   else if (opt->kind()!=ConfigOption::O_Bool)
   {
-    config_err("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
+    config_err("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigBool *)opt)->valueRef();
 }
 
-/* -----------------------------------------------------------------
- */
+/* ------------------------------------------ */
 
-void ConfigInt::writeXML(FTextStream& t)
+void ConfigInfo::writeTemplate(FTextStream &t, bool sl,bool)
 {
-  t << "    <option type='int' "
-       "id='" << convertToXML(name()) << "' "
-       "docs='\n" << convertToXML(docs()) << "' "
-       "minval='" << m_minVal << "' "
-       "maxval='" << m_maxVal << "' "
-       "defval='" << m_defValue << "'";
-  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
-  t << "/>" << endl;
-}
-
-void ConfigBool::writeXML(FTextStream& t)
-{
-  t << "    <option type='bool' "
-       "id='" << convertToXML(name()) << "' "
-       "docs='\n" << convertToXML(docs()) << "' "
-       "defval='" << m_defValue << "'";
-  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
-  t << "/>" << endl;
-}
-
-void ConfigString::writeXML(FTextStream& t)
-{
-  QString format;
-  switch (m_widgetType)
+  if (!sl)
   {
-    case String: format="string"; break;
-    case File:   format="file";   break;
-    case Dir:    format="dir";    break;
+    t << "\n";
   }
-  t << "    <option type='string' "
-       "id='" << convertToXML(name()) << "' "
-       "format='" << format << "' "
-       "docs='\n" << convertToXML(docs()) << "' "
-       "defval='" << convertToXML(m_defValue) << "'";
-  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
-  t << "/>" << endl;
+  t << "#---------------------------------------------------------------------------\n";
+  t << "# " << m_doc << endl;
+  t << "#---------------------------------------------------------------------------\n";
 }
 
-void ConfigEnum::writeXML(FTextStream &t)
+void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
 {
-  t << "    <option type='enum' "
-       "id='" << convertToXML(name()) << "' "
-       "defval='" << convertToXML(m_defValue) << "' "
-       "docs='\n" << convertToXML(docs()) << "'";
-  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
-  t << ">" << endl;
-
-  char *enumVal = m_valueRange.first();
-  while (enumVal)
+  if (!sl)
   {
-    t << "      <value name='" << convertToXML(enumVal) << "'/>" << endl;
-    enumVal = m_valueRange.next();
+    t << endl;
+    t << convertToComment(m_doc, m_userComment);
+    t << endl;
   }
-
-  t << "    </option>" << endl;
-}
-
-void ConfigList::writeXML(FTextStream &t)
-{
-  QString format;
-  switch (m_widgetType)
+  else if (!m_userComment.isEmpty())
   {
-    case String:     format="string";  break;
-    case File:       format="file";    break;
-    case Dir:        format="dir";     break;
-    case FileAndDir: format="filedir"; break;
+    t << convertToComment("", m_userComment);
   }
-  t << "    <option type='list' "
-       "id='" << convertToXML(name()) << "' "
-       "format='" << format << "' "
-       "docs='\n" << convertToXML(docs()) << "'";
-  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
-  t << ">" << endl;
-  char *enumVal = m_value.first();
-  while (enumVal)
+  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  writeStringList(t,m_value);
+  t << "\n";
+}
+
+void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
+{
+  if (!sl)
   {
-    t << "      <value name='" << convertToXML(enumVal) << "'/>" << endl;
-    enumVal = m_value.next();
+    t << endl;
+    t << convertToComment(m_doc, m_userComment);
+    t << endl;
   }
-
-  t << "    </option>" << endl;
+  else if (!m_userComment.isEmpty())
+  {
+    t << convertToComment("", m_userComment);
+  }
+  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  writeStringValue(t,m_value);
+  t << "\n";
 }
 
-void ConfigObsolete::writeXML(FTextStream &t)
+void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
 {
-  t << "    <option type='obsolete' "
-       "id='" << convertToXML(name()) << "'/>" << endl;
+  if (!sl)
+  {
+    t << endl;
+    t << convertToComment(m_doc, m_userComment);
+    t << endl;
+  }
+  else if (!m_userComment.isEmpty())
+  {
+    t << convertToComment("", m_userComment);
+  }
+  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  writeStringValue(t,m_value);
+  t << "\n";
 }
 
-void ConfigDisabled::writeXML(FTextStream &t)
+void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
-  t << "    <option type='disabled' "
-       "id='" << convertToXML(name()) << "'/>" << endl;
+  if (!sl)
+  {
+    t << endl;
+    t << convertToComment(m_doc, m_userComment);
+    t << endl;
+  }
+  else if (!m_userComment.isEmpty())
+  {
+    t << convertToComment("", m_userComment);
+  }
+  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  if (upd && !m_valueString.isEmpty())
+  {
+    writeStringValue(t,m_valueString);
+  }
+  else
+  {
+    writeIntValue(t,m_value);
+  }
+  t << "\n";
 }
 
+void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
+{
+  if (!sl)
+  {
+    t << endl;
+    t << convertToComment(m_doc, m_userComment);
+    t << endl;
+  }
+  else if (!m_userComment.isEmpty())
+  {
+    t << convertToComment("", m_userComment);
+  }
+  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  if (upd && !m_valueString.isEmpty())
+  {
+    writeStringValue(t,m_valueString);
+  }
+  else
+  {
+    writeBoolValue(t,m_value);
+  }
+  t << "\n";
+}
+
+void ConfigObsolete::writeTemplate(FTextStream &,bool,bool) {}
+void ConfigDisabled::writeTemplate(FTextStream &,bool,bool) {}
 
 /* -----------------------------------------------------------------
  *
@@ -417,6 +435,7 @@ static QCString          includeName;
 static QStrList          includePathList;
 static QStack<ConfigFileState> includeStack;  
 static int               includeDepth;
+static bool              config_upd = FALSE;
 
 static QCString     tabSizeString;
 static QCString     maxInitLinesString;
@@ -654,15 +673,31 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(GetString);
 						 break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 if (config_upd)
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' has become obsolete.\n"
+						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+                                                 }
+                                                 else
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' has become obsolete.\n"
+						              "         To avoid this warning please remove this line from your configuration "
+							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 }
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
-					         config_err("Warning: Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
-						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 if (config_upd)
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+                                                 }
+                                                 else
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+						              "         To avoid this warning please remove this line from your configuration "
+							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 }
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -827,69 +862,29 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "# Doxyfile " << versionString << endl << endl;
   if (!sl)
   {
-    t << "# This file describes the settings to be used by the documentation system\n";
-    t << "# doxygen (www.doxygen.org) for a project.\n";
-    t << "#\n";
-    t << "# All text after a double hash (##) is considered a comment and is placed\n";
-    t << "# in front of the TAG it is preceding .\n";
-    t << "# All text after a hash (#) is considered a comment and will be ignored.\n";
-    t << "# The format is:\n";
-    t << "#       TAG = value [value, ...]\n";
-    t << "# For lists items can also be appended using:\n";
-    t << "#       TAG += value [value, ...]\n";
-    t << "# Values that contain spaces should be placed between quotes (\" \").\n";
+    t << convertToComment(m_header,"");
   }
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->writeTemplate(t,sl,upd);
-    option = m_options->next();
   }
   /* print last lines of user comment that were at the end of the file */
   if (m_userComment)
   {
     t << "\n";
-    t << m_userComment;
+    t << takeUserComment();
   }
-}
-
-void Config::writeXML(FTextStream &t)
-{
-  t << "<doxygenconfig>" << endl;
-  bool first=TRUE;
-  ConfigOption *option = m_options->first();
-  while (option)
-  {
-    if (option->kind()==ConfigOption::O_Info)
-    {
-      if (!first) t << "  </group>" << endl;
-      t << "  <group name='" << option->name() << "' "
-	   "docs='"        << option->docs() << "'>" << endl;
-      first=FALSE;
-    }
-    else
-    {
-      option->writeXML(t);
-    }
-    option = m_options->next();
-  }
-  option = m_obsolete->first();
-  while (option)
-  {
-    option->writeXML(t);
-    option = m_obsolete->next();
-  }
-  if (!first) t << "  </group>" << endl;
-  t << "</doxygenconfig>" << endl;
 }
 
 void Config::convertStrToVal()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->convertStrToVal();
-    option = m_options->next();
   }
 }
 
@@ -1025,11 +1020,11 @@ void ConfigEnum::substEnvVars()
 
 void Config::substituteEnvironmentVars()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->substEnvVars();
-    option = m_options->next();
   }
 }
 
@@ -1065,6 +1060,18 @@ static void cleanUpPaths(QStrList &str)
       }
     }
     sfp = str.next();
+  }
+}
+
+void Config::checkFileName(const char *optionName)
+{
+  QCString &s = Config_getString(optionName);
+  QCString val = s.stripWhiteSpace().lower();
+  if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
+      (val=="no"  || val=="false" || val=="0" || val=="none")) 
+  {
+    config_err("Error: file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
+    s=""; // note tihe use of &s above: this will change the option value!
   }
 }
 
@@ -1261,7 +1268,7 @@ void Config::check()
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     config_err("Warning: doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTPATH.\n"
+               "You may want to clear or change DOT_FONTNAME.\n"
                "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
   
@@ -1322,7 +1329,30 @@ void Config::check()
     mscgenPath="";
   }
 
-  
+  // check dia path
+  QCString &diaPath = Config_getString("DIA_PATH");
+  if (!diaPath.isEmpty())
+  {
+    QFileInfo dp(diaPath+"/dia"+portable_commandExtension());
+    if (!dp.exists() || !dp.isFile())
+    {
+      config_err("Warning: dia could not be found at %s\n",diaPath.data());
+      diaPath="";
+    }
+    else
+    {
+      diaPath=dp.dirPath(TRUE).utf8()+"/";
+#if defined(_WIN32) // convert slashes
+      uint i=0,l=diaPath.length();
+      for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
+#endif
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    diaPath="";
+  }
+
   // check input
   QStrList &inputSources=Config_getList("INPUT");
   if (inputSources.count()==0)
@@ -1559,20 +1589,44 @@ void Config::check()
     Config_getBool("EXTRACT_PACKAGE")       = TRUE;
   }                               
 
+  checkFileName("GENERATE_TAGFILE");
+
+#if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
+      // So this and other regressions should be analysed and fixed before this can be enabled
+  // disable any boolean options that depend on disabled options
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (it.toFirst();(option=it.current());++it)
+  {
+    QCString depName = option->dependsOn(); // option has a dependency
+    if (!depName.isEmpty())
+    {
+      ConfigOption * dep = Config::instance()->get(depName);
+      if (dep->kind()==ConfigOption::O_Bool &&
+          Config_getBool(depName)==FALSE) // dependent option is disabled
+      {
+        if (option->kind()==ConfigOption::O_Bool)
+        {
+          printf("disabling option %s\n",option->name().data());
+          Config_getBool(option->name())=FALSE; // also disable this option
+        }
+      }
+    }
+  }
+#endif
 }
 
 void Config::init()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->init();
-    option = m_options->next();
   }
 
   // sanity check if all depends relations are valid
-  option = m_options->first();
-  while (option)
+  for (it.toFirst();(option=it.current());++it)
   {
     QCString depName = option->dependsOn();
     if (!depName.isEmpty())
@@ -1585,7 +1639,6 @@ void Config::init()
         exit(1);
       }
     }
-    option = m_options->next();
   }
 }
 
@@ -1654,7 +1707,7 @@ static QCString configFileToString(const char *name)
   return "";
 }
 
-bool Config::parseString(const char *fn,const char *str)
+bool Config::parseString(const char *fn,const char *str,bool update)
 {
   config = Config::instance();
   inputString   = str;
@@ -1666,15 +1719,21 @@ bool Config::parseString(const char *fn,const char *str)
   includeDepth  = 0;
   configYYrestart( configYYin );
   BEGIN( Start );
+  config_upd = update;
   configYYlex();
+  config_upd = FALSE;
   inputString = 0;
   return TRUE;
 }
 
-bool Config::parse(const char *fn)
+bool Config::parse(const char *fn,bool update)
 {
+  int retval;
   encoding = "UTF-8";
-  return parseString(fn,configFileToString(fn)); 
+  printlex(yy_flex_debug, TRUE, __FILE__, fn);
+  retval =  parseString(fn,configFileToString(fn), update); 
+  printlex(yy_flex_debug, FALSE, __FILE__, fn);
+  return retval;
 }
 
 extern "C" { // some bogus code to keep the compiler happy

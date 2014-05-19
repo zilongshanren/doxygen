@@ -1,7 +1,7 @@
 #
 # 
 #
-# Copyright (C) 1997-2013 by Dimitri van Heesch.
+# Copyright (C) 1997-2014 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -18,11 +18,15 @@
 
 LEX        = %%FLEX%%
 YACC       = %%BISON%%
-INCBUFSIZE = $(PERL) increasebuffer.pl
+PYTHON     = %%PYTHON%%
+PERL       = %%PERL%%
+INCBUFSIZE = $(PYTHON) increasebuffer.py
+GENERATED_SRC = ../generated_src/doxygen
+GENERATED_OBJ = ../objects/doxygen
 
 #${
 sub GenerateDep {
-    my($obj,$src,$dep) = @_;
+    my($obj,$src,@deps) = @_;
     my(@objv,$srcv,$i,$s,$o,$d,$c);
     @objv = split(/\s+/,$obj);
     @srcv = split(/\s+/,$src);
@@ -31,7 +35,9 @@ sub GenerateDep {
         $o = $objv[$i];
         next if $s eq "";
         $text .= $o . ": " . $s;
-	$text .= " ${linebreak}\n\t\t" . $dep if $dep ne "";
+        foreach my $dep (@deps) {
+	  $text .= " ${linebreak}\n\t\t" . $dep if $dep ne "";
+        }
         if ( $moc_output{$s} ne "" ) {
             $text .= " ${linebreak}\n\t\t" . $moc_output{$s};
         }
@@ -41,152 +47,163 @@ sub GenerateDep {
     }
     chop $text;
 }
+sub GenerateLex {
+    my($name,$caseOpt) = @_;
+    $text = "\t\$(LEX) ";
+    if ($caseOpt) {
+        $text .= "-i ";
+    }
+    $text .= "-P".$name."YY -t ".$name.".l | \$(INCBUFSIZE) > \$(GENERATED_SRC)/".$name.".cpp";
+}
 #$} 
 
 ####################
 
-#$ GenerateDep("scanner.cpp","scanner.l");
-	$(LEX) -PscanYY -t scanner.l | $(INCBUFSIZE) >scanner.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/scanner.cpp","scanner.l");
+#$ GenerateLex("scanner",0);
 
-#$ GenerateDep("code.cpp","code.l");
-	$(LEX) -PcodeYY -t code.l | $(INCBUFSIZE) >code.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/code.cpp","code.l");
+#$ GenerateLex("code",0);
 
-#$ GenerateDep("pyscanner.cpp","pyscanner.l");
-	$(LEX) -PpyscanYY -t pyscanner.l | $(INCBUFSIZE) >pyscanner.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/pyscanner.cpp","pyscanner.l");
+#$ GenerateLex("pyscanner",0);
 
-#$ GenerateDep("pycode.cpp","pycode.l");
-	$(LEX) -PpycodeYY -t pycode.l | $(INCBUFSIZE) >pycode.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/pycode.cpp","pycode.l");
+#$ GenerateLex("pycode",0);
 
-#$ GenerateDep("fortranscanner.cpp","fortranscanner.l");
-	$(LEX) -i -PfscanYY -t fortranscanner.l | $(INCBUFSIZE) >fortranscanner.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/fortranscanner.cpp","fortranscanner.l");
+#$ GenerateLex("fortranscanner",1);
 
-#$ GenerateDep("fortrancode.cpp","fortrancode.l");
-	$(LEX) -i -PfcodeYY -t fortrancode.l | $(INCBUFSIZE) >fortrancode.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/fortrancode.cpp","fortrancode.l");
+#$ GenerateLex("fortrancode",1);
 
-#$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
-	$(LEX) -i -PvhdlcodeYY -t vhdlcode.l | $(INCBUFSIZE) >vhdlcode.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlcode.cpp","vhdlcode.l");
+#$ GenerateLex("vhdlcode",1);
 
-#$ GenerateDep("tclscanner.cpp","tclscanner.l");
-	$(LEX) -i -PtclscanYY -t tclscanner.l | $(INCBUFSIZE) >tclscanner.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/tclscanner.cpp","tclscanner.l");
+#$ GenerateLex("tclscanner",1);
 
-#$ GenerateDep("pre.cpp","pre.l");
-	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
+#$ GenerateDep("\$(GENERATED_SRC)/pre.cpp","pre.l");
+#$ GenerateLex("pre",0);
 
-#$ GenerateDep("declinfo.cpp","declinfo.l");
-	$(LEX) -PdeclinfoYY -t declinfo.l | $(INCBUFSIZE) >declinfo.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/declinfo.cpp","declinfo.l");
+#$ GenerateLex("declinfo",0);
 
-#$ GenerateDep("defargs.cpp","defargs.l");
-	$(LEX) -PdefargsYY -t defargs.l | $(INCBUFSIZE) >defargs.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/defargs.cpp","defargs.l");
+#$ GenerateLex("defargs",0);
 
-#$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
-	$(LEX) -PdoctokenizerYY -t doctokenizer.l | $(INCBUFSIZE) >doctokenizer.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/doctokenizer.cpp","doctokenizer.l");
+#$ GenerateLex("doctokenizer",0);
 
-#$ GenerateDep("commentcnv.cpp","commentcnv.l");
-	$(LEX) -PcommentcnvYY -t commentcnv.l | $(INCBUFSIZE) >commentcnv.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/commentcnv.cpp","commentcnv.l");
+#$ GenerateLex("commentcnv",0);
 
-#$ GenerateDep("commentscan.cpp","commentscan.l");
-	$(LEX) -PcommentScanYY -t commentscan.l | $(INCBUFSIZE) >commentscan.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/commentscan.cpp","commentscan.l");
+#$ GenerateLex("commentscan",0);
 
-#$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
-	$(LEX) -PcppExpYY -t constexp.l | $(INCBUFSIZE) >ce_lex.cpp 
+#$ GenerateDep("\$(GENERATED_SRC)/constexp.cpp","constexp.l","\$(GENERATED_SRC)/ce_parse.h");
+#$ GenerateLex("constexp",0);
 
-#$ GenerateDep("ce_parse.cpp","constexp.y");
-	$(YACC) -l -p cppExpYY constexp.y -o ce_parse.cpp 
+#$ GenerateDep("\$(GENERATED_SRC)/ce_parse.cpp","constexp.y");
+	$(YACC) -l -p constexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.cpp 
 
-#$ GenerateDep("ce_parse.h","constexp.y");
-	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
-	-rm ce_parse.c
+#$ GenerateDep("\$(GENERATED_SRC)/ce_parse.h","constexp.y");
+	$(YACC) -l -d -p ce_parsexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.c 
+	-rm $(GENERATED_SRC)/ce_parse.c
 
-#$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l","vhdlparser.h");
-	$(LEX) -i -PvhdlScanYY -t vhdlscanner.l | $(INCBUFSIZE) >vhdlscanner.cpp
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l");
+#$ GenerateLex("vhdlscanner",1);
 
-#$ GenerateDep("vhdlparser.cpp","vhdlparser.y");
-	$(YACC) -l -p vhdlScanYY vhdlparser.y -o vhdlparser.cpp 	
+TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 
-#$ GenerateDep("vhdlparser.h","vhdlparser.y");
-	$(YACC) -l -d -p vhdlScanYY vhdlparser.y -o vhdlparser.c 
-	-rm vhdlparser.c	
-	
-#$ GenerateDep("layout.cpp","layout_default.h");
+#$ GenerateDep("layout.cpp","\$(GENERATED_SRC)/layout_default.xml.h");
 
-TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
+#$ GenerateDep("cite.cpp","\$(GENERATED_SRC)/doxygen.bst.h","\$(GENERATED_SRC)/bib2xhtml.pl.h");
 
-index_xsd.h: index.xsd
-	cat index.xsd | $(TO_C_CMD) >index_xsd.h 
+#$ GenerateDep("ftvhelp.cpp","\$(GENERATED_SRC)/navtree.js.h","\$(GENERATED_SRC)/resize.js.h","\$(GENERATED_SRC)/navtree.css.h");
 
-compound_xsd.h: compound.xsd
-	cat compound.xsd | $(TO_C_CMD) >compound_xsd.h 
+#$ GenerateDep("htmlgen.cpp","\$(GENERATED_SRC)/header.html.h","\$(GENERATED_SRC)/footer.html.h","\$(GENERATED_SRC)/doxygen.css.h","\$(GENERATED_SRC)/search_functions.php.h","\$(GENERATED_SRC)/search_opensearch.php.h","\$(GENERATED_SRC)/search.css.h","\$(GENERATED_SRC)/jquery_p1.js.h","\$(GENERATED_SRC)/jquery_p2.js.h","\$(GENERATED_SRC)/jquery_p3.js.h","\$(GENERATED_SRC)/jquery_ui.js.h","\$(GENERATED_SRC)/jquery_fx.js.h","\$(GENERATED_SRC)/jquery_pt.js.h","\$(GENERATED_SRC)/svgpan.js.h","\$(GENERATED_SRC)/dynsections.js.h","\$(GENERATED_SRC)/extsearch.js.h");
 
-layout_default.h: layout_default.xml
-	cat layout_default.xml | $(TO_C_CMD) >layout_default.h 
+#$ GenerateDep("xmlgen.cpp","\$(GENERATED_SRC)/index.xsd.h","\$(GENERATED_SRC)/compound.xsd.h");
 
-header_html.h: header.html
-	cat header.html | $(TO_C_CMD) >header_html.h
+#$ GenerateDep("latexgen.cpp","\$(GENERATED_SRC)/doxygen.sty.h");
 
-footer_html.h: footer.html
-	cat footer.html | $(TO_C_CMD) >footer_html.h
+#$ GenerateDep("searchindex.cpp","\$(GENERATED_SRC)/search.js.h");
 
-search_functions_php.h: search_functions.php
-	cat search_functions.php | $(TO_C_CMD) >search_functions_php.h 
+$(GENERATED_SRC)/index.xsd.h: index.xsd
+	$(TO_C_CMD)
 
-search_opensearch_php.h: search_opensearch.php
-	cat search_opensearch.php | $(TO_C_CMD) >search_opensearch_php.h 
+$(GENERATED_SRC)/compound.xsd.h: compound.xsd
+	$(TO_C_CMD)
 
-search_js.h: search.js
-	cat search.js | $(TO_C_CMD) >search_js.h 
+$(GENERATED_SRC)/layout_default.xml.h: layout_default.xml
+	$(TO_C_CMD)
 
-search_css.h: search.css
-	cat search.css | $(TO_C_CMD) >search_css.h 
+$(GENERATED_SRC)/header.html.h: header.html
+	$(TO_C_CMD)
 
-extsearch_js.h: extsearch.js
-	cat extsearch.js | $(TO_C_CMD) >extsearch_js.h 
+$(GENERATED_SRC)/footer.html.h: footer.html
+	$(TO_C_CMD)
 
-doxygen_css.h: doxygen.css
-	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
+$(GENERATED_SRC)/search_functions.php.h: search_functions.php
+	$(TO_C_CMD)
 
-doxygen_sty.h: doxygen.sty
-	cat doxygen.sty | $(TO_C_CMD) >doxygen_sty.h 
+$(GENERATED_SRC)/search_opensearch.php.h: search_opensearch.php
+	$(TO_C_CMD)
 
-navtree_js.h: navtree.js
-	cat navtree.js | $(TO_C_CMD) >navtree_js.h
+$(GENERATED_SRC)/search.js.h: search.js
+	$(TO_C_CMD)
 
-navindex_js.h: navindex.js
-	cat navindex.js | $(TO_C_CMD) >navindex_js.h
+$(GENERATED_SRC)/search.css.h: search.css
+	$(TO_C_CMD)
 
-resize_js.h: resize.js
-	cat resize.js | $(TO_C_CMD) >resize_js.h
+$(GENERATED_SRC)/extsearch.js.h: extsearch.js
+	$(TO_C_CMD)
 
-jquery_p1_js.h: jquery_p1.js
-	cat jquery_p1.js | $(TO_C_CMD) >jquery_p1_js.h
+$(GENERATED_SRC)/doxygen.css.h: doxygen.css
+	$(TO_C_CMD)
 
-jquery_p2_js.h: jquery_p2.js
-	cat jquery_p2.js | $(TO_C_CMD) >jquery_p2_js.h
+$(GENERATED_SRC)/doxygen.sty.h: doxygen.sty
+	$(TO_C_CMD)
 
-jquery_p3_js.h: jquery_p3.js
-	cat jquery_p3.js | $(TO_C_CMD) >jquery_p3_js.h
+$(GENERATED_SRC)/navtree.js.h: navtree.js
+	$(TO_C_CMD)
 
-jquery_p4_js.h: jquery_p4.js
-	cat jquery_p4.js | $(TO_C_CMD) >jquery_p4_js.h
+$(GENERATED_SRC)/resize.js.h: resize.js
+	$(TO_C_CMD)
 
-jquery_ui_js.h: jquery_ui.js
-	cat jquery_ui.js | $(TO_C_CMD) >jquery_ui_js.h
+$(GENERATED_SRC)/jquery_p1.js.h: jquery_p1.js
+	$(TO_C_CMD)
 
-jquery_fx_js.h: jquery_fx.js
-	cat jquery_fx.js | $(TO_C_CMD) >jquery_fx_js.h
+$(GENERATED_SRC)/jquery_p2.js.h: jquery_p2.js
+	$(TO_C_CMD)
 
-navtree_css.h: navtree.css
-	cat navtree.css | $(TO_C_CMD) >navtree_css.h
+$(GENERATED_SRC)/jquery_p3.js.h: jquery_p3.js
+	$(TO_C_CMD)
 
-svgpan_js.h: svgpan.js
-	cat svgpan.js | $(TO_C_CMD) >svgpan_js.h
+$(GENERATED_SRC)/jquery_ui.js.h: jquery_ui.js
+	$(TO_C_CMD)
 
-dynsections_js.h: dynsections.js
-	cat dynsections.js | $(TO_C_CMD) >dynsections_js.h
+$(GENERATED_SRC)/jquery_fx.js.h: jquery_fx.js
+	$(TO_C_CMD)
 
-doxygen_bst.h: doxygen.bst
-	cat doxygen.bst | $(TO_C_CMD) >doxygen_bst.h
+$(GENERATED_SRC)/jquery_pt.js.h: jquery_pt.js
+	$(TO_C_CMD)
 
-bib2xhtml.h: bib2xhtml.pl
-	cat bib2xhtml.pl | $(TO_C_CMD) >bib2xhtml.h
+$(GENERATED_SRC)/navtree.css.h: navtree.css
+	$(TO_C_CMD)
 
+$(GENERATED_SRC)/svgpan.js.h: svgpan.js
+	$(TO_C_CMD)
 
+$(GENERATED_SRC)/dynsections.js.h: dynsections.js
+	$(TO_C_CMD)
+
+$(GENERATED_SRC)/doxygen.bst.h: doxygen.bst
+	$(TO_C_CMD)
+
+$(GENERATED_SRC)/bib2xhtml.pl.h: bib2xhtml.pl
+	$(TO_C_CMD)
+
+$(GENERATED_SRC)/version.cpp: ../configure
+	$(PYTHON) version.py $(GENERATED_SRC)

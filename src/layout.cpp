@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,7 +33,7 @@
 #include <qtextstream.h>
 
 static const char layout_default[] =
-#include "layout_default.h"
+#include "layout_default.xml.h"
 ;
 
 #define ADD_OPTION(langId,text) "|"+QCString().setNum(langId)+"="+text
@@ -582,7 +582,7 @@ class LayoutParser : public QXmlDefaultHandler
                                            SrcLangExt_Fortran,theTranslator->trModules()
                                          )));
       m_sHandler.insert("file/memberdecl/constantgroups",
-          new StartElementHandlerSection(this,LayoutDocEntry::FileNamespaces,&LayoutParser::startSectionEntry,
+          new StartElementHandlerSection(this,LayoutDocEntry::FileConstantGroups,&LayoutParser::startSectionEntry,
                                          theTranslator->trConstantGroups()));
       m_sHandler.insert("file/memberdecl/defines", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,

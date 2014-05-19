@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -31,14 +31,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int cppExpYYerror(const char *s)
+int constexpYYerror(const char *s)
 {
   warn(g_constExpFileName,g_constExpLineNr,
        "preprocessing issue while doing constant expression evaluation: %s",s);
   return 0;
 }
 
-int cppExpYYlex();
+int constexpYYlex();
 
 %}
 

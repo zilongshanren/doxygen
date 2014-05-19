@@ -468,6 +468,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   projVersion->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
   // project icon
   QLabel *projLogo = new QLabel(this);
+  projLogo->setMinimumSize(1,55);
   projLogo->setText(tr("Project logo:"));
   projLogo->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
@@ -481,10 +482,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   m_projNumber = new QLineEdit;
   QPushButton *projIconSel = new QPushButton(this);
   projIconSel->setText(tr("Select..."));
-  QPixmap pm(QSize(120,55));
-  pm.fill();
   m_projIconLab = new QLabel;
-  m_projIconLab->setPixmap(pm);
 
   grid->addWidget(m_projName,0,1,1,2);
   grid->addWidget(m_projBrief,1,1,1,2);
@@ -567,12 +565,31 @@ void Step1::selectProjectIcon()
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   QString iconName = QFileDialog::getOpenFileName(this,
                                     tr("Select project icon/image"),path);
-  QPixmap pm(iconName);
-  if (!pm.isNull())
+  if (iconName.isEmpty())
   {
-    m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
-    updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);
+    m_projIconLab->setText(tr("No Project logo selected."));
   }
+  else
+  {
+    QFile Fout(iconName);
+    if(!Fout.exists()) 
+    {
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+    }
+    else
+    {
+      QPixmap pm(iconName);
+      if (!pm.isNull())
+      {
+        m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      }
+      else
+      {
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+      }
+    }
+  }
+  updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);
 }
 
 void Step1::selectSourceDir()
@@ -663,17 +680,27 @@ void Step1::init()
   QString iconName = getStringOption(m_modelData,STR_PROJECT_LOGO);
   if (!iconName.isEmpty())
   {
-    QPixmap pm(iconName);
-    if (!pm.isNull())
+    QFile Fout(iconName);
+    if(!Fout.exists()) 
     {
-      m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+    }
+    else
+    {
+      QPixmap pm(iconName);
+      if (!pm.isNull())
+      {
+        m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      }
+      else
+      {
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+      }
     }
   }
   else
   {
-    QPixmap pm(QSize(120,55));
-    pm.fill();
-    m_projIconLab->setPixmap(pm);
+    m_projIconLab->setText(tr("No Project logo selected."));
   }
   option = m_modelData[STR_INPUT];
   if (option->value().toStringList().count()>0)
@@ -1265,17 +1292,24 @@ void Wizard::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
     {
       m_topicStack->setCurrentWidget(m_step4);
       m_prev->setEnabled(true);
-      m_next->setEnabled(false);
+      m_next->setEnabled(true);
     }
   }
 }
 
 void Wizard::nextTopic()
 {
-  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
-  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
-  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  if (m_topicStack->currentIndex()+1==m_topicStack->count()) // last topic
+  {
+    done();
+  }
+  else
+  {
+    m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
+    m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
+    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+    m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  }
 }
 
 void Wizard::prevTopic()
@@ -1288,6 +1322,7 @@ void Wizard::prevTopic()
 
 void Wizard::refresh()
 {
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
   m_step1->init();
   m_step2->init();
   m_step3->init();

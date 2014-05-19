@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -39,11 +39,16 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void writeCodeLink(const char *ref,const char *file,
                        const char *anchor,const char *name,
                        const char *tooltip);
+    void writeTooltip(const char *id, 
+                      const DocLinkInfo &docInfo,
+                      const char *decl,
+                      const char *desc,
+                      const SourceLinkInfo &defInfo,
+                      const SourceLinkInfo &declInfo
+                     );
     void writeLineNumber(const char *,const char *,const char *,int);
     void startCodeLine(bool);
     void endCodeLine();
-    void startCodeAnchor(const char *label);
-    void endCodeAnchor();
     void startFontClass(const char *s);
     void endFontClass();
     void writeCodeAnchor(const char *anchor);
@@ -51,6 +56,10 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void addWord(const char *,bool) {}
 
   private:
+    void _writeCodeLink(const char *className,
+                        const char *ref,const char *file,
+                        const char *anchor,const char *name,
+                        const char *tooltip);
     void docify(const char *str);
     bool m_streamSet;
     FTextStream m_t;
@@ -94,14 +103,14 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
     void writeLineNumber(const char *ref,const char *file,const char *anchor,int lineNumber)
     { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    void writeTooltip(const char *id, const DocLinkInfo &docInfo, const char *decl,
+                      const char *desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
+                     )
+    { m_codeGen.writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
     void startCodeLine(bool hasLineNumbers)
     { m_codeGen.startCodeLine(hasLineNumbers); }
     void endCodeLine()
     { m_codeGen.endCodeLine(); }
-    void startCodeAnchor(const char *label)
-    { m_codeGen.startCodeAnchor(label); }
-    void endCodeAnchor()
-    { m_codeGen.endCodeAnchor(); }
     void startFontClass(const char *s) 
     { m_codeGen.startFontClass(s); }
     void endFontClass() 
@@ -292,9 +301,9 @@ class HtmlGenerator : public OutputGenerator
     { t << "</table>" << endl; }
     void startDescTableTitle()
     //{ t << "<tr><td valign=\"top\"><em>"; }
-    { t << "<tr><td class=\"fieldname\"><em>"; }
+    { t << "<tr><td class=\"fieldname\">"; }
     void endDescTableTitle()
-    { t << "</em>&nbsp;</td>"; }
+    { t << "&#160;</td>"; }
     void startDescTableData()
     //{ t << "<td>" << endl; }
     { t << "<td class=\"fielddoc\">" << endl; }
