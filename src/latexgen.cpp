@@ -186,6 +186,8 @@ static void writeMakeBat()
     exit(1);
   }
   FTextStream t(&file);
+  t << "set Dir_Old=%cd%\n";
+  t << "cd /D %~dp0\n\n";
   t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
   if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
   {
@@ -246,6 +248,8 @@ static void writeMakeBat()
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
     t << "pdflatex refman\n";
+    t << "cd /D %Dir_Old%\n";
+    t << "set Dir_Old=\n";
   }
 #endif
 }
@@ -286,6 +290,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
 
   // Load required packages
   t << "% Packages required by doxygen\n"
+       "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
        "\\usepackage{doxygen}\n"
        "\\usepackage{graphicx}\n"
@@ -293,7 +298,6 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
        "\\usepackage{multirow}\n"
-       "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\PassOptionsToPackage{warn}{textcomp}\n"
        "\\usepackage{textcomp}\n"
        "\\usepackage[nointegrals]{wasysym}\n"
