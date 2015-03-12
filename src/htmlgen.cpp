@@ -1066,6 +1066,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   QCString treeViewCssJs;
   QCString searchCssJs;
   QCString searchBox;
+  QCString switchtab;
   QCString mathJaxJs;
   QCString extraCssText;
 
@@ -1199,11 +1200,19 @@ static QCString substituteHtmlKeywords(const QCString &s,
         convertToHtml(Config_getString("PROJECT_NUMBER")),
         convertToHtml(Config_getString("PROJECT_BRIEF")));
 
+    //added by guanghui
+  switchtab += "<ul class=\"tablist\" style=\"bottom: 0px; position:absolute; right: 4px;\">";
+  switchtab += "<li ><a name=\"cpp\" style=\"background-color:#BFEFFF;\" href=\"javascript:onClickCpp();\">c++</a></li>";
+  switchtab += "<li ><a name=\"js\" href=\"javascript:onClickJs();\">js</a></li>";
+  switchtab += "<li ><a name=\"lua\" href=\"javascript:onClickLua();\">lua</a></li>";
+  switchtab += "</ul>";
+
   // additional HTML only keywords
   result = substitute(result,"$navpath",navPath);
   result = substitute(result,"$stylesheet",cssFile);
   result = substitute(result,"$treeview",treeViewCssJs);
   result = substitute(result,"$searchbox",searchBox);
+  result = substitute(result,"$switchtab",switchtab);
   result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$mathjax",mathJaxJs);
   result = substitute(result,"$generatedby",generatedBy);
@@ -3261,6 +3270,8 @@ void HtmlGenerator::writeSearchPage()
     t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",false,'" << theTranslator->trSearch() << "');\n";
     t << "</script>\n";
+
+
     if (!Config_getBool("DISABLE_INDEX"))
     {
       writeDefaultQuickLinks(t,TRUE,HLI_Search,0,"");

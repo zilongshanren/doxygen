@@ -429,9 +429,8 @@ function getNode(o, po)
   po.childrenVisited = true;
   var l = po.childrenData.length-1;
   for (var i in po.childrenData) {
-    var nodeData = po.childrenData[i];
-    po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2],
-      i==l);
+      var nodeData = po.childrenData[i];
+      po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
   }
   insertFunction();
 }
