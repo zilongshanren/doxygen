@@ -430,7 +430,8 @@ function getNode(o, po)
   var l = po.childrenData.length-1;
   for (var i in po.childrenData) {
       var nodeData = po.childrenData[i];
-      po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
+      if(nodeData[0] !== 'Classes' && nodeData[0] != 'Namespace Members')
+          po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
   }
   insertFunction();
 }

@@ -279,6 +279,12 @@ void Entry::reset()
   if (typeConstr) { delete typeConstr; typeConstr=0; }
   //if (mtArgList) { delete mtArgList; mtArgList=0; }
   
+  hasJsFunName = false;
+  hasLuaFunName = false;
+  bIsOmitJsFun = false;
+  bIsOmitLuaFun = false;
+  bIsOmitJsClass = false;
+  bIsOmitLuaClass= false;
 
 }
 

@@ -1673,26 +1673,26 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  current->startLine = yyLineNr;
 					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
-                      //added by guanghui
-                      /* printf("zilongshanren : %s\n", g_renameJsFunName.data()); */
-                         if(!g_renameJsFunName.isEmpty())
-                         {
-                             if(g_renameJsFunName == OMIT_SIMBOL)
-                             {
-                                 current->bIsOmitJsClass = true;
-                                 /* printf("omit js class\n"); */
-                             }
-                         }
+                                        //added by guanghui
+                                        /* printf("zilongshanren : %s\n", g_renameJsFunName.data()); */
+                                           if(!g_renameJsFunName.isEmpty())
+                                           {
+                                               if(g_renameJsFunName == OMIT_SIMBOL)
+                                               {
+                                                   current->bIsOmitJsClass = true;
+                                                   /* printf("omit js class\n"); */
+                                               }
+                                           }
 
-                         if(!g_renameLuaFunName.isEmpty())
-                         {
-                             /* printf("omit lua class : %s\n", g_renameLuaFunName.data()); */
-                             if(g_renameLuaFunName == OMIT_SIMBOL)
-                             {
-                                 current->bIsOmitLuaClass = true;
-                                 /* printf("omit lua class\n"); */
-                             }
-                         }
+                                           if(!g_renameLuaFunName.isEmpty())
+                                           {
+                                               /* printf("omit lua class : %s\n", g_renameLuaFunName.data()); */
+                                               if(g_renameLuaFunName == OMIT_SIMBOL)
+                                               {
+                                                   current->bIsOmitLuaClass = true;
+                                                   /* printf("omit lua class\n"); */
+                                               }
+                                           }
 
 					  if (yytext[0]=='@')
 					  {
@@ -4055,7 +4055,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 						  memspecEntry
 						 ) // case 1: use S_t as type for pS_t in "typedef struct _S {} S_t, *pS_t;"
 					      {
-                            varEntry->type+=memspecEntry->name+msType;
+                                                  varEntry->type+=memspecEntry->name+msType;
 					      }
 					      else // case 2: use _S as type for for pS_t
 					      {
@@ -4074,16 +4074,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					      Grouping *g;
 					      for (;(g=gli.current());++gli)
 					      {
-                              varEntry->groups->append(new Grouping(*g));
+                                                  varEntry->groups->append(new Grouping(*g));
 					      }
 					      if (current->sli) // copy special list items
 					      {
-                              QListIterator<ListItemInfo> li(*current->sli);
-                              ListItemInfo *lii;
-                              for (li.toFirst();(lii=li.current());++li)
-                              {
-                                  varEntry->addSpecialListItem(lii->type,lii->itemId);
-                              }
+                                                  QListIterator<ListItemInfo> li(*current->sli);
+                                                  ListItemInfo *lii;
+                                                  for (li.toFirst();(lii=li.current());++li)
+                                                  {
+                                                      varEntry->addSpecialListItem(lii->type,lii->itemId);
+                                                  }
 					      }
 
 					      //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
@@ -4094,6 +4094,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  if (*yytext==';') // end of a struct/class ...
 					  {
+                                              resetMultipleLanDocParserState();
 					    if (!isTypedef && msName.isEmpty() && memspecEntry && (current->section&Entry::COMPOUND_MASK))
 					    { // case where a class/struct has a doc block after it
 					      if (!current->doc.isEmpty())
