@@ -423,6 +423,12 @@ function removeToInsertLater(element) {
   };
 }
 
+var ignoreTypeList = ['Classes', 'Namespace Members', 'Type', 'TouchDirection', 'HandlerType', 'Direction',
+                      'UNIFORM_SAMPLERO', 'Key', 'KeyCode', 'Eventcode', 'MouseEventType', '_prxy',
+                      'AudioState', 'State', 'Mode', 'EventType', 'Key', 'InputMode', 'InputFlag',
+                      'BackGroundColorType', 'ClippingType', 'HorizontalEdge', 'VerticalEdge',
+                      'LinearGravity', 'RelativeAlign', 'Gravity', 'FocusDirection', 'PositionType', 'SizeType', 'TouchEventType', 'TextureResType', 'BrightStyle'];
+
 function getNode(o, po)
 {
   var insertFunction = removeToInsertLater(po.li);
@@ -430,7 +436,7 @@ function getNode(o, po)
   var l = po.childrenData.length-1;
   for (var i in po.childrenData) {
       var nodeData = po.childrenData[i];
-      if(nodeData[0] !== 'Classes' && nodeData[0] != 'Namespace Members')
+      if(-1 === $.inArray(nodeData[0], ignoreTypeList))
           po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
   }
   insertFunction();

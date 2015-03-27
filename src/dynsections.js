@@ -88,19 +88,58 @@ function toggleInherit(id)
     var src = $(img).attr('src');
     if (rows.filter(':first').is(':visible')===true) {
         rows.css('display','none');
+
         if (src.length === 16) {
             $(img).attr('src',src.substring(0,src.length-10)+'open.png');
         }
     } else {
-        rows.css('display','table-row'); // using show() causes jump in firefox
+        // rows.css('display','table-row'); // using show() causes jump in firefox
+        //added by guanghui
+        //only display the needed rows
+        rows.each(function(){
+            if($('a[name=cpp]').css("background-color") === "rgb(191, 239, 255)"){
+                if(this.attributes[0].nodeValue == "cpp"){
+                    this.attributes[2].nodeValue="display:table-row;";
+                }
+            }
+            if($('a[name=js]').css("background-color") === "rgb(191, 239, 255)"){
+                if(this.attributes[0].nodeValue == "js"){
+                    this.attributes[2].nodeValue="display:table-row;";
+                }
+            }
+            if($('a[name=lua]').css("background-color") === "rgb(191, 239, 255)"){
+                if(this.attributes[0].nodeValue == "lua"){
+                    this.attributes[2].nodeValue="display:table-row;";
+                }
+            }
+        });
+        
         if (src.length === 14) {
             $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
         }
 
-        //added by guanghui
-        $('tr[name=cpp]').show();
-        $('tr[name=js]').hide();
-        $('tr[name=lua]').hide();
     }
+
+    // setTimeout(function(){
+    //     //added by guanghui
+    //     if($('a[name=cpp]').css("background-color") === "rgb(191, 239, 255)")
+    //     {
+    //         $('tr[name=cpp]').css("display",'table-row');
+    //         $('tr[name=js]').css("display", "none");
+    //         $('tr[name=lua]').css("display", "none");
+    //     }
+    //     if($('a[name=lua]').css("background-color") === "rgb(191, 239, 255)")
+    //     {
+    //         $('tr[name=lua]').css("display",'table-row');
+    //         $('tr[name=js]').css("display", "none");
+    //         $('tr[name=cpp]').css("display", "none");
+    //     }
+    //     if($('a[name=js]').css("background-color") === "rgb(191, 239, 255)")
+    //     {
+    //         $('tr[name=js]').css("display",'table-row');
+    //         $('tr[name=cpp]').css("display", "none");
+    //         $('tr[name=lua]').css("display", "none");
+    //     }
+    // },100);
 }
 

@@ -561,6 +561,7 @@ void MemberList::writeDeclarations(OutputList &ol,
                   stripPath(cd->getOutputFileBase());
       if (title)
       {
+          //this line should consider multipl language
         ol.writeInheritedSectionTitle(inheritId,cd->getReference(),
                                       cd->getOutputFileBase(), 
                                       cd->anchor(),title,cd->displayName());
