@@ -86,7 +86,19 @@ function toggleInherit(id)
     var rows = $('tr.inherit.'+id);
     var img = $('tr.inherit_header.'+id+' img');
     var src = $(img).attr('src');
-    if (rows.filter(':first').is(':visible')===true) {
+    var currentLanguagePage="cpp";
+    if($('a[name=js]').css("background-color") === "rgb(191, 239, 255)"){
+        currentLanguagePage="js";
+    }
+    else if($('a[name=lua]').css("background-color") === "rgb(191, 239, 255)"){
+        currentLanguagePage="lua";
+    }
+
+    var filterRows = rows.filter(function(index){
+        return $(this).attr("name") == currentLanguagePage;
+    });
+    
+    if (filterRows.filter(":first").is(':visible')===true) {
         rows.css('display','none');
 
         if (src.length === 16) {
