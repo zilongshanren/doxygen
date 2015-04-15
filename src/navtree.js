@@ -109,21 +109,21 @@ function cachedLink()
 
 function getScript(scriptName,func,show)
 {
-  var head = document.getElementsByTagName("head")[0]; 
+  var head = document.getElementsByTagName("head")[0];
   var script = document.createElement('script');
   script.id = scriptName;
   script.type = 'text/javascript';
-  script.onload = func; 
-  script.src = scriptName+'.js'; 
-  if ($.browser.msie && $.browser.version<=8) { 
+  script.onload = func;
+  script.src = scriptName+'.js';
+  if ($.browser.msie && $.browser.version<=8) {
     // script.onload does not work with older versions of IE
     script.onreadystatechange = function() {
-      if (script.readyState=='complete' || script.readyState=='loaded') { 
-        func(); if (show) showRoot(); 
+      if (script.readyState=='complete' || script.readyState=='loaded') {
+        func(); if (show) showRoot();
       }
     }
   }
-  head.appendChild(script); 
+  head.appendChild(script);
 }
 
 function createIndent(o,domNode,node,level)
@@ -159,7 +159,7 @@ function createIndent(o,domNode,node,level)
     span.style.height  = '22px';
     span.innerHTML = '&#160;';
     domNode.appendChild(span);
-  } 
+  }
 }
 
 var animationInProgress = false;
@@ -233,7 +233,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
       var aname = '#'+link.split('#')[1];
       var srcPage = stripPath(pathName());
       var targetPage = stripPath(link.split('#')[0]);
-      a.href = srcPage!=targetPage ? url : "javascript:void(0)"; 
+      a.href = srcPage!=targetPage ? url : "javascript:void(0)";
       a.onclick = function(){
         storeLink(link);
         if (!$(a).parent().parent().hasClass('selected'))
@@ -251,7 +251,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
       a.onclick = function() { storeLink(link); }
     }
   } else {
-    if (childrenData != null) 
+    if (childrenData != null)
     {
       a.className = "nolink";
       a.href = "javascript:void(0)";
@@ -300,7 +300,7 @@ function expandNode(o, node, imm, showRoot)
     } else {
       if (!node.childrenVisited) {
         getNode(o, node);
-      } if (imm || ($.browser.msie && $.browser.version>8)) { 
+      } if (imm || ($.browser.msie && $.browser.version>8)) {
         // somehow slideDown jumps to the start of tree for IE9 :-(
         $(node.getChildrenUL()).show();
       } else {
@@ -423,11 +423,11 @@ function removeToInsertLater(element) {
   };
 }
 
-var ignoreTypeList = ['Classes', 'Namespace Members', 'Type', 'TouchDirection', 'HandlerType', 'Direction',
-                      'UNIFORM_SAMPLERO', 'Key', 'KeyCode', 'Eventcode', 'MouseEventType', '_prxy',
-                      'AudioState', 'State', 'Mode', 'EventType', 'Key', 'InputMode', 'InputFlag',
-                      'BackGroundColorType', 'ClippingType', 'HorizontalEdge', 'VerticalEdge',
-                      'LinearGravity', 'RelativeAlign', 'Gravity', 'FocusDirection', 'PositionType', 'SizeType', 'TouchEventType', 'TextureResType', 'BrightStyle'];
+// var ignoreTypeList = ['Classes', 'Namespace Members', 'Type', 'TouchDirection', 'HandlerType', 'Direction',
+//                       'UNIFORM_SAMPLERO', 'Key', 'KeyCode', 'Eventcode', 'MouseEventType', '_prxy',
+//                       'AudioState', 'State', 'Mode', 'EventType', 'Key', 'InputMode', 'InputFlag',
+//                       'BackGroundColorType', 'ClippingType', 'HorizontalEdge', 'VerticalEdge',
+//                       'LinearGravity', 'RelativeAlign', 'Gravity', 'FocusDirection', 'PositionType', 'SizeType', 'TouchEventType', 'TextureResType', 'BrightStyle'];
 
 function getNode(o, po)
 {
@@ -436,8 +436,7 @@ function getNode(o, po)
   var l = po.childrenData.length-1;
   for (var i in po.childrenData) {
       var nodeData = po.childrenData[i];
-      if(-1 === $.inArray(nodeData[0], ignoreTypeList))
-          po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
+      po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2], i==l);
   }
   insertFunction();
 }
@@ -568,4 +567,3 @@ function initNavTree(toroot,relpath)
      }
   })
 }
-
