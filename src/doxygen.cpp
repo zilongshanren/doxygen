@@ -3660,9 +3660,10 @@ static void buildFunctionList(EntryNav *rootNav)
           // new global function
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->getLast() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
+          // TODO: added by guanghui. Add a way to rename and ignore global JS and Lua function.
           md=new MemberDef(
               root->fileName,root->startLine,root->startColumn,
-              root->type,root->renameJsFunName,root->args,root->exception,
+              root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
               MemberType_Function,tArgList,root->argList);
 
