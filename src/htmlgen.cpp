@@ -867,14 +867,16 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
   t << "          <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag_sel.png\"\n";
-  t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
-  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
+  // t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
+  // t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
+  t << " onclick=\" searchBox.onClickSearchContFun() \" \n ";
   t << "               alt=\"\"/>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"" 
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
   t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
   t << "               onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
-  t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
+  t << " onkeypress=\"searchBox.OnSearchFieldKeyPress(event) \" /> \n";
+  // t << "               onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
   t << "          </span><span class=\"right\">\n";
   t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
     << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.png\" alt=\"\"/></a>\n";
